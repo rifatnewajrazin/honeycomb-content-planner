@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoneyComb Inc. Content Tracker & Planner</title>
+  <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo-wrap">
+        <div class="logo-section">
+          <img src="assets/logos/honeycomb.png" class="sidebar-logo-img" alt="HoneyComb logo">
+          <div class="logo-text">
+            <h1>HoneyComb Inc.</h1>
+            <span>Media Desk</span>
+          </div>
+        </div>
+
+        <nav class="nav-menu">
+          <a href="#" class="nav-item active" data-view="dashboard">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Dashboard
+          </a>
+          <a href="#" class="nav-item" data-view="kanban">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M9 3v18M15 3v18" />
+            </svg>
+            Kanban Board
+          </a>
+          <a href="#" class="nav-item" data-view="calendar">
+            <svg viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            Calendar
+          </a>
+          <a href="#" class="nav-item" data-view="analytics">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 20V10M12 20V4M6 20v-6"/>
+            </svg>
+            Analytics
+          </a>
+        </nav>
+      </div>
+
+      <!-- User Profile Section (populated dynamically) -->
+      <div class="user-profile-section"></div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Sticky Top Header -->
+      <header class="header">
+        <div class="header-title">
+          <h2>Content Hub</h2>
+          <p>HoneyComb Inc. Active Pages & Subsections</p>
+        </div>
+        
+        <div class="header-actions">
+          <!-- Page Filter -->
+          <select id="global-brand-filter" class="filter-select">
+            <option value="all">All Brands & Pages</option>
+          </select>
+          
+          <!-- New Content Post Button -->
+          <button id="create-post-btn" class="btn-primary" aria-label="Schedule a new post">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New Post
+          </button>
+        </div>
+      </header>
+
+      <!-- View 1: Dashboard View -->
+      <section id="dashboard-view" class="view-panel active">
+        <div class="dashboard-grid" id="dashboard-cards-grid">
+          <!-- Dynamically Rendered Page Cards -->
+        </div>
+      </section>
+
+      <!-- View 2: Kanban Board View -->
+      <section id="kanban-view" class="view-panel">
+        <div class="kanban-container">
+          <!-- Ideation -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title-wrap">
+                <span class="column-dot" style="background-color: var(--status-info)"></span>
+                <span class="column-title">Ideation</span>
+              </div>
+              <span class="column-count">0</span>
+            </div>
+            <div class="column-cards-area" data-status="ideation"></div>
+          </div>
+
+          <!-- Development -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title-wrap">
+                <span class="column-dot" style="background-color: #f59e0b"></span>
+                <span class="column-title">In Development</span>
+              </div>
+              <span class="column-count">0</span>
+            </div>
+            <div class="column-cards-area" data-status="development"></div>
+          </div>
+
+          <!-- Ready / Approved -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title-wrap">
+                <span class="column-dot" style="background-color: #10b981"></span>
+                <span class="column-title">Approved</span>
+              </div>
+              <span class="column-count">0</span>
+            </div>
+            <div class="column-cards-area" data-status="ready"></div>
+          </div>
+
+          <!-- Scheduled -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title-wrap">
+                <span class="column-dot" style="background-color: var(--honey-gold)"></span>
+                <span class="column-title">Scheduled</span>
+              </div>
+              <span class="column-count">0</span>
+            </div>
+            <div class="column-cards-area" data-status="scheduled"></div>
+          </div>
+
+          <!-- Published -->
+          <div class="kanban-column">
+            <div class="column-header">
+              <div class="column-title-wrap">
+                <span class="column-dot" style="background-color: #8b5cf6"></span>
+                <span class="column-title">Published</span>
+              </div>
+              <span class="column-count">0</span>
+            </div>
+            <div class="column-cards-area" data-status="published"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View 3: Calendar View -->
+      <section id="calendar-view" class="view-panel">
+        <div class="calendar-view-header">
+          <div class="calendar-nav-wrap">
+            <button id="cal-prev" class="btn-icon" aria-label="Previous Month">
+              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <h3 id="calendar-title" class="calendar-month-year">July 2026</h3>
+            <button id="cal-next" class="btn-icon" aria-label="Next Month">
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="calendar-grid">
+          <div class="calendar-weekdays">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+          </div>
+          <div class="calendar-days" id="calendar-days-grid">
+            <!-- Day cells generated by app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- View 4: Analytics View -->
+      <section id="analytics-view" class="view-panel">
+        <div class="analytics-summary">
+          <div class="stat-box">
+            <div class="stat-icon-wrap">
+              <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div class="stat-details">
+              <h4>Total Scheduled</h4>
+              <p id="stat-total-posts">0</p>
+            </div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-icon-wrap" style="background-color: var(--status-healthy-glow); color: var(--status-healthy)">
+              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+            </div>
+            <div class="stat-details">
+              <h4>Published</h4>
+              <p id="stat-published-posts">0</p>
+            </div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-icon-wrap" style="background-color: rgba(59, 130, 246, 0.15); color: #3b82f6">
+              <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>
+            </div>
+            <div class="stat-details">
+              <h4>Completion Rate</h4>
+              <p id="stat-completion-rate">0%</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="chart-panel">
+            <h3>Content Upload Volume</h3>
+            <div class="chart-container" id="analytics-chart">
+              <!-- Dynamically populated chart bars -->
+            </div>
+          </div>
+
+          <div class="chart-panel">
+            <h3>Active Pages Status</h3>
+            <div class="legend-list" id="analytics-legend">
+              <!-- Dynamically populated legend stats -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal Form (Create / Edit Content Post) -->
+    <div id="post-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">Schedule New Post</h3>
+          <button class="close-btn" id="modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="post-form">
+          <div class="modal-body">
+            
+            <div class="form-group">
+              <label for="post-title">Content Title / Topic</label>
+              <input type="text" id="post-title" class="form-control" placeholder="e.g., Summer Oud Collection Reel Showcase" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="post-brand">Business Page / Brand</label>
+                <select id="post-brand" class="form-control" required></select>
+              </div>
+
+              <div class="form-group">
+                <label>Target Platforms</label>
+                <div class="platforms-checkbox-grid">
+                  <label class="platform-checkbox-label">
+                    <input type="checkbox" name="post-platforms" value="facebook">
+                    <span>Facebook</span>
+                  </label>
+                  <label class="platform-checkbox-label">
+                    <input type="checkbox" name="post-platforms" value="instagram">
+                    <span>Instagram</span>
+                  </label>
+                  <label class="platform-checkbox-label">
+                    <input type="checkbox" name="post-platforms" value="linkedin">
+                    <span>LinkedIn</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="post-type">Content Type</label>
+                <select id="post-type" class="form-control" required>
+                  <option value="post">Social Media Post</option>
+                  <option value="story">Story</option>
+                  <option value="video">Reel/Video</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="post-assignee">Assignee</label>
+                <select id="post-assignee" class="form-control" required></select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="post-date">Target Date</label>
+                <input type="date" id="post-date" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label for="post-time">Target Time</label>
+                <input type="time" id="post-time" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="grid-column: span 2">
+                <label for="post-status">Status Pipeline</label>
+                <select id="post-status" class="form-control" required>
+                  <option value="ideation">Ideation / Draft</option>
+                  <option value="development">In Development</option>
+                  <option value="ready">Approved / Ready</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="published">Published</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="post-caption">Caption / Notes</label>
+              <textarea id="post-caption" class="form-control" placeholder="Copy/caption text, links, visual references, and post notes..."></textarea>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="modal-delete-btn" style="background-color: var(--status-critical-glow); color: var(--status-critical); border-color: rgba(239, 68, 68, 0.15); margin-right: auto; display: none;">Delete Post</button>
+            <button type="button" class="btn-secondary modal-cancel">Cancel</button>
+            <button type="submit" class="btn-primary">Save Content</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-wrapper" class="toast-container"></div>
+
+    <!-- Login Overlay Panel -->
+    <div id="login-overlay" class="login-overlay-panel" style="display: none;">
+      <div class="login-card">
+        <img src="assets/logos/honeycomb.png" class="login-logo" alt="HoneyComb logo">
+        <h2>HoneyComb Content Hub</h2>
+        <p>Sign in to manage and schedule creative contents</p>
+        
+        <form id="login-form">
+          <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+            <label for="login-user" style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">User Profile</label>
+            <select id="login-user" class="form-control" style="width: 100%; margin-top: 8px;" required>
+              <option value="Rifat Newaj Razin">Rifat Newaj Razin (Head of Multimedia & Creative)</option>
+              <option value="Jubayer Hossain">Jubayer Hossain (Content Planner and Researcher)</option>
+            </select>
+          </div>
+          <div class="form-group" style="text-align: left; margin-bottom: 24px;">
+            <label for="login-password" style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Password</label>
+            <input type="password" id="login-password" class="form-control" style="width: 100%; margin-top: 8px;" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; height: 48px; border-radius: 12px; font-weight: 700; font-size: 1rem; border: none;">Sign In</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
