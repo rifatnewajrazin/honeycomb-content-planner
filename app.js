@@ -505,7 +505,6 @@ function initData() {
     console.error("Firestore sync error:", error);
   });
 }
-}
 
 function saveToStorage() {
   localStorage.setItem('hc_brands', JSON.stringify(state.brands));
