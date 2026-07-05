@@ -1,3 +1,20 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFhMBHmaUzJm14MPgY6oQscuFblPJZ-rE",
+  authDomain: "honeycomb-content-hub.firebaseapp.com",
+  projectId: "honeycomb-content-hub",
+  storageBucket: "honeycomb-content-hub.firebasestorage.app",
+  messagingSenderId: "900897411326",
+  appId: "1:900897411326:web:80b7a46d0f0848f1955af",
+  measurementId: "G-SLZMBC7307"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 // Default brands config
 const DEFAULT_BRANDS = [
   {
@@ -396,40 +413,18 @@ function renderUserProfile() {
 // Load from LocalStorage or Load Defaults
 function initData() {
   const localBrands = localStorage.getItem('hc_brands');
-  const localPosts = localStorage.getItem('hc_posts');
   const localTeam = localStorage.getItem('hc_team');
 
-  if (localBrands && localPosts && localTeam) {
+  if (localBrands && localTeam) {
     state.brands = JSON.parse(localBrands);
-    state.posts = JSON.parse(localPosts);
     state.team = JSON.parse(localTeam);
     
     // Check if the team needs to be updated with new roles.
-    // If not, migrate or overwrite the team list.
     const isNewTeamSet = state.team.some(t => t.role === 'Cinematographer and Video Editor');
     if (!isNewTeamSet) {
       state.team = [...DEFAULT_TEAM];
-      
-      // Update assignee names in existing posts to match the new team names
-      state.posts.forEach(p => {
-        if (p.assignee === 'Md. Yasin Arafat' || p.assignee === 'Yasin Arafat') {
-          p.assignee = 'Yasin Arafat Rabby';
-        } else if (p.assignee === 'Niaz' || p.assignee === 'Niaz Uddin') {
-          p.assignee = 'Niaz Uddin';
-        } else if (p.assignee === 'Self') {
-          p.assignee = 'Rifat Newaj Razin';
-        }
-      });
       saveToStorage();
     }
-
-    // Migrate old post schema (platform string to platforms array)
-    state.posts.forEach(p => {
-      if (p.platform && !p.platforms) {
-        p.platforms = [p.platform];
-        delete p.platform;
-      }
-    });
 
     // Ensure all weekly goals are strictly set to matching user selection
     const goalsMap = {
@@ -470,34 +465,6 @@ function initData() {
       saveToStorage();
     }
 
-    // Migrate post platforms and types in user database
-    let migrated = false;
-    state.posts.forEach(p => {
-      // 1. Filter out youtube and tiktok
-      if (p.platforms) {
-        const originalLen = p.platforms.length;
-        p.platforms = p.platforms.filter(plat => plat !== 'youtube' && plat !== 'tiktok');
-        if (p.platforms.length === 0) {
-          p.platforms = ['facebook'];
-        }
-        if (p.platforms.length !== originalLen) {
-          migrated = true;
-        }
-      }
-      
-      // 2. Map old type keys to new type keys
-      if (p.type === 'photo' || p.type === 'article') {
-        p.type = 'post';
-        migrated = true;
-      } else if (p.type === 'text') {
-        p.type = 'status';
-        migrated = true;
-      }
-    });
-    if (migrated) {
-      saveToStorage();
-    }
-
     // Check if team member photos need to be updated in localStorage
     let photoMigrated = false;
     const RifatEntry = state.team.find(t => t.name === 'Rifat Newaj Razin');
@@ -515,15 +482,33 @@ function initData() {
     }
   } else {
     state.brands = [...DEFAULT_BRANDS];
-    state.posts = [...DEFAULT_POSTS];
     state.team = [...DEFAULT_TEAM];
     saveToStorage();
   }
+
+  // Sync posts from Firestore in real-time
+  onSnapshot(collection(db, "posts"), (querySnapshot) => {
+    if (querySnapshot.empty) {
+      // Seed Firestore with default mock posts if database is completely empty
+      DEFAULT_POSTS.forEach(async (p) => {
+        await setDoc(doc(db, "posts", p.id), p);
+      });
+    } else {
+      const loadedPosts = [];
+      querySnapshot.forEach((doc) => {
+        loadedPosts.push(doc.data());
+      });
+      state.posts = loadedPosts;
+      refreshViews();
+    }
+  }, (error) => {
+    console.error("Firestore sync error:", error);
+  });
+}
 }
 
 function saveToStorage() {
   localStorage.setItem('hc_brands', JSON.stringify(state.brands));
-  localStorage.setItem('hc_posts', JSON.stringify(state.posts));
   localStorage.setItem('hc_team', JSON.stringify(state.team));
 }
 
@@ -1024,7 +1009,7 @@ function renderAnalytics() {
 }
 
 // Drag & Drop / Status Update
-function updatePostStatus(postId, newStatus) {
+async function updatePostStatus(postId, newStatus) {
   const post = state.posts.find(p => p.id === postId);
   if (!post) return;
 
@@ -1058,9 +1043,15 @@ function updatePostStatus(postId, newStatus) {
     }
   }
 
-  saveToStorage();
-  refreshViews();
-  showToast(`Successfully moved to "${newStatus.toUpperCase()}"`, 'success');
+  // Sync to Firestore
+  try {
+    await setDoc(doc(db, "posts", post.id), post);
+    showToast(`Successfully moved to "${newStatus.toUpperCase()}"`, 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to update status in cloud', 'error');
+    refreshViews();
+  }
 }
 
 // Post Creation & Editing Modal
@@ -1203,15 +1194,15 @@ function closePostModal() {
   if (existingBanner) existingBanner.remove();
 }
 
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
   e.preventDefault();
 
   const title = document.getElementById('post-title').value.trim();
   const brandId = document.getElementById('post-brand').value;
-  const checkedPlatforms = Array.from(document.querySelectorAll('input[name="post-platforms"]:checked')).map(cb => cb.value);
   const status = document.getElementById('post-status').value;
   const type = document.getElementById('post-type').value;
   const assignee = document.getElementById('post-assignee').value;
+  const checkedPlatforms = Array.from(document.querySelectorAll('input[name="post-platforms"]:checked')).map(cb => cb.value);
   const date = document.getElementById('post-date').value;
   const time = document.getElementById('post-time').value;
   const caption = document.getElementById('post-caption').value.trim();
@@ -1248,12 +1239,21 @@ function handleFormSubmit(e) {
           brand.lastPostDate = date;
         }
       }
+      
+      // Save changes to Firestore
+      try {
+        await setDoc(doc(db, "posts", post.id), post);
+        showToast('Post updated successfully', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to save changes to cloud', 'error');
+      }
     }
-    showToast('Post updated successfully', 'success');
   } else {
     // Create new post
+    const newId = 'post-' + Date.now();
     const newPost = {
-      id: 'post-' + Date.now(),
+      id: newId,
       title,
       brandId,
       platforms: checkedPlatforms,
@@ -1264,17 +1264,15 @@ function handleFormSubmit(e) {
       time,
       caption
     };
-    state.posts.push(newPost);
     
-    // Update brand last active date if just published
-    if (status === 'published') {
-      const brand = state.brands.find(b => b.id === brandId);
-      if (brand) {
-        brand.lastPostDate = date;
-      }
+    // Save to Firestore
+    try {
+      await setDoc(doc(db, "posts", newId), newPost);
+      showToast('New post scheduled successfully', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to save new post to cloud', 'error');
     }
-    
-    showToast('New post scheduled successfully', 'success');
   }
 
   saveToStorage();
@@ -1283,15 +1281,18 @@ function handleFormSubmit(e) {
 }
 
 // Delete post from edit modal
-function deletePost() {
+async function deletePost() {
   if (!state.editingPost) return;
   
   if (confirm('Are you sure you want to delete this content item?')) {
-    state.posts = state.posts.filter(p => p.id !== state.editingPost.id);
-    saveToStorage();
+    try {
+      await deleteDoc(doc(db, "posts", state.editingPost.id));
+      showToast('Content item removed', 'info');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete from cloud', 'error');
+    }
     closePostModal();
-    refreshViews();
-    showToast('Content item removed', 'info');
   }
 }
 
