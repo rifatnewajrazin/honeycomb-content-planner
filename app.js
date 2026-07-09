@@ -666,13 +666,22 @@ function initData() {
       DEFAULT_TEAM.forEach(async (t) => {
         await setDoc(doc(db, "team", t.id), t);
       });
+    } else {
       const loadedTeam = [];
       querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const defaultMatch = DEFAULT_TEAM.find(t => t.name === data.name || (data.aliases && data.aliases.includes(t.name)) || (t.aliases && t.aliases.includes(data.name)));
+        const dataName = data.name || '';
+        const defaultMatch = DEFAULT_TEAM.find(t => {
+          const nameMatches = t.name === dataName;
+          const aliasMatches1 = data.aliases && Array.isArray(data.aliases) && data.aliases.includes(t.name);
+          const aliasMatches2 = t.aliases && Array.isArray(t.aliases) && t.aliases.includes(dataName);
+          return nameMatches || aliasMatches1 || aliasMatches2;
+        });
+
         if (defaultMatch) {
-          // If the role is waiting assignment or matches, override with default correct roles/fields
-          if (data.role.includes("Awaiting Assignment") || data.access === undefined || data.isDesigner === undefined) {
+          const hasLegacyRole = data.role && typeof data.role === 'string' && data.role.includes("Awaiting Assignment");
+          const isMissingFields = data.role === undefined || data.access === undefined || data.isDesigner === undefined;
+          if (hasLegacyRole || isMissingFields) {
             const updated = { 
               ...defaultMatch, 
               ...data, 
