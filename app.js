@@ -25,8 +25,8 @@ const DEFAULT_BRANDS = [
     frequencyGoal: 2,
     logo: 'assets/logos/sammtech.png',
     grad: 'var(--grad-sammtech)',
-    color: '#3b82f6',
-    glow: 'rgba(59, 130, 246, 0.15)',
+    color: '#ffffff',
+    glow: 'transparent',
     lastPostDate: '2026-07-03'
   },
   {
@@ -37,8 +37,8 @@ const DEFAULT_BRANDS = [
     frequencyGoal: 0,
     logo: 'assets/logos/lovelife.png',
     grad: 'var(--grad-lovelife)',
-    color: '#ec4899',
-    glow: 'rgba(236, 72, 153, 0.15)',
+    color: '#cccccc',
+    glow: 'transparent',
     lastPostDate: '2026-07-04'
   },
   {
@@ -49,8 +49,8 @@ const DEFAULT_BRANDS = [
     frequencyGoal: 14,
     logo: 'assets/logos/tahams.png',
     grad: 'var(--grad-tahams)',
-    color: '#f59e0b',
-    glow: 'rgba(245, 158, 11, 0.15)',
+    color: '#aaaaaa',
+    glow: 'transparent',
     lastPostDate: '2026-07-05'
   },
   {
@@ -61,8 +61,8 @@ const DEFAULT_BRANDS = [
     frequencyGoal: 2,
     logo: 'assets/logos/perfume-tahams.png',
     grad: 'var(--grad-perfume)',
-    color: '#a855f7',
-    glow: 'rgba(168, 85, 247, 0.15)',
+    color: '#888888',
+    glow: 'transparent',
     lastPostDate: '2026-07-02'
   },
   {
@@ -73,8 +73,8 @@ const DEFAULT_BRANDS = [
     frequencyGoal: 1,
     logo: 'assets/logos/lumina-tahams.png',
     grad: 'var(--grad-lumina)',
-    color: '#06b6d4',
-    glow: 'rgba(6, 182, 212, 0.15)',
+    color: '#dddddd',
+    glow: 'transparent',
     lastPostDate: '2026-07-04'
   },
   {
@@ -85,8 +85,8 @@ const DEFAULT_BRANDS = [
     frequencyGoal: 1,
     logo: 'assets/logos/star-tahams.png',
     grad: 'var(--grad-star)',
-    color: '#10b981',
-    glow: 'rgba(16, 185, 129, 0.15)',
+    color: '#bbbbbb',
+    glow: 'transparent',
     lastPostDate: '2026-07-01'
   },
   {
@@ -97,21 +97,63 @@ const DEFAULT_BRANDS = [
     frequencyGoal: 2,
     logo: 'assets/logos/merchtile.png',
     grad: 'var(--grad-merchtile)',
-    color: '#14b8a6',
-    glow: 'rgba(20, 184, 166, 0.15)',
+    color: '#999999',
+    glow: 'transparent',
     lastPostDate: '2026-07-03'
   }
 ];
 
 // Default Team members
+// Default Team members
 const DEFAULT_TEAM = [
-  { name: 'Rifat Newaj Razin', role: 'Head of Multimedia & Creative', initial: 'RR', photo: 'assets/rifat-profile.jpg' },
-  { name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM' },
-  { name: 'Yasin Arafat Rabby', role: 'Designer', initial: 'YR' },
-  { name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU' },
-  { name: 'Jubayer Hossain', role: 'Content Planner and Researcher', initial: 'JH', photo: 'assets/jubayer-profile.jpg' },
-  { name: 'Mohammad Zahidul Islam', role: 'Content Planner and Researcher', initial: 'ZI' }
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isWorkAssigner: true, isIdeaInitiator: true, aliases: [] },
+  { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', password: 'mahim123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
+  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', password: 'rabby123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Yasin Arafat Rabby'] },
+  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', password: 'niaz123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'p-5', name: 'Jubayer Hossain', role: 'Social Media Manager', initial: 'JH', photo: 'assets/jubayer-profile.jpg', password: 'jubayer123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: [] },
+  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', password: 'zahid123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
+  { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', password: 'ashiq123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Ashiq Bhaia'] },
+  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', password: 'tohfa123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Tohfa Apu'] },
+  { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', password: 'saddam123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', password: 'naim123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', password: 'oisarjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', password: 'orthee123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
+  { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', password: 'rafi123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-8', name: 'Md. Nurujjaman Shagor', role: 'Senior Office Associate', initial: 'NS', password: 'shagor123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', password: 'anik123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-10', name: 'Nazir Ahmed Talukder', role: 'General Manager', initial: 'NT', password: 'nazir123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Nazir'] },
+  { id: 'person-11', name: 'Md Abdul Haye Molla', role: 'Senior Driver', initial: 'HM', password: 'molla123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-12', name: 'Md. Shihab Uddin', role: 'Junior Office Associate', initial: 'SU', password: 'shihab123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-13', name: 'Shahriyar Shafin', role: 'Junior Office Associate', initial: 'SS', password: 'shafin123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-14', name: 'Mizanur Rahman Mamun', role: 'Cinematographer & Post Production Lead', initial: 'MM', password: 'mamun123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', password: 'esha123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
+  { id: 'person-16', name: 'Sohel Rana', role: 'Senior Sales Executive', initial: 'SR', password: 'sohel123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
+  { id: 'person-17', name: 'Md Abir Hasan', role: 'Temporary Sales Executive', initial: 'AH', password: 'abir123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] }
 ];
+
+function findTeamMember(name) {
+  if (!name) return null;
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  return teamList.find(p => p.name === name || (p.aliases && p.aliases.includes(name)));
+}
+
+function isItemArchived(item) {
+  return false;
+}
+
+function isAssignedToUser(item, user) {
+  if (!user) return false;
+  const namesToMatch = [user.name, ...(user.aliases || [])];
+  
+  if (item.assignee) {
+    return namesToMatch.some(n => n.toLowerCase() === item.assignee.toLowerCase() || item.assignee.toLowerCase().includes(n.toLowerCase()));
+  }
+  if (item.designer) {
+    return namesToMatch.some(n => n.toLowerCase() === item.designer.toLowerCase() || item.designer.toLowerCase().includes(n.toLowerCase()));
+  }
+  return false;
+}
+
 
 // Default mock content posts matching date around 2026-07-05
 const DEFAULT_POSTS = [
@@ -286,22 +328,69 @@ const DEFAULT_POSTS = [
   }
 ];
 
-// User Accounts & Passwords
-const USER_ACCOUNTS = {
-  'Rifat Newaj Razin': { password: 'rifat123', role: 'Head of Multimedia & Creative', photo: 'assets/rifat-profile.jpg', access: 'admin' },
-  'Jubayer Hossain': { password: 'jubayer123', role: 'Content Planner and Researcher', photo: 'assets/jubayer-profile.jpg', access: 'admin' }
-};
+// Default spreadsheet tasks (DESIGNER TASK TRACKER & WORKFLOW)
+const DEFAULT_TASKS = [
+  { id: 'T-01', name: 'Evoka Visiting Card Design', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-06-29', time: '15:00', urgency: '24 hours', status: 'Delayed', deliveryLink: '', comments: 'Will start and finish on 4th.', associatedPostId: '' },
+  { id: 'T-02', name: 'Tahams DC2 Visiting Card Order Update', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-06-29', time: '11:15', urgency: '24 hours', status: 'Finished', deliveryLink: '', comments: 'Monday Delivery.', associatedPostId: '' },
+  { id: 'T-03', name: 'Lovelife Memories 10 Years', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-06-29', time: '21:00', urgency: '16 hours', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1vByO-XJiwCMlFgZnx-TiE8l9TjltXj-F?usp=drive_link', comments: 'Will finish on 30th.', associatedPostId: 'post-2' },
+  { id: 'T-04', name: 'Brand Identity Design', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-06-30', time: '03:45', urgency: 'N/A', status: 'Not Started', deliveryLink: '', comments: 'Font done, working on the color section.', associatedPostId: '' },
+  { id: 'T-05', name: 'Asad Rasel Investment Post Tahams', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-06-30', time: '15:00', urgency: 'Today', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1ct478xgJfzpnyhzoaE2qcwxrB3PMffMj?usp=drive_link', comments: 'On correction.', associatedPostId: '' },
+  { id: 'T-06', name: 'Perfume Box Resize + Roll on Box', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-06-30', time: '18:00', urgency: '24 hours', status: 'On Progress', deliveryLink: '', comments: 'Will start tomorrow.', associatedPostId: 'post-11' },
+  { id: 'T-07', name: 'Emon Bhai DC2 Cameo Machine Troubleshoot', designer: 'Razin', assignedBy: 'Emon Bhai', date: '2026-07-01', time: '16:00', urgency: '24 hours', status: 'Finished', deliveryLink: '', comments: 'Talked and Fixed.', associatedPostId: '' },
+  { id: 'T-08', name: 'Font Guideline for Tahams', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-07-02', time: '13:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://rifatnewajrazin.github.io/tahams-font-guidelines/', comments: 'Finished finally.', associatedPostId: '' },
+  { id: 'T-09', name: 'Asad Rasel Investment Post Tahams (More Correction)', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-03', time: '11:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1ct478xgJfzpnyhzoaE2qcwxrB3PMffMj?usp=drive_link', comments: 'Confirmed.', associatedPostId: '' },
+  { id: 'T-10', name: 'Cuban Collar Shirt 4 color', designer: 'Rabby', assignedBy: 'Tohfa Apu', date: '2026-07-04', time: '10:00', urgency: 'N/A', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1eF8T19MMr0bY5mrKBjM36PCXfzy021zR?usp=sharing', comments: '4 color diye diyechi', associatedPostId: '' },
+  { id: 'T-11', name: 'Evoka Experiences Logo Format Delivery', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-04', time: '10:00', urgency: 'N/A', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/10G_E8vwnC8xmxGOqgJknhT7FVApSz9G8?usp=drive_link', comments: 'Done and dusted.', associatedPostId: '' },
+  { id: 'T-12', name: 'Investor Post Delivery - Asad Rasel', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-04', time: '10:00', urgency: 'N/A', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1G5vyaHnDf3Prbn2N0vm-ebu1HwxYeaUW?usp=sharing', comments: 'Updated', associatedPostId: '' },
+  { id: 'T-13', name: 'New Billboard Design', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-05', time: '16:00', urgency: 'ASAP', status: 'Not Started', deliveryLink: '', comments: 'Notepad for Details', associatedPostId: '' },
+  { id: 'T-14', name: 'DC4 Opening Soon Post + Cover', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-05', time: '16:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1xkbX95S6SLr3GeJLzJPRkzZuWyfqCHqC?usp=sharing', comments: 'Notepad for Details', associatedPostId: '' },
+  { id: 'T-15', name: 'All Brands Social Media Refinement', designer: 'Razin', assignedBy: 'Razin', date: '2026-07-05', time: '12:00', urgency: 'ASAP', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' },
+  { id: 'T-16', name: 'Merchandiser Formalities : ID Card , Mug, Database', designer: 'Razin', assignedBy: 'Oishi Apu', date: '2026-07-05', time: '12:00', urgency: 'ASAP', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' },
+  { id: 'T-17', name: '750 Ml Water Bottle (Straw) Design', designer: 'Rabby', assignedBy: 'Tohfa Apu', date: '2026-07-05', time: '15:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://drive.google.com/file/d/1Hk-du-Ua4Ft7JNvL1e0enf6DYt2JB6DK/view?usp=sharing', comments: '', associatedPostId: '' },
+  { id: 'T-18', name: 'Big Boss Post Design', designer: 'Rabby', assignedBy: 'Ashiq Bhaia', date: '2026-07-05', time: '15:00', urgency: 'Week', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' },
+  { id: 'T-19', name: 'DC4 Google Map Reveal Post Design', designer: 'Razin', assignedBy: 'Jubaer Bhai', date: '2026-07-05', time: '18:11', urgency: 'week', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' }
+];
+
+// Default Content Planner Ideas (CONTENT PLANNER & IDEA BANK)
+const DEFAULT_IDEAS = [
+  {
+    id: 'idea-1',
+    topic: 'Dc4 Google Map Reveal',
+    date: '2026-07-20',
+    urgency: '2 week',
+    status: 'Draft Idea',
+    designer: 'Razin',
+    initiator: 'Jubaer Bhai',
+    linkedTaskId: 'T-19',
+    inspiration: '',
+    notes: '',
+    dateLogged: '2026-07-05'
+  }
+];
+
+// App State
 
 // App State
 let state = {
   brands: [],
   posts: [],
+  tasks: [],
+  ideas: [],
   team: [],
   currentView: 'dashboard',
   selectedBrandFilter: 'all',
   currentDate: new Date('2026-07-05T12:00:00'), // Setting active app date based on user local time
   calendarDate: new Date('2026-07-05T12:00:00'),
-  editingPost: null
+  editingPost: null,
+  editingTask: null,
+  editingIdea: null,
+  taskSearchFilter: '',
+  taskDesignerFilter: 'all',
+  taskAssignerFilter: 'all',
+  taskStatusFilter: 'all',
+  ideaSearchFilter: '',
+  ideaDesignerFilter: 'all',
+  ideaStatusFilter: 'all'
 };
 
 // Initialize Application
@@ -319,10 +408,11 @@ function initAuth() {
       const username = document.getElementById('login-user').value;
       const passwordInput = document.getElementById('login-password').value;
       
-      const account = USER_ACCOUNTS[username];
+      const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+      const account = findTeamMember(username);
       if (account && account.password === passwordInput) {
-        localStorage.setItem('hc_logged_in_user', username);
-        showToast(`Welcome back, ${username.split(' ')[0]}!`, 'success');
+        localStorage.setItem('hc_logged_in_user', account.name);
+        showToast(`Welcome back, ${account.name.split(' ')[0]}!`, 'success');
         if (loginOverlay) loginOverlay.style.display = 'none';
         
         renderUserProfile();
@@ -369,22 +459,36 @@ function renderUserProfile() {
   const userSection = document.querySelector('.user-profile-section');
   if (!userSection) return;
   const currentUser = localStorage.getItem('hc_logged_in_user');
+  const person = findTeamMember(currentUser);
   
-  if (currentUser && USER_ACCOUNTS[currentUser]) {
-    const account = USER_ACCOUNTS[currentUser];
+  // Toggle admin log link in sidebar
+  const logsLink = document.getElementById('nav-logs-link');
+  if (logsLink) {
+    if (currentUser && person && person.access === 'admin') {
+      logsLink.style.display = 'flex';
+    } else {
+      logsLink.style.display = 'none';
+      if (state.currentView === 'logs') {
+        switchView('dashboard');
+      }
+    }
+  }
+
+  if (currentUser && person) {
+    const account = person;
     const avatarHtml = account.photo 
       ? `<img src="${account.photo}" class="user-avatar-img" alt="${currentUser}">`
       : `<div class="user-avatar" style="background: var(--honey-gold); color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-size: 1.1rem; border: 2px solid rgba(255, 255, 255, 0.1); box-shadow: var(--shadow-sm);">${currentUser.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}</div>`;
        
     userSection.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
         ${avatarHtml}
-        <div class="user-info">
-          <span class="user-name" style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap;">${currentUser}</span>
-          <span class="user-role" style="font-size: 0.7rem; color: #94a3b8;" title="${account.role}">${account.role}</span>
+        <div class="user-info" style="min-width: 0; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+          <span class="user-name" style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display: block;">${currentUser}</span>
+          <span class="user-role" style="font-size: 0.7rem; color: #94a3b8; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display: block;" title="${account.role}">${account.role}</span>
         </div>
       </div>
-      <button id="btn-logout" class="logout-btn" title="Logout">
+      <button id="btn-logout" class="logout-btn" title="Logout" style="flex-shrink: 0; margin-left: 8px;">
         <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
       </button>
     `;
@@ -415,16 +519,29 @@ function initData() {
   const localBrands = localStorage.getItem('hc_brands');
   const localTeam = localStorage.getItem('hc_team');
 
-  if (localBrands && localTeam) {
+  if (localBrands) {
     state.brands = JSON.parse(localBrands);
-    state.team = JSON.parse(localTeam);
     
-    // Check if the team needs to be updated with new roles.
-    const isNewTeamSet = state.team.some(t => t.role === 'Cinematographer and Video Editor');
-    if (!isNewTeamSet) {
-      state.team = [...DEFAULT_TEAM];
-      saveToStorage();
-    }
+    // Forcefully align brand colors and glows to monochrome
+    const monochromeMap = {
+      'sammtech': { color: '#ffffff', glow: 'transparent' },
+      'lovelife': { color: '#cccccc', glow: 'transparent' },
+      'tahams': { color: '#aaaaaa', glow: 'transparent' },
+      'perfume-tahams': { color: '#888888', glow: 'transparent' },
+      'lumina-tahams': { color: '#dddddd', glow: 'transparent' },
+      'star-tahams': { color: '#bbbbbb', glow: 'transparent' },
+      'merchtile': { color: '#999999', glow: 'transparent' }
+    };
+    let colorsUpdated = false;
+    state.brands.forEach(b => {
+      if (monochromeMap[b.id] !== undefined) {
+        if (b.color !== monochromeMap[b.id].color || b.glow !== monochromeMap[b.id].glow) {
+          b.color = monochromeMap[b.id].color;
+          b.glow = monochromeMap[b.id].glow;
+          colorsUpdated = true;
+        }
+      }
+    });
 
     // Ensure all weekly goals are strictly set to matching user selection
     const goalsMap = {
@@ -443,7 +560,7 @@ function initData() {
         goalsUpdated = true;
       }
     });
-    if (goalsUpdated) {
+    if (goalsUpdated || colorsUpdated) {
       saveToStorage();
     }
 
@@ -464,25 +581,8 @@ function initData() {
       });
       saveToStorage();
     }
-
-    // Check if team member photos need to be updated in localStorage
-    let photoMigrated = false;
-    const RifatEntry = state.team.find(t => t.name === 'Rifat Newaj Razin');
-    if (RifatEntry && !RifatEntry.photo) {
-      RifatEntry.photo = 'assets/rifat-profile.jpg';
-      photoMigrated = true;
-    }
-    const JubayerEntry = state.team.find(t => t.name === 'Jubayer Hossain');
-    if (JubayerEntry && JubayerEntry.photo !== 'assets/jubayer-profile.jpg') {
-      JubayerEntry.photo = 'assets/jubayer-profile.jpg';
-      photoMigrated = true;
-    }
-    if (photoMigrated) {
-      saveToStorage();
-    }
   } else {
     state.brands = [...DEFAULT_BRANDS];
-    state.team = [...DEFAULT_TEAM];
     saveToStorage();
   }
 
@@ -499,10 +599,119 @@ function initData() {
         loadedPosts.push(doc.data());
       });
       state.posts = loadedPosts;
+      updateModalDropdowns();
       refreshViews();
+      healPostTaskSync();
     }
   }, (error) => {
     console.error("Firestore sync error:", error);
+  });
+
+  // Sync tasks from Firestore in real-time
+  onSnapshot(collection(db, "tasks"), (querySnapshot) => {
+    if (querySnapshot.empty) {
+      // Seed Firestore with default spreadsheet tasks if database is completely empty
+      DEFAULT_TASKS.forEach(async (t) => {
+        await setDoc(doc(db, "tasks", t.id), t);
+      });
+    } else {
+      const loadedTasks = [];
+      querySnapshot.forEach((docSnap) => {
+        const t = docSnap.data();
+        if (!t.taskType) {
+          t.taskType = t.associatedPostId ? 'post' : 'general';
+          setDoc(doc(db, "tasks", docSnap.id), t);
+        }
+        loadedTasks.push(t);
+      });
+      state.tasks = loadedTasks.sort((a, b) => a.id.localeCompare(b.id));
+      updateModalDropdowns();
+      refreshViews();
+      healPostTaskSync();
+    }
+  }, (error) => {
+    console.error("Firestore tasks sync error:", error);
+  });
+
+  // Sync ideas from Firestore in real-time
+  onSnapshot(collection(db, "ideas"), (querySnapshot) => {
+    if (querySnapshot.empty) {
+      // Seed Firestore with default spreadsheet ideas if database is completely empty
+      DEFAULT_IDEAS.forEach(async (i) => {
+        await setDoc(doc(db, "ideas", i.id), i);
+      });
+    } else {
+      const loadedIdeas = [];
+      querySnapshot.forEach((doc) => {
+        loadedIdeas.push(doc.data());
+      });
+      state.ideas = loadedIdeas.sort((a, b) => a.id.localeCompare(b.id));
+      updateModalDropdowns();
+      refreshViews();
+    }
+  }, (error) => {
+    console.error("Firestore ideas sync error:", error);
+  });
+
+  // Sync team members from Firestore in real-time
+  onSnapshot(collection(db, "team"), (querySnapshot) => {
+    if (!localStorage.getItem('team_list_seeded_v3')) {
+      // Force seed the new integrated team list
+      DEFAULT_TEAM.forEach(async (t) => {
+        await setDoc(doc(db, "team", t.id), t);
+      });
+      localStorage.setItem('team_list_seeded_v3', 'true');
+    } else if (querySnapshot.empty) {
+      // Seed Firestore with default team members if database is completely empty
+      DEFAULT_TEAM.forEach(async (t) => {
+        await setDoc(doc(db, "team", t.id), t);
+      });
+      const loadedTeam = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const defaultMatch = DEFAULT_TEAM.find(t => t.name === data.name || (data.aliases && data.aliases.includes(t.name)) || (t.aliases && t.aliases.includes(data.name)));
+        if (defaultMatch) {
+          // If the role is waiting assignment or matches, override with default correct roles/fields
+          if (data.role.includes("Awaiting Assignment") || data.access === undefined || data.isDesigner === undefined) {
+            const updated = { 
+              ...defaultMatch, 
+              ...data, 
+              id: defaultMatch.id,
+              role: defaultMatch.role,
+              isDesigner: defaultMatch.isDesigner,
+              isWorkAssigner: defaultMatch.isWorkAssigner,
+              isIdeaInitiator: defaultMatch.isIdeaInitiator,
+              access: defaultMatch.access,
+              password: defaultMatch.password
+            };
+            setDoc(doc(db, "team", defaultMatch.id), updated);
+            if (docSnap.id !== defaultMatch.id) {
+              deleteDoc(doc(db, "team", docSnap.id));
+            }
+            loadedTeam.push(updated);
+            return;
+          }
+        }
+        loadedTeam.push(data);
+      });
+
+      // Find any default team members that are completely missing
+      const missingMembers = DEFAULT_TEAM.filter(dt => !loadedTeam.some(lt => lt.name === dt.name || (lt.aliases && lt.aliases.includes(dt.name)) || (dt.aliases && dt.aliases.includes(lt.name))));
+      if (missingMembers.length > 0) {
+        console.log(`Seeding ${missingMembers.length} missing team members to Firestore...`);
+        missingMembers.forEach((t) => {
+          setDoc(doc(db, "team", t.id), t);
+          loadedTeam.push(t);
+        });
+      }
+
+      state.team = loadedTeam.sort((a, b) => a.name.localeCompare(b.name));
+      updateModalDropdowns();
+      renderUserProfile();
+      refreshViews();
+    }
+  }, (error) => {
+    console.error("Firestore team sync error:", error);
   });
 }
 
@@ -511,8 +720,603 @@ function saveToStorage() {
   localStorage.setItem('hc_team', JSON.stringify(state.team));
 }
 
+// Sync activity logs from Firestore in real-time
+onSnapshot(collection(db, "activity_log"), (querySnapshot) => {
+  const loadedLogs = [];
+  querySnapshot.forEach((docSnap) => {
+    loadedLogs.push(docSnap.data());
+  });
+  state.activityLog = loadedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  if (state.activityLog.length > 100) {
+    state.activityLog = state.activityLog.slice(0, 100);
+  }
+  renderActivityLog();
+  updateActivityBadge();
+}, (error) => {
+  console.error("Firestore activity_log sync error:", error);
+});
+
+async function logActivity(actionText, dbInstance) {
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const logEntry = {
+    id: `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    user: currentUser,
+    actionText: actionText,
+    timestamp: new Date().toISOString()
+  };
+  try {
+    const targetDb = dbInstance || db;
+    await setDoc(doc(targetDb, "activity_log", logEntry.id), logEntry);
+  } catch (err) {
+    console.error("Failed to write to activity log:", err);
+  }
+}
+
+function renderPostComments(post) {
+  const feed = document.getElementById('post-comments-feed');
+  if (!feed) return;
+  if (!post || !post.commentsList || post.commentsList.length === 0) {
+    feed.innerHTML = '<div style="color: #64748b; font-style: italic; font-size: 0.8rem; text-align: center; padding: 10px;">No comments yet. Start the discussion!</div>';
+    return;
+  }
+
+  feed.innerHTML = post.commentsList.map(c => {
+    const initials = c.user.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const dateStr = new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `
+      <div class="comment-bubble-card">
+        <div class="comment-avatar">${initials}</div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="comment-user">${c.user}</span>
+            <span class="comment-time">${dateStr}</span>
+          </div>
+          <div class="comment-text">${c.text}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function renderTaskComments(task) {
+  const feed = document.getElementById('task-comments-feed');
+  if (!feed) return;
+  if (!task || !task.commentsList || task.commentsList.length === 0) {
+    if (task && task.comments) {
+      const parts = task.comments.split(' | ');
+      const parsed = parts.map(p => {
+        const match = p.match(/^\[(.*?)\]: (.*)$/);
+        return {
+          user: match ? match[1] : 'System',
+          text: match ? match[2] : p,
+          timestamp: task.date ? `${task.date}T12:00:00.000Z` : new Date().toISOString()
+        };
+      });
+      task.commentsList = parsed;
+    } else {
+      feed.innerHTML = '<div style="color: #64748b; font-style: italic; font-size: 0.8rem; text-align: center; padding: 10px;">No comments yet. Start the discussion!</div>';
+      return;
+    }
+  }
+
+  feed.innerHTML = task.commentsList.map(c => {
+    const initials = c.user.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const dateStr = new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `
+      <div class="comment-bubble-card">
+        <div class="comment-avatar">${initials}</div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="comment-user">${c.user}</span>
+            <span class="comment-time">${dateStr}</span>
+          </div>
+          <div class="comment-text">${c.text}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  feed.scrollTop = feed.scrollHeight;
+}
+
+async function addCommentToPost(postId, text, dbInstance) {
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const post = state.posts.find(p => p.id === postId);
+  if (!post) return;
+
+  const commentsList = post.commentsList || [];
+  commentsList.push({
+    user: currentUser,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  post.commentsList = commentsList;
+  post.comments = commentsList.map(c => `[${c.user.split(' ')[0]}]: ${c.text}`).join(' | ');
+
+  try {
+    const targetDb = dbInstance || db;
+    await setDoc(doc(targetDb, "posts", post.id), post);
+    await syncPostToTask(post, targetDb);
+    await logActivity(`commented on post "${post.title}": "${text}"`, targetDb);
+  } catch (err) {
+    console.error("Failed to add comment:", err);
+  }
+}
+
+async function addCommentToTask(taskId, text, dbInstance) {
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const commentsList = task.commentsList || [];
+  commentsList.push({
+    user: currentUser,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  task.commentsList = commentsList;
+  task.comments = commentsList.map(c => `[${c.user.split(' ')[0]}]: ${c.text}`).join(' | ');
+
+  try {
+    const targetDb = dbInstance || db;
+    await setDoc(doc(targetDb, "tasks", task.id), task);
+    await syncTaskToPost(task, targetDb);
+    await logActivity(`commented on task "${task.name}": "${text}"`, targetDb);
+  } catch (err) {
+    console.error("Failed to add task comment:", err);
+  }
+}
+
+function renderActivityLog() {
+  const container = document.getElementById('activity-log-list');
+  if (!container) return;
+
+  if (!state.activityLog || state.activityLog.length === 0) {
+    container.innerHTML = '<div style="color: #64748b; font-style: italic; text-align: center; margin-top: 40px;">No recent activity</div>';
+    return;
+  }
+
+  container.innerHTML = state.activityLog.map(log => {
+    const date = new Date(log.timestamp);
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    
+    return `
+      <div class="activity-log-item">
+        <div>
+          <span class="activity-log-user">${log.user}</span>
+          <span class="activity-log-text">${log.actionText}</span>
+        </div>
+        <div class="activity-log-time">${dateStr} at ${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+let lastViewedLogTime = localStorage.getItem('hc_last_viewed_log_time') || new Date(0).toISOString();
+
+function updateActivityBadge() {
+  const badge = document.getElementById('activity-badge');
+  if (!badge) return;
+  
+  if (state.activityLog && state.activityLog.length > 0) {
+    const newestLog = state.activityLog[0];
+    if (newestLog.timestamp > lastViewedLogTime) {
+      badge.style.display = 'block';
+      return;
+    }
+  }
+  badge.style.display = 'none';
+}
+
+function triggerCelebration() {
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.width = '100vw';
+  canvas.style.height = '100vh';
+  canvas.style.pointerEvents = 'none';
+  canvas.style.zIndex = '99999';
+  document.body.appendChild(canvas);
+  
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  const particles = [];
+  const colors = ['#fbbf24', '#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#a855f7'];
+  
+  // Left side burst
+  for (let i = 0; i < 75; i++) {
+    particles.push({
+      x: 0,
+      y: canvas.height * 0.8,
+      vx: Math.random() * 15 + 5,
+      vy: -Math.random() * 20 - 10,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1,
+      decay: Math.random() * 0.015 + 0.005
+    });
+  }
+
+  // Right side burst
+  for (let i = 0; i < 75; i++) {
+    particles.push({
+      x: canvas.width,
+      y: canvas.height * 0.8,
+      vx: -Math.random() * 15 - 5,
+      vy: -Math.random() * 20 - 10,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1,
+      decay: Math.random() * 0.015 + 0.005
+    });
+  }
+  
+  function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      if (p.alpha > 0) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.4; // gravity
+        p.alpha -= p.decay;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        alive = true;
+      }
+    });
+    if (alive) {
+      requestAnimationFrame(update);
+    } else {
+      canvas.remove();
+    }
+  }
+  update();
+}
+
+function exportTasksToCSV() {
+  const headers = ['ID', 'Task Name', 'Creative', 'Assigned By', 'Date', 'Time', 'Urgency', 'Status', 'Delivery Link', 'Comments', 'Job Type'];
+  const rows = state.tasks.map(t => [
+    t.id,
+    t.name,
+    t.designer,
+    t.assignedBy || '',
+    t.date,
+    t.time || '',
+    t.urgency || '',
+    t.status,
+    t.deliveryLink || '',
+    t.comments || '',
+    t.taskType || 'general'
+  ]);
+  
+  const csvRows = [headers.join(',')];
+  rows.forEach(r => {
+    const formatted = r.map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+    csvRows.push(formatted);
+  });
+  
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `honeycomb_tasks_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function handleCSVImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(evt) {
+    try {
+      const text = evt.target.result;
+      const lines = text.split('\n');
+      let importedCount = 0;
+      
+      let maxId = 0;
+      state.tasks.forEach(t => {
+        const num = parseInt(t.id.replace('T-', ''));
+        if (!isNaN(num) && num > maxId) maxId = num;
+      });
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        const cells = [];
+        let insideQuote = false;
+        let currentCell = '';
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j];
+          if (char === '"') {
+            insideQuote = !insideQuote;
+          } else if (char === ',' && !insideQuote) {
+            cells.push(currentCell.trim());
+            currentCell = '';
+          } else {
+            currentCell += char;
+          }
+        }
+        cells.push(currentCell.trim());
+
+        if (cells.length < 2) continue;
+        
+        const name = cells[1] || 'Imported Task';
+        const designer = cells[2] || 'Unassigned';
+        const assignedBy = cells[3] || 'System';
+        const date = cells[4] || new Date().toISOString().slice(0, 10);
+        const time = cells[5] || '12:00';
+        const urgency = cells[6] || 'ASAP';
+        const status = cells[7] || 'Not Started';
+        const deliveryLink = cells[8] || '';
+        const comments = cells[9] || '';
+        const jobType = cells[10] || 'general';
+        
+        maxId++;
+        const newId = `T-${String(maxId).padStart(2, '0')}`;
+        
+        const newTask = {
+          id: newId,
+          name,
+          designer,
+          assignedBy,
+          date,
+          time,
+          urgency,
+          status,
+          deliveryLink,
+          comments,
+          taskType: jobType,
+          associatedPostId: ''
+        };
+        
+        await setDoc(doc(db, "tasks", newId), newTask);
+        importedCount++;
+      }
+      
+      showToast(`Successfully imported ${importedCount} tasks from CSV!`, 'success');
+      await logActivity(`imported ${importedCount} tasks from CSV`, db);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to parse CSV file', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function renderUnscheduledIdeas() {
+  const container = document.getElementById('unscheduled-ideas-list');
+  if (!container) return;
+  
+  const unscheduled = state.ideas.filter(i => !i.linkedTaskId);
+  
+  if (unscheduled.length === 0) {
+    container.innerHTML = '<div style="color: #64748b; font-style: italic; text-align: center; margin-top: 40px;">No unscheduled ideas. Add some in the Idea Bank view!</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  unscheduled.forEach(idea => {
+    const card = document.createElement('div');
+    card.className = 'draggable-idea-card';
+    card.draggable = true;
+    card.innerHTML = `
+      <div style="font-weight: 600; color: #fff; font-size: 0.85rem; margin-bottom: 4px;">${idea.topic}</div>
+      <div style="font-size: 0.75rem; color: #94a3b8;">Designer: ${idea.designer || 'Unassigned'}</div>
+      <div style="font-size: 0.75rem; color: #94a3b8; display: flex; justify-content: space-between; margin-top: 6px;">
+        <span>Urgency: <strong style="color: #fbbf24;">${idea.urgency}</strong></span>
+        <span style="opacity: 0.6;">Drag to schedule</span>
+      </div>
+    `;
+    
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'idea', ideaId: idea.id }));
+    });
+    
+    container.appendChild(card);
+  });
+}
+
+async function convertIdeaToPost(ideaId, kanbanStatus) {
+  const idea = state.ideas.find(i => i.id === ideaId);
+  if (!idea) return;
+
+  if (idea.linkedTaskId) {
+    await updateIdeaStatus(ideaId, kanbanStatus);
+    return;
+  }
+
+  let maxId = 0;
+  state.tasks.forEach(t => {
+    const num = parseInt(t.id.replace('T-', ''));
+    if (!isNaN(num) && num > maxId) maxId = num;
+  });
+  const newTaskId = `T-${String(maxId + 1).padStart(2, '0')}`;
+  const newPostId = 'post-' + Date.now();
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const newTask = {
+    id: newTaskId,
+    name: idea.topic,
+    designer: idea.designer || 'Unassigned',
+    assignedBy: idea.initiator || 'System',
+    date: todayStr,
+    time: '12:00',
+    urgency: idea.urgency || 'ASAP',
+    status: mapPostStatusToTaskStatus(kanbanStatus),
+    deliveryLink: '',
+    comments: idea.notes || '',
+    taskType: 'post',
+    associatedPostId: newPostId
+  };
+
+  const newPost = {
+    id: newPostId,
+    title: idea.topic,
+    brandId: state.brands[0] ? state.brands[0].id : 'all',
+    platforms: ['facebook'],
+    status: kanbanStatus,
+    type: 'post',
+    assignee: idea.designer || 'Unassigned',
+    date: todayStr,
+    time: '12:00',
+    caption: idea.notes || '',
+    associatedTaskId: newTaskId
+  };
+
+  idea.linkedTaskId = newTaskId;
+  idea.status = 'In Production';
+
+  try {
+    await setDoc(doc(db, "tasks", newTaskId), newTask);
+    await setDoc(doc(db, "posts", newPostId), newPost);
+    await setDoc(doc(db, "ideas", ideaId), idea);
+    
+    showToast(`Successfully scheduled Idea as Task ${newTaskId}!`, 'success');
+    await logActivity(`scheduled content idea "${idea.topic}" as task ${newTaskId}`, db);
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to schedule idea', 'error');
+  }
+}
+
 // Navigation & Event Listeners
 function setupEventListeners() {
+  // Brand modal event listeners
+  const brandClose = document.getElementById('brand-modal-close-btn');
+  const brandCancel = document.getElementById('brand-modal-cancel-btn');
+  if (brandClose) brandClose.addEventListener('click', closeBrandModal);
+  if (brandCancel) brandCancel.addEventListener('click', closeBrandModal);
+
+  const brandForm = document.getElementById('brand-form');
+  if (brandForm) {
+    brandForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const idInput = document.getElementById('brand-edit-id').value;
+      const name = document.getElementById('brand-name').value.trim();
+      const type = document.getElementById('brand-type').value.trim();
+      const goal = parseInt(document.getElementById('brand-goal').value, 10) || 0;
+      const logo = document.getElementById('brand-logo').value.trim() || null;
+
+      if (!name || !type) return;
+
+      if (idInput) {
+        // Edit existing brand
+        const brand = state.brands.find(b => b.id === idInput);
+        if (brand) {
+          brand.name = name;
+          brand.type = type;
+          brand.frequencyGoal = goal;
+          brand.logo = logo;
+          showToast('Brand details updated successfully!', 'success');
+          logActivity(`updated brand "${name}"`, db);
+        }
+      } else {
+        // Create new brand
+        const newId = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const existing = state.brands.find(b => b.id === newId);
+        const finalId = existing ? `${newId}-${Date.now().toString().slice(-4)}` : newId;
+        
+        const grays = ['#ffffff', '#cccccc', '#aaaaaa', '#888888', '#dddddd', '#bbbbbb', '#999999'];
+        const randomColor = grays[Math.floor(Math.random() * grays.length)];
+        const randomGrad = `linear-gradient(135deg, ${randomColor}, #334155)`;
+
+        const newBrand = {
+          id: finalId,
+          name,
+          type,
+          frequencyGoal: goal,
+          logo,
+          grad: randomGrad,
+          color: randomColor,
+          glow: 'transparent',
+          lastPostDate: 'Never'
+        };
+        state.brands.push(newBrand);
+        showToast('New brand added successfully!', 'success');
+        logActivity(`added brand "${name}"`, db);
+      }
+
+      saveToStorage();
+      updateModalDropdowns();
+      refreshViews();
+      closeBrandModal();
+    });
+  }
+
+  const toggleBtn = document.getElementById('toggle-activity-btn');
+  const closeBtn = document.getElementById('close-activity-btn');
+  const drawer = document.getElementById('activity-drawer');
+
+  if (toggleBtn && drawer) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.classList.toggle('open');
+      if (drawer.classList.contains('open')) {
+        lastViewedLogTime = new Date().toISOString();
+        localStorage.setItem('hc_last_viewed_log_time', lastViewedLogTime);
+        updateActivityBadge();
+      }
+    });
+  }
+
+  if (closeBtn && drawer) {
+    closeBtn.addEventListener('click', () => {
+      drawer.classList.remove('open');
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (drawer && drawer.classList.contains('open')) {
+      if (!drawer.contains(e.target) && !toggleBtn.contains(e.target)) {
+        drawer.classList.remove('open');
+      }
+    }
+  });
+
+  // Comments submit listeners
+  const postAddCommentBtn = document.getElementById('post-add-comment-btn');
+  if (postAddCommentBtn) {
+    postAddCommentBtn.addEventListener('click', async () => {
+      const input = document.getElementById('post-new-comment');
+      if (!input || !input.value.trim() || !state.editingPost) return;
+      const text = input.value.trim();
+      input.value = '';
+      await addCommentToPost(state.editingPost.id, text, db);
+      setTimeout(() => {
+        const post = state.posts.find(p => p.id === state.editingPost.id);
+        renderPostComments(post);
+      }, 300);
+    });
+  }
+
+  const taskAddCommentBtn = document.getElementById('task-add-comment-btn');
+  if (taskAddCommentBtn) {
+    taskAddCommentBtn.addEventListener('click', async () => {
+      const input = document.getElementById('task-new-comment');
+      if (!input || !input.value.trim() || !state.editingTask) return;
+      const text = input.value.trim();
+      input.value = '';
+      await addCommentToTask(state.editingTask.id, text, db);
+      setTimeout(() => {
+        const task = state.tasks.find(t => t.id === state.editingTask.id);
+        renderTaskComments(task);
+      }, 300);
+    });
+  }
+
   // Sidebar Nav clicks
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
@@ -531,6 +1335,23 @@ function setupEventListeners() {
     });
   }
 
+  // Logs filters
+  const logsSearchInput = document.getElementById('logs-search-input');
+  if (logsSearchInput) {
+    logsSearchInput.addEventListener('input', (e) => {
+      state.logsSearchQuery = e.target.value;
+      renderLogs();
+    });
+  }
+
+  const logsUserFilter = document.getElementById('logs-user-filter');
+  if (logsUserFilter) {
+    logsUserFilter.addEventListener('change', (e) => {
+      state.logsUserFilter = e.target.value;
+      renderLogs();
+    });
+  }
+
   // Create post button
   const createBtn = document.getElementById('create-post-btn');
   if (createBtn) {
@@ -539,9 +1360,14 @@ function setupEventListeners() {
     });
   }
 
-  // Close modal clicks
+  // Close modal clicks (post, task, idea, and person modals)
   document.querySelectorAll('.close-btn, .modal-cancel').forEach(btn => {
-    btn.addEventListener('click', closePostModal);
+    btn.addEventListener('click', () => {
+      closePostModal();
+      closeTaskModal();
+      closeIdeaModal();
+      closePersonModal();
+    });
   });
 
   // Delete post button click
@@ -568,6 +1394,50 @@ function setupEventListeners() {
     postForm.addEventListener('submit', handleFormSubmit);
   }
 
+  // Ideas Drawer toggle listeners
+  const toggleIdeasBtn = document.getElementById('toggle-ideas-btn');
+  const closeIdeasBtn = document.getElementById('close-ideas-btn');
+  const ideasDrawer = document.getElementById('ideas-drawer');
+
+  if (toggleIdeasBtn && ideasDrawer) {
+    toggleIdeasBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ideasDrawer.classList.toggle('open');
+      if (ideasDrawer.classList.contains('open')) {
+        renderUnscheduledIdeas();
+      }
+    });
+  }
+
+  if (closeIdeasBtn && ideasDrawer) {
+    closeIdeasBtn.addEventListener('click', () => {
+      ideasDrawer.classList.remove('open');
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (ideasDrawer && ideasDrawer.classList.contains('open')) {
+      if (!ideasDrawer.contains(e.target) && !toggleIdeasBtn.contains(e.target)) {
+        ideasDrawer.classList.remove('open');
+      }
+    }
+  });
+
+  // CSV Export/Import listeners
+  const exportBtn = document.getElementById('csv-export-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportTasksToCSV);
+  }
+
+  const importBtn = document.getElementById('csv-import-btn');
+  const importInput = document.getElementById('csv-import-input');
+  if (importBtn && importInput) {
+    importBtn.addEventListener('click', () => {
+      importInput.click();
+    });
+    importInput.addEventListener('change', handleCSVImport);
+  }
+
   // Drag and drop events setup for Kanban columns
   const areas = document.querySelectorAll('.column-cards-area');
   areas.forEach(area => {
@@ -580,12 +1450,28 @@ function setupEventListeners() {
       area.classList.remove('dragover');
     });
 
-    area.addEventListener('drop', (e) => {
+    area.addEventListener('drop', async (e) => {
       e.preventDefault();
       area.classList.remove('dragover');
-      const postId = e.dataTransfer.getData('text/plain');
+      const itemId = e.dataTransfer.getData('text/plain');
       const newStatus = area.getAttribute('data-status');
-      updatePostStatus(postId, newStatus);
+      
+      if (itemId.startsWith('{')) {
+        try {
+          const data = JSON.parse(itemId);
+          if (data.type === 'idea') {
+            await convertIdeaToPost(data.ideaId, newStatus);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else if (itemId.startsWith('idea-')) {
+        await convertIdeaToPost(itemId, newStatus);
+      } else if (itemId.startsWith('T-')) {
+        updateTaskStatus(itemId, newStatus);
+      } else {
+        updatePostStatus(itemId, newStatus);
+      }
     });
   });
 
@@ -599,6 +1485,134 @@ function setupEventListeners() {
     state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
     renderCalendar();
   });
+
+  // --- TASK EVENTS ---
+  const taskSearch = document.getElementById('task-search-input');
+  if (taskSearch) {
+    taskSearch.addEventListener('input', (e) => {
+      state.taskSearchFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  const taskDesigner = document.getElementById('task-designer-filter');
+  if (taskDesigner) {
+    taskDesigner.addEventListener('change', (e) => {
+      state.taskDesignerFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  const taskAssigner = document.getElementById('task-assigner-filter');
+  if (taskAssigner) {
+    taskAssigner.addEventListener('change', (e) => {
+      state.taskAssignerFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  const taskStatus = document.getElementById('task-status-filter');
+  if (taskStatus) {
+    taskStatus.addEventListener('change', (e) => {
+      state.taskStatusFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  const createTaskBtn = document.getElementById('create-task-btn');
+  if (createTaskBtn) {
+    createTaskBtn.addEventListener('click', () => {
+      openTaskModal();
+    });
+  }
+
+  const taskForm = document.getElementById('task-form');
+  if (taskForm) {
+    taskForm.addEventListener('submit', handleTaskFormSubmit);
+  }
+
+  const jobTypeSelect = document.getElementById('task-form-job-type');
+  if (jobTypeSelect) {
+    jobTypeSelect.addEventListener('change', (e) => {
+      const linkGroup = document.getElementById('task-form-link-post-group');
+      if (linkGroup) {
+        linkGroup.style.display = e.target.value === 'post' ? 'block' : 'none';
+      }
+    });
+  }
+
+  const deleteTaskBtn = document.getElementById('task-modal-delete-btn');
+  if (deleteTaskBtn) {
+    deleteTaskBtn.addEventListener('click', deleteTask);
+  }
+
+  // --- CONTENT PLANNER (IDEAS) EVENTS ---
+  const ideaSearch = document.getElementById('idea-search-input');
+  if (ideaSearch) {
+    ideaSearch.addEventListener('input', (e) => {
+      state.ideaSearchFilter = e.target.value;
+      renderIdeas();
+    });
+  }
+
+  const ideaDesigner = document.getElementById('idea-designer-filter');
+  if (ideaDesigner) {
+    ideaDesigner.addEventListener('change', (e) => {
+      state.ideaDesignerFilter = e.target.value;
+      renderIdeas();
+    });
+  }
+
+  const ideaStatus = document.getElementById('idea-status-filter');
+  if (ideaStatus) {
+    ideaStatus.addEventListener('change', (e) => {
+      state.ideaStatusFilter = e.target.value;
+      renderIdeas();
+    });
+  }
+
+  const createIdeaBtn = document.getElementById('create-idea-btn');
+  if (createIdeaBtn) {
+    createIdeaBtn.addEventListener('click', () => {
+      openIdeaModal();
+    });
+  }
+
+  const ideaForm = document.getElementById('idea-form');
+  if (ideaForm) {
+    ideaForm.addEventListener('submit', handleIdeaFormSubmit);
+  }
+
+  const deleteIdeaBtn = document.getElementById('idea-modal-delete-btn');
+  if (deleteIdeaBtn) {
+    deleteIdeaBtn.addEventListener('click', deleteIdea);
+  }
+
+  // --- TEAM EVENTS ---
+  const teamSearch = document.getElementById('team-search-input');
+  if (teamSearch) {
+    teamSearch.addEventListener('input', (e) => {
+      state.teamSearchFilter = e.target.value;
+      renderTeam();
+    });
+  }
+
+  const createPersonBtn = document.getElementById('create-person-btn');
+  if (createPersonBtn) {
+    createPersonBtn.addEventListener('click', () => {
+      openPersonModal();
+    });
+  }
+
+  const personForm = document.getElementById('person-form');
+  if (personForm) {
+    personForm.addEventListener('submit', handlePersonFormSubmit);
+  }
+
+  const deletePersonBtn = document.getElementById('person-modal-delete-btn');
+  if (deletePersonBtn) {
+    deletePersonBtn.addEventListener('click', deletePerson);
+  }
 }
 
 function switchView(viewName) {
@@ -624,10 +1638,15 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
+  }
+
+  const toggleIdeasBtn = document.getElementById('toggle-ideas-btn');
+  if (toggleIdeasBtn) {
+    toggleIdeasBtn.style.display = viewName === 'kanban' ? 'flex' : 'none';
   }
 
   // Scroll main back to top
@@ -666,7 +1685,73 @@ function refreshViews() {
   renderKanban();
   renderCalendar();
   renderAnalytics();
+  renderTasks();
+  renderIdeas();
+  renderTeam();
+  renderLogs();
 }
+
+function renderLogs() {
+  const tableBody = document.getElementById('logs-table-body');
+  if (!tableBody) return;
+
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  const account = findTeamMember(currentUser);
+  const isAdmin = currentUser && account && account.access === 'admin';
+
+  if (!isAdmin) {
+    tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ef4444; padding: 32px 16px; font-weight: 600;">Access Denied: Admin privileges required.</td></tr>`;
+    return;
+  }
+
+  const logsSearch = (state.logsSearchQuery || '').toLowerCase();
+  const logsUser = state.logsUserFilter || 'all';
+
+  // Filter activityLog
+  const filteredLogs = (state.activityLog || []).filter(log => {
+    const matchesSearch = log.actionText.toLowerCase().includes(logsSearch) || log.user.toLowerCase().includes(logsSearch);
+    const matchesUser = logsUser === 'all' || log.user === logsUser;
+    return matchesSearch && matchesUser;
+  });
+
+  tableBody.innerHTML = '';
+  if (filteredLogs.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #64748b; padding: 32px 16px; font-style: italic;">No logs found.</td></tr>`;
+    return;
+  }
+
+  filteredLogs.forEach(log => {
+    const date = new Date(log.timestamp);
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color: #94a3b8; font-family: monospace; font-size: 0.8rem;">${dateStr} ${timeStr}</td>
+      <td style="color: var(--honey-gold); font-weight: 600;">${log.user}</td>
+      <td style="color: #e2e8f0;">${log.actionText}</td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+function populateLogsUserFilter() {
+  const userFilterSelect = document.getElementById('logs-user-filter');
+  if (!userFilterSelect) return;
+  const currentVal = userFilterSelect.value;
+  userFilterSelect.innerHTML = '<option value="all">All Users</option>';
+  
+  // Get all unique users in activityLog
+  const activeLogUsers = Array.from(new Set((state.activityLog || []).map(l => l.user))).sort();
+  activeLogUsers.forEach(username => {
+    userFilterSelect.innerHTML += `<option value="${username}">${username}</option>`;
+  });
+  
+  if (activeLogUsers.includes(currentVal)) {
+    userFilterSelect.value = currentVal;
+  }
+}
+
+
 
 // Render Dashboard View
 function renderDashboard() {
@@ -715,6 +1800,15 @@ function renderDashboard() {
       healthClass = 'status-warning-badge';
     }
 
+    const isTargetAchieved = publishedCount >= goal && goal > 0;
+    if (isTargetAchieved) {
+      const key = `hc_achieved_${brand.id}_${weekStart.toISOString().slice(0,10)}`;
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, 'true');
+        setTimeout(() => triggerCelebration(), 500);
+      }
+    }
+
     const card = document.createElement('div');
     card.className = 'brand-card';
     card.style.setProperty('--brand-grad', brand.grad);
@@ -725,8 +1819,14 @@ function renderDashboard() {
             ? `<img src="${brand.logo}" class="brand-badge-img" alt="${brand.name} logo">`
             : `<div class="brand-badge-icon" style="background: ${brand.grad}">${brand.name.substring(0,2).toUpperCase()}</div>`}
           <div class="brand-title-wrap">
-            <h3>${brand.name}</h3>
+            <h3 style="display: flex; align-items: center; gap: 8px;">
+              ${brand.name}
+              <button class="edit-brand-btn" data-id="${brand.id}" style="background: none; border: none; cursor: pointer; color: #a3a3c2; padding: 0; display: inline-flex; align-items: center;" title="Edit Page/Brand">
+                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+              </button>
+            </h3>
             <div class="brand-subtitle">${brand.type}</div>
+            ${isTargetAchieved ? `<div class="target-achieved-badge" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px; margin-top: 4px; box-shadow: 0 0 10px rgba(251,191,36,0.3); display: inline-block; width: fit-content;">Goal Met! 🏆</div>` : ''}
           </div>
         </div>
         ${healthStatus !== 'Healthy' ? `<div class="status-indicator ${healthClass}">${healthStatus}</div>` : ''}
@@ -758,8 +1858,42 @@ function renderDashboard() {
         <span>Total: <strong>${brandPosts.length} posts</strong></span>
       </div>
     `;
+
+    const editBtn = card.querySelector('.edit-brand-btn');
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openBrandModal(brand.id);
+      });
+    }
+
     grid.appendChild(card);
   });
+
+  // Append "+ Add Page / Brand" button card
+  if (state.selectedBrandFilter === 'all') {
+    const addCard = document.createElement('div');
+    addCard.className = 'brand-card';
+    addCard.style.display = 'flex';
+    addCard.style.flexDirection = 'column';
+    addCard.style.alignItems = 'center';
+    addCard.style.justifyContent = 'center';
+    addCard.style.border = '1px dashed rgba(255, 255, 255, 0.15)';
+    addCard.style.background = 'transparent';
+    addCard.style.cursor = 'pointer';
+    addCard.style.minHeight = '200px';
+    addCard.style.borderRadius = '16px';
+    addCard.innerHTML = `
+      <div style="text-align: center; color: #94a3b8;">
+        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; margin-bottom: 8px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <div style="font-weight: 500; font-size: 0.9rem;">Add Page / Brand</div>
+      </div>
+    `;
+    addCard.addEventListener('click', () => {
+      openBrandModal();
+    });
+    grid.appendChild(addCard);
+  }
 }
 
 // Render Kanban Board View
@@ -771,30 +1905,62 @@ function renderKanban() {
     if (!colArea) return;
     colArea.innerHTML = '';
 
-    let colPosts = state.posts.filter(p => p.status === col);
+    let colPosts = state.posts.filter(p => p.status === col && !isItemArchived(p));
     if (state.selectedBrandFilter !== 'all') {
       colPosts = colPosts.filter(p => p.brandId === state.selectedBrandFilter);
+    }
+
+    let colTasks = state.tasks.filter(t => {
+      let colStatus = '';
+      if (t.status === 'Not Started') colStatus = 'ideation';
+      else if (t.status === 'On Progress') colStatus = 'development';
+      else if (t.status === 'Delayed') colStatus = 'ready';
+      else if (t.status === 'Finished') colStatus = 'published';
+      return colStatus === col && t.taskType !== 'post' && !isItemArchived(t); // Hide duplicate social media post tasks from kanban to avoid redundancy
+    });
+
+    let colIdeas = state.ideas.filter(i => {
+      let colStatus = '';
+      if (i.status === 'Draft Idea') colStatus = 'ideation';
+      else if (i.status === 'In Production') colStatus = 'development';
+      else if (i.status === 'Completed') colStatus = 'published';
+      return colStatus === col && !isItemArchived(i);
+    });
+
+    if (state.selectedBrandFilter !== 'all') {
+      const selectedBrand = state.brands.find(b => b.id === state.selectedBrandFilter);
+      if (selectedBrand) {
+        const brandNameLower = selectedBrand.name.toLowerCase();
+        colTasks = colTasks.filter(t => 
+          t.name.toLowerCase().includes(brandNameLower) || 
+          (t.comments || '').toLowerCase().includes(brandNameLower)
+        );
+        colIdeas = colIdeas.filter(i => 
+          i.topic.toLowerCase().includes(brandNameLower) || 
+          (i.notes || '').toLowerCase().includes(brandNameLower)
+        );
+      }
     }
 
     // Update count indicator
     const countBadge = colArea.closest('.kanban-column').querySelector('.column-count');
     if (countBadge) {
-      countBadge.textContent = colPosts.length;
+      countBadge.textContent = colPosts.length + colTasks.length + colIdeas.length;
     }
 
+    // Render Posts
     colPosts.forEach(post => {
       const brand = state.brands.find(b => b.id === post.brandId);
       if (!brand) return;
 
       const card = document.createElement('div');
-      card.className = 'post-card';
+      card.className = post.status === 'correction' ? 'post-card correction' : 'post-card';
       card.setAttribute('draggable', 'true');
       card.setAttribute('data-id', post.id);
       card.style.setProperty('--brand-grad', brand.grad);
       card.style.setProperty('--brand-color', brand.color);
       card.style.setProperty('--brand-glow', brand.glow);
 
-      // Determine platform icons
       const platformBadgesHtml = (post.platforms || []).map(p => {
         const platformIcon = getPlatformIcon(p);
         return `
@@ -804,10 +1970,19 @@ function renderKanban() {
         `;
       }).join('');
       
-      // Determine if post is overdue
       const isOverdue = post.status !== 'published' && new Date(post.date + 'T00:00:00') < new Date('2026-07-05T00:00:00');
       const dateClass = isOverdue ? 'card-due-date overdue' : 'card-due-date';
       const assigneeInitials = getAssigneeInitials(post.assignee);
+
+      let taskLinkBadgeHtml = '';
+      if (post.associatedTaskId) {
+        taskLinkBadgeHtml = `
+          <div class="card-task-link-badge" data-task-id="${post.associatedTaskId}">
+            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            <span>Task ${post.associatedTaskId}</span>
+          </div>
+        `;
+      }
 
       card.innerHTML = `
         <div class="card-top">
@@ -822,8 +1997,8 @@ function renderKanban() {
         <div class="card-title">${post.title}</div>
         <div class="card-meta">
           <div class="card-assignee">
-            ${(state.team.find(t => t.name === post.assignee) || {}).photo 
-              ? `<img src="${(state.team.find(t => t.name === post.assignee) || {}).photo}" class="card-assignee-avatar-img" title="${post.assignee}">`
+            ${(findTeamMember(post.assignee) || {}).photo 
+              ? `<img src="${(findTeamMember(post.assignee) || {}).photo}" class="card-assignee-avatar-img" title="${post.assignee}">`
               : `<div class="card-assignee-avatar" title="${post.assignee}">${assigneeInitials}</div>`}
             <span>${post.assignee.split(' ')[0]}</span>
           </div>
@@ -832,16 +2007,23 @@ function renderKanban() {
             <span>${formatCardDate(post.date)}</span>
           </div>
         </div>
+        ${taskLinkBadgeHtml}
       `;
 
-      // Click to edit
       card.addEventListener('click', (e) => {
-        // Prevent click when dragging
-        if (e.target.closest('.card-assignee-avatar')) return;
+        if (e.target.closest('.card-assignee-avatar') || e.target.closest('.card-task-link-badge')) return;
         openPostModal(post);
       });
 
-      // Drag listeners
+      const taskBadge = card.querySelector('.card-task-link-badge');
+      if (taskBadge) {
+        taskBadge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const taskId = taskBadge.getAttribute('data-task-id');
+          navigateToTask(taskId);
+        });
+      }
+
       card.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', post.id);
         card.style.opacity = '0.5';
@@ -853,6 +2035,103 @@ function renderKanban() {
 
       colArea.appendChild(card);
     });
+
+    // Render Tasks
+    colTasks.forEach(task => {
+      const card = document.createElement('div');
+      card.className = 'post-card task-card';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-id', task.id);
+      card.style.borderLeft = '4px solid #8b5cf6';
+      
+      const designerAvatar = task.designer 
+        ? `<div class="card-assignee-avatar" style="background: #8b5cf6; color: #fff">${getAssigneeInitials(task.designer)}</div>`
+        : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`;
+
+      card.innerHTML = `
+        <div class="card-top">
+          <span class="card-brand-tag" style="background: rgba(139, 92, 246, 0.1); color: #c084fc">
+            <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.5; margin-right:4px;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            <span>Design Task (${task.id})</span>
+          </span>
+        </div>
+        <div class="card-title">${task.name}</div>
+        <div class="card-meta">
+          <div class="card-assignee">
+            ${designerAvatar}
+            <span>${(task.designer || '').split(' ')[0]}</span>
+          </div>
+          <div class="card-due-date">
+            <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
+            <span>${formatCardDate(task.date)}</span>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        openTaskModal(task);
+      });
+
+      card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', task.id);
+        card.style.opacity = '0.5';
+      });
+
+      card.addEventListener('dragend', () => {
+        card.style.opacity = '1';
+      });
+
+      colArea.appendChild(card);
+    });
+
+    // Render Ideas
+    colIdeas.forEach(idea => {
+      const card = document.createElement('div');
+      card.className = 'post-card idea-card';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-id', idea.id);
+      card.style.borderLeft = '4px solid #06b6d4';
+      
+      const designerAvatar = idea.designer 
+        ? `<div class="card-assignee-avatar" style="background: #06b6d4; color: #fff">${getAssigneeInitials(idea.designer)}</div>`
+        : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`;
+
+      card.innerHTML = `
+        <div class="card-top">
+          <span class="card-brand-tag" style="background: rgba(6, 182, 212, 0.1); color: #22d3ee">
+            <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.5; margin-right:4px;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"/></svg>
+            <span>Planner Idea</span>
+          </span>
+        </div>
+        <div class="card-title">${idea.topic}</div>
+        <div class="card-meta">
+          <div class="card-assignee">
+            ${designerAvatar}
+            <span>${(idea.designer || '').split(' ')[0]}</span>
+          </div>
+          <div class="card-due-date">
+            <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
+            <span>${formatCardDate(idea.date)}</span>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        openIdeaModal(idea);
+      });
+
+      card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', idea.id);
+        card.style.opacity = '0.5';
+      });
+
+      card.addEventListener('dragend', () => {
+        card.style.opacity = '1';
+      });
+
+      colArea.appendChild(card);
+    });
+
   });
 }
 
@@ -900,13 +2179,33 @@ function renderCalendar() {
       <div class="calendar-events"></div>
     `;
 
-    // Filter posts for this date
+    // Filter posts, tasks, and ideas for this date
     let dayPosts = state.posts.filter(p => p.date === dateStr);
     if (state.selectedBrandFilter !== 'all') {
       dayPosts = dayPosts.filter(p => p.brandId === state.selectedBrandFilter);
     }
 
+    let dayTasks = state.tasks.filter(t => t.date === dateStr && t.taskType !== 'post');
+    let dayIdeas = state.ideas.filter(i => i.date === dateStr);
+
+    if (state.selectedBrandFilter !== 'all') {
+      const selectedBrand = state.brands.find(b => b.id === state.selectedBrandFilter);
+      if (selectedBrand) {
+        const brandNameLower = selectedBrand.name.toLowerCase();
+        dayTasks = dayTasks.filter(t => 
+          t.name.toLowerCase().includes(brandNameLower) || 
+          (t.comments || '').toLowerCase().includes(brandNameLower)
+        );
+        dayIdeas = dayIdeas.filter(i => 
+          i.topic.toLowerCase().includes(brandNameLower) || 
+          (i.notes || '').toLowerCase().includes(brandNameLower)
+        );
+      }
+    }
+
     const eventsArea = dayCell.querySelector('.calendar-events');
+    
+    // Render posts
     dayPosts.forEach(post => {
       const brand = state.brands.find(b => b.id === post.brandId);
       if (!brand) return;
@@ -915,12 +2214,48 @@ function renderCalendar() {
       eventItem.className = 'calendar-event-item';
       eventItem.style.setProperty('--brand-glow', brand.glow);
       eventItem.style.setProperty('--brand-color', brand.color);
-      eventItem.textContent = `[${brand.name.substring(0,3)}] ${post.title}`;
-      eventItem.title = `${brand.name}: ${post.title} (${(post.platforms || []).join(', ').toUpperCase()})`;
+      
+      const taskIndicator = post.associatedTaskId ? ` [Task ${post.associatedTaskId}]` : '';
+      eventItem.textContent = `[${brand.name.substring(0,3)}] ${post.title}${taskIndicator}`;
+      eventItem.title = `${brand.name}: ${post.title} (${(post.platforms || []).join(', ').toUpperCase()})${post.associatedTaskId ? ' (Linked to Task ' + post.associatedTaskId + ')' : ''}`;
       
       eventItem.addEventListener('click', (e) => {
         e.stopPropagation();
         openPostModal(post);
+      });
+
+      eventsArea.appendChild(eventItem);
+    });
+
+    // Render design tasks
+    dayTasks.forEach(task => {
+      const eventItem = document.createElement('div');
+      eventItem.className = 'calendar-event-item';
+      eventItem.style.setProperty('--brand-glow', 'rgba(139, 92, 246, 0.2)');
+      eventItem.style.setProperty('--brand-color', '#8b5cf6');
+      eventItem.textContent = `[Task] ${task.name}`;
+      eventItem.title = `Task ${task.id}: ${task.name} (${task.designer})`;
+      
+      eventItem.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openTaskModal(task);
+      });
+
+      eventsArea.appendChild(eventItem);
+    });
+
+    // Render planner ideas
+    dayIdeas.forEach(idea => {
+      const eventItem = document.createElement('div');
+      eventItem.className = 'calendar-event-item';
+      eventItem.style.setProperty('--brand-glow', 'rgba(6, 182, 212, 0.2)');
+      eventItem.style.setProperty('--brand-color', '#06b6d4');
+      eventItem.textContent = `[Idea] ${idea.topic}`;
+      eventItem.title = `Idea: ${idea.topic} (${idea.designer || 'Unassigned'})`;
+      
+      eventItem.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openIdeaModal(idea);
       });
 
       eventsArea.appendChild(eventItem);
@@ -1005,6 +2340,81 @@ function renderAnalytics() {
     `;
     legendList.appendChild(legendItem);
   });
+
+  // 1. Creative Workload Stacked Chart
+  const workloadChart = document.getElementById('creative-workload-chart');
+  if (workloadChart) {
+    workloadChart.innerHTML = '';
+    const creatives = state.team.filter(p => p.isDesigner);
+    
+    let maxTasks = 1;
+    const creativeStats = creatives.map(c => {
+      const tasks = state.tasks.filter(t => t.designer === c.name || (c.aliases && c.aliases.includes(t.designer)));
+      const notStarted = tasks.filter(t => t.status === 'Not Started').length;
+      const onProgress = tasks.filter(t => t.status === 'On Progress').length;
+      const finished = tasks.filter(t => t.status === 'Finished').length;
+      const delayed = tasks.filter(t => t.status === 'Delayed').length;
+      const total = tasks.length;
+      if (total > maxTasks) maxTasks = total;
+      
+      return { c, notStarted, onProgress, finished, delayed, total };
+    });
+
+    creativeStats.forEach(stat => {
+      const nsPct = Math.round((stat.notStarted / maxTasks) * 100);
+      const opPct = Math.round((stat.onProgress / maxTasks) * 100);
+      const fPct = Math.round((stat.finished / maxTasks) * 100);
+      const dPct = Math.round((stat.delayed / maxTasks) * 100);
+      
+      const col = document.createElement('div');
+      col.className = 'workload-column';
+      col.innerHTML = `
+        <div class="workload-stack" title="${stat.c.name}: ${stat.total} Tasks (${stat.finished} Finished, ${stat.onProgress} In Progress, ${stat.notStarted} Not Started, ${stat.delayed} Delayed)">
+          <div class="workload-segment" style="height: ${nsPct}%; background: #64748b;"></div>
+          <div class="workload-segment" style="height: ${opPct}%; background: #f59e0b;"></div>
+          <div class="workload-segment" style="height: ${fPct}%; background: #10b981;"></div>
+          <div class="workload-segment" style="height: ${dPct}%; background: #ef4444;"></div>
+        </div>
+        <div class="workload-label" title="${stat.c.name}">${stat.c.name.split(' ')[0]}</div>
+      `;
+      workloadChart.appendChild(col);
+    });
+  }
+
+  // 2. Platform Breakdown Legend list
+  const platformList = document.getElementById('platform-breakdown-list');
+  if (platformList) {
+    platformList.innerHTML = '';
+    const counts = { facebook: 0, instagram: 0, youtube: 0, tiktok: 0 };
+    state.posts.forEach(p => {
+      if (p.platforms) {
+        p.platforms.forEach(plat => {
+          const lPlat = plat.toLowerCase();
+          if (counts[lPlat] !== undefined) counts[lPlat]++;
+        });
+      }
+    });
+
+    const platformsData = [
+      { id: 'facebook', name: 'Facebook', color: '#1877f2', count: counts.facebook },
+      { id: 'instagram', name: 'Instagram', color: '#e1306c', count: counts.instagram },
+      { id: 'youtube', name: 'YouTube', color: '#ff0000', count: counts.youtube },
+      { id: 'tiktok', name: 'TikTok', color: '#00f2fe', count: counts.tiktok }
+    ];
+
+    platformsData.forEach(p => {
+      const legendItem = document.createElement('div');
+      legendItem.className = 'legend-item';
+      legendItem.innerHTML = `
+        <div class="legend-info">
+          <div class="legend-color" style="background: ${p.color}; border-radius: 4px;"></div>
+          <span class="legend-name">${p.name}</span>
+        </div>
+        <span class="legend-value">${p.count} posts scheduled</span>
+      `;
+      platformList.appendChild(legendItem);
+    });
+  }
 }
 
 // Drag & Drop / Status Update
@@ -1023,9 +2433,11 @@ async function updatePostStatus(postId, newStatus) {
   }
 
   // Access control check for limited users
-  const account = USER_ACCOUNTS[currentUser];
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const account = findTeamMember(currentUser);
   const isLimited = account && account.access === 'limited';
-  if (isLimited && post.assignee !== 'Jubayer Hossain') {
+  const isOwner = (post.assignee === currentUser) || (account && account.aliases && account.aliases.includes(post.assignee));
+  if (isLimited && !isOwner) {
     showToast('Access Denied: You can only move items assigned to you', 'error');
     refreshViews(); // Re-renders list to reset the visual card placement
     return;
@@ -1045,12 +2457,47 @@ async function updatePostStatus(postId, newStatus) {
   // Sync to Firestore
   try {
     await setDoc(doc(db, "posts", post.id), post);
+    await syncPostToTask(post, db);
     showToast(`Successfully moved to "${newStatus.toUpperCase()}"`, 'success');
+    await logActivity(`moved post "${post.title}" to ${newStatus.toUpperCase()}`, db);
   } catch (err) {
     console.error(err);
     showToast('Failed to update status in cloud', 'error');
     refreshViews();
   }
+}
+
+// Brand Manager Modal Controls
+function openBrandModal(brandId = null) {
+  const overlay = document.getElementById('brand-modal');
+  const modalTitle = document.getElementById('brand-modal-title');
+  const form = document.getElementById('brand-form');
+  if (!overlay || !form) return;
+
+  // Clear fields
+  form.reset();
+  document.getElementById('brand-edit-id').value = '';
+
+  if (brandId) {
+    modalTitle.innerText = 'Edit Page / Brand';
+    const brand = state.brands.find(b => b.id === brandId);
+    if (brand) {
+      document.getElementById('brand-edit-id').value = brand.id;
+      document.getElementById('brand-name').value = brand.name;
+      document.getElementById('brand-type').value = brand.type;
+      document.getElementById('brand-goal').value = brand.frequencyGoal;
+      document.getElementById('brand-logo').value = brand.logo || '';
+    }
+  } else {
+    modalTitle.innerText = 'Add Page / Brand';
+  }
+
+  overlay.classList.add('active');
+}
+
+function closeBrandModal() {
+  const overlay = document.getElementById('brand-modal');
+  if (overlay) overlay.classList.remove('active');
 }
 
 // Post Creation & Editing Modal
@@ -1070,6 +2517,17 @@ function openPostModal(post = null, targetDate = null) {
   const deleteBtn = document.getElementById('modal-delete-btn');
   const form = document.getElementById('post-form');
   
+  // Populate Associated Design Task dropdown
+  const taskLinkSelect = document.getElementById('post-link-task');
+  if (taskLinkSelect) {
+    taskLinkSelect.innerHTML = '<option value="">-- None --</option>';
+    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
+    sortedTasks.forEach(t => {
+      taskLinkSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
+    });
+    taskLinkSelect.value = (post && post.associatedTaskId) ? post.associatedTaskId : '';
+  }
+  
   if (!overlay || !form) return;
 
   // Reset Form Checkboxes and accessibility states
@@ -1086,12 +2544,14 @@ function openPostModal(post = null, targetDate = null) {
     cb.closest('.platform-checkbox-label').classList.remove('checked');
   });
 
-  const account = USER_ACCOUNTS[currentUser];
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const account = teamList.find(p => p.name === currentUser);
   const isLimited = account && account.access === 'limited';
 
   if (post) {
     // Edit Mode
     modalTitle.textContent = 'Edit Content Post';
+    renderPostComments(post);
     
     // Accessibility: Guests and Limited users cannot delete posts at all
     if (deleteBtn) {
@@ -1132,22 +2592,26 @@ function openPostModal(post = null, targetDate = null) {
       formBody.insertAdjacentHTML('afterbegin', warningHtml);
     }
     // Accessibility: Limited users can only edit posts assigned to them
-    else if (isLimited && post.assignee !== 'Jubayer Hossain') {
-      form.querySelectorAll('.form-control, input[type="checkbox"]').forEach(el => el.setAttribute('disabled', 'true'));
-      if (submitBtn) submitBtn.style.display = 'none';
-      
-      const formBody = form.querySelector('.modal-body') || form;
-      const warningHtml = `
-        <div id="modal-view-only-banner" class="view-only-banner">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
-          <span>View Only: This post is assigned to ${post.assignee}. You can only edit posts assigned to you.</span>
-        </div>
-      `;
-      formBody.insertAdjacentHTML('afterbegin', warningHtml);
+    else if (isLimited) {
+      const isOwner = (post.assignee === currentUser) || (account && account.aliases && account.aliases.includes(post.assignee));
+      if (!isOwner) {
+        form.querySelectorAll('.form-control, input[type="checkbox"]').forEach(el => el.setAttribute('disabled', 'true'));
+        if (submitBtn) submitBtn.style.display = 'none';
+        
+        const formBody = form.querySelector('.modal-body') || form;
+        const warningHtml = `
+          <div id="modal-view-only-banner" class="view-only-banner">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
+            <span>View Only: This post is assigned to ${post.assignee}. You can only edit posts assigned to you.</span>
+          </div>
+        `;
+        formBody.insertAdjacentHTML('afterbegin', warningHtml);
+      }
     }
   } else {
     // Add Mode
     modalTitle.textContent = 'Create New Content Post';
+    renderPostComments(null);
     if (deleteBtn) deleteBtn.style.display = 'none';
 
     // Autofill date if clicked from calendar
@@ -1205,6 +2669,7 @@ async function handleFormSubmit(e) {
   const date = document.getElementById('post-date').value;
   const time = document.getElementById('post-time').value;
   const caption = document.getElementById('post-caption').value.trim();
+  const associatedTaskId = document.getElementById('post-link-task') ? document.getElementById('post-link-task').value : '';
 
   if (!title) {
     showToast('Please enter a content title', 'error');
@@ -1221,6 +2686,7 @@ async function handleFormSubmit(e) {
     const post = state.posts.find(p => p.id === state.editingPost.id);
     if (post) {
       const oldStatus = post.status;
+      const oldTaskId = post.associatedTaskId;
       post.title = title;
       post.brandId = brandId;
       post.platforms = checkedPlatforms;
@@ -1230,6 +2696,7 @@ async function handleFormSubmit(e) {
       post.date = date;
       post.time = time;
       post.caption = caption;
+      post.associatedTaskId = associatedTaskId;
 
       // Update brand last active date if just published
       if (status === 'published' && oldStatus !== 'published') {
@@ -1242,7 +2709,9 @@ async function handleFormSubmit(e) {
       // Save changes to Firestore
       try {
         await setDoc(doc(db, "posts", post.id), post);
+        await syncPostToTask(post, db);
         showToast('Post updated successfully', 'success');
+        await logActivity(`updated content post "${post.title}"`, db);
       } catch (err) {
         console.error(err);
         showToast('Failed to save changes to cloud', 'error');
@@ -1261,13 +2730,16 @@ async function handleFormSubmit(e) {
       assignee,
       date,
       time,
-      caption
+      caption,
+      associatedTaskId
     };
     
     // Save to Firestore
     try {
       await setDoc(doc(db, "posts", newId), newPost);
+      await syncPostToTask(newPost, db);
       showToast('New post scheduled successfully', 'success');
+      await logActivity(`created content post "${newPost.title}"`, db);
     } catch (err) {
       console.error(err);
       showToast('Failed to save new post to cloud', 'error');
@@ -1284,9 +2756,15 @@ async function deletePost() {
   if (!state.editingPost) return;
   
   if (confirm('Are you sure you want to delete this content item?')) {
+    const postId = state.editingPost.id;
+    const associatedTaskId = state.editingPost.associatedTaskId;
     try {
-      await deleteDoc(doc(db, "posts", state.editingPost.id));
+      await deleteDoc(doc(db, "posts", postId));
+      if (associatedTaskId) {
+        await deleteDoc(doc(db, "tasks", associatedTaskId));
+      }
       showToast('Content item removed', 'info');
+      await logActivity(`deleted content post "${state.editingPost.title}"`, db);
     } catch (err) {
       console.error(err);
       showToast('Failed to delete from cloud', 'error');
@@ -1357,3 +2835,1398 @@ function showToast(msg, type = 'success') {
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
+
+/* ==========================================================================
+   TASK TRACKER CORE LOGIC & CONTROLLERS
+   ========================================================================== */
+
+function renderTasks() {
+  const tableBodyPosts = document.getElementById('tasks-list-body-posts');
+  const tableBodyGeneral = document.getElementById('tasks-list-body-general');
+  if (!tableBodyPosts || !tableBodyGeneral) return;
+  tableBodyPosts.innerHTML = '';
+  tableBodyGeneral.innerHTML = '';
+
+  // Filter tasks
+  let filteredTasks = state.tasks.filter(t => !isItemArchived(t));
+
+  // Search by name
+  if (state.taskSearchFilter) {
+    const q = state.taskSearchFilter.toLowerCase();
+    filteredTasks = filteredTasks.filter(t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
+  }
+
+  // Filter by designer
+  if (state.taskDesignerFilter !== 'all') {
+    filteredTasks = filteredTasks.filter(t => t.designer === state.taskDesignerFilter);
+  }
+
+  // Filter by assigner
+  if (state.taskAssignerFilter !== 'all') {
+    filteredTasks = filteredTasks.filter(t => t.assignedBy === state.taskAssignerFilter);
+  }
+
+  // Filter by status
+  if (state.taskStatusFilter !== 'all') {
+    filteredTasks = filteredTasks.filter(t => t.status === state.taskStatusFilter);
+  }
+
+  // Calculate statistics (always on all tasks, not filtered)
+  const totalCount = state.tasks.length;
+  const progressCount = state.tasks.filter(t => t.status === 'On Progress').length;
+  const finishedCount = state.tasks.filter(t => t.status === 'Finished').length;
+  const delayedCount = state.tasks.filter(t => t.status === 'Delayed').length;
+
+  document.getElementById('task-stat-total').textContent = totalCount;
+  document.getElementById('task-stat-progress').textContent = progressCount;
+  document.getElementById('task-stat-finished').textContent = finishedCount;
+  document.getElementById('task-stat-delayed').textContent = delayedCount;
+
+  // Calculate active workload split
+  const activeTasks = state.tasks.filter(t => t.status !== 'Finished');
+  const workloadCounts = { Razin: 0, Rabby: 0, Niaz: 0 };
+  activeTasks.forEach(t => {
+    if (workloadCounts[t.designer] !== undefined) {
+      workloadCounts[t.designer]++;
+    }
+  });
+  
+  const workloadEl = document.getElementById('task-stat-workload');
+  if (workloadEl) {
+    workloadEl.innerHTML = `
+      Razin: <strong>${workloadCounts.Razin}</strong> &nbsp;|&nbsp; 
+      Rabby: <strong>${workloadCounts.Rabby}</strong> &nbsp;|&nbsp; 
+      Niaz: <strong>${workloadCounts.Niaz}</strong>
+    `;
+  }
+
+  // Split filtered tasks into Social Media Posts and General Design Tasks
+  const socialTasks = filteredTasks.filter(t => t.associatedPostId || t.taskType === 'post');
+  const generalTasks = filteredTasks.filter(t => !t.associatedPostId && t.taskType !== 'post');
+
+  document.getElementById('social-tasks-count').textContent = socialTasks.length;
+  document.getElementById('general-tasks-count').textContent = generalTasks.length;
+
+  const renderRow = (task, targetBody) => {
+    const statusClass = task.status.toLowerCase().replace(' ', '-');
+    const driveLinkHtml = task.deliveryLink 
+      ? `<a href="${task.deliveryLink}" target="_blank" class="task-link-btn" title="Open Delivery Link">
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+         </a>`
+      : '';
+
+    let linkedPostHtml = '';
+    if (task.associatedPostId) {
+      if (task.associatedPostId.startsWith('idea-')) {
+        const linkedIdea = state.ideas.find(i => i.id === task.associatedPostId);
+        if (linkedIdea) {
+          linkedPostHtml = `
+            <div class="linked-post-badge" style="background-color: rgba(168, 85, 247, 0.1); color: #a855f7; border-color: rgba(168, 85, 247, 0.15);" title="Linked to planner idea: ${linkedIdea.topic}">
+              <svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"/></svg>
+              <span>Idea: ${linkedIdea.topic.substring(0, 18)}...</span>
+            </div>
+          `;
+        }
+      } else {
+        const linkedPost = state.posts.find(p => p.id === task.associatedPostId);
+        if (linkedPost) {
+          linkedPostHtml = `
+            <div class="linked-post-badge" title="Linked to content post: ${linkedPost.title}">
+              <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7zm10 3a3 3 0 100-6 3 3 0 000 6z"/></svg>
+              <span>Post: ${linkedPost.title.substring(0, 18)}...</span>
+            </div>
+          `;
+        }
+      }
+    }
+
+    const commentsText = task.comments ? `<div class="task-comments-text">${task.comments}</div>` : '';
+    const dateFormatted = formatCardDate(task.date);
+
+    const row = document.createElement('tr');
+    row.id = `task-row-${task.id}`;
+    if (task.status === 'Correction') {
+      row.className = 'highlighted-correction';
+    }
+    row.innerHTML = `
+      <td style="white-space: nowrap;"><strong>${task.id}</strong></td>
+      <td>
+        <div style="font-weight: 600; color: #fff">${task.name}</div>
+        ${commentsText}
+      </td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(task.designer)}</div>
+          <span>${task.designer}</span>
+        </div>
+      </td>
+      <td>${task.assignedBy}</td>
+      <td>${dateFormatted} ${task.time || ''}</td>
+      <td>${task.urgency || 'N/A'}</td>
+      <td>
+        <span class="task-status-badge ${statusClass}">${task.status}</span>
+      </td>
+      <td>
+        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px">
+          ${driveLinkHtml}
+          ${linkedPostHtml}
+        </div>
+      </td>
+      <td>
+        <button class="btn-icon task-edit-btn" data-id="${task.id}" style="width: 32px; height: 32px" title="Edit Task">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+      </td>
+    `;
+
+    // Hook edit button click
+    row.querySelector('.task-edit-btn').addEventListener('click', () => {
+      openTaskModal(task);
+    });
+
+    // Hook linked item click
+    const linkedPostBadge = row.querySelector('.linked-post-badge');
+    if (linkedPostBadge) {
+      linkedPostBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (task.associatedPostId.startsWith('idea-')) {
+          navigateToIdea(task.associatedPostId);
+        } else {
+          const post = state.posts.find(p => p.id === task.associatedPostId);
+          if (post) {
+            switchView('kanban');
+            // Find the card and scroll to it
+            setTimeout(() => {
+              const cardEl = document.querySelector(`.post-card[data-id="${post.id}"]`);
+              if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                cardEl.style.boxShadow = '0 0 20px var(--honey-gold)';
+                setTimeout(() => cardEl.style.boxShadow = '', 4000);
+              }
+            }, 300);
+          }
+        }
+      });
+    }
+
+    targetBody.appendChild(row);
+  };
+
+  socialTasks.forEach(t => renderRow(t, tableBodyPosts));
+  generalTasks.forEach(t => renderRow(t, tableBodyGeneral));
+}
+
+function openTaskModal(task = null) {
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+
+  // Accessibility: Guests cannot create new tasks
+  if (!task && !currentUser) {
+    showToast('Access Denied: Please sign in to create tasks', 'error');
+    showLoginOverlay();
+    return;
+  }
+
+  state.editingTask = task;
+  const overlay = document.getElementById('task-modal');
+  const modalTitle = document.getElementById('task-modal-title');
+  const deleteBtn = document.getElementById('task-modal-delete-btn');
+  const form = document.getElementById('task-form');
+  
+  if (!overlay || !form) return;
+
+  form.reset();
+  form.querySelectorAll('.form-control').forEach(el => el.removeAttribute('disabled'));
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.style.display = 'block';
+
+  const existingBanner = document.getElementById('task-view-only-banner');
+  if (existingBanner) existingBanner.remove();
+
+  // Populate link post dropdown
+  const linkPostSelect = document.getElementById('task-form-link-post');
+  if (linkPostSelect) {
+    linkPostSelect.innerHTML = '<option value="">-- None --</option>';
+    state.posts.forEach(p => {
+      linkPostSelect.innerHTML += `<option value="${p.id}">${p.title} [${p.id}]</option>`;
+    });
+    linkPostSelect.value = (task && task.associatedPostId) ? task.associatedPostId : '';
+  }
+
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const account = teamList.find(p => p.name === currentUser);
+  const isLimited = account && account.access === 'limited';
+
+  if (task) {
+    // Edit mode
+    modalTitle.textContent = `Edit Task ${task.id}`;
+    if (deleteBtn) {
+      deleteBtn.style.display = (!currentUser || isLimited) ? 'none' : 'block';
+    }
+
+    document.getElementById('task-form-name').value = task.name;
+    document.getElementById('task-form-designer').value = task.designer;
+    document.getElementById('task-form-assigner').value = task.assignedBy;
+    document.getElementById('task-form-date').value = task.date;
+    document.getElementById('task-form-time').value = task.time || '12:00';
+    document.getElementById('task-form-urgency').value = task.urgency || '';
+    document.getElementById('task-form-status').value = task.status;
+    document.getElementById('task-form-delivery').value = task.deliveryLink || '';
+    document.getElementById('task-form-comments').value = task.comments || '';
+    renderTaskComments(task);
+
+    // Access control: Guest gets Read-Only
+    if (!currentUser) {
+      form.querySelectorAll('.form-control').forEach(el => el.setAttribute('disabled', 'true'));
+      if (submitBtn) submitBtn.style.display = 'none';
+      
+      const formBody = form.querySelector('.modal-body') || form;
+      formBody.insertAdjacentHTML('afterbegin', `
+        <div id="task-view-only-banner" class="view-only-banner">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
+          <span>Guest Mode: Sign in to edit tasks.</span>
+        </div>
+      `);
+    } else if (isLimited) {
+      const isOwner = (task.designer === currentUser) || (account && account.aliases && account.aliases.includes(task.designer));
+      if (!isOwner) {
+        form.querySelectorAll('.form-control').forEach(el => el.setAttribute('disabled', 'true'));
+        if (submitBtn) submitBtn.style.display = 'none';
+        
+        const formBody = form.querySelector('.modal-body') || form;
+        formBody.insertAdjacentHTML('afterbegin', `
+          <div id="task-view-only-banner" class="view-only-banner">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
+            <span>View Only: This task is assigned to ${task.designer}. You can only edit tasks assigned to you.</span>
+          </div>
+        `);
+      }
+    }
+  } else {
+    // Add mode
+    modalTitle.textContent = 'Create New Task';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+
+    // Autofill defaults
+    document.getElementById('task-form-date').value = '2026-07-05';
+    document.getElementById('task-form-time').value = '12:00';
+    document.getElementById('task-form-status').value = 'Not Started';
+    document.getElementById('task-form-assigner').value = currentUser || 'Razin';
+    renderTaskComments(null);
+  }
+
+  // Populate job type select
+  const jobTypeSelect = document.getElementById('task-form-job-type');
+  const linkGroup = document.getElementById('task-form-link-post-group');
+  if (jobTypeSelect) {
+    jobTypeSelect.value = (task && task.associatedPostId) ? 'post' : (task && task.taskType ? task.taskType : 'general');
+    if (linkGroup) {
+      linkGroup.style.display = jobTypeSelect.value === 'post' ? 'block' : 'none';
+    }
+  }
+
+  overlay.classList.add('active');
+}
+
+function closeTaskModal() {
+  const overlay = document.getElementById('task-modal');
+  if (overlay) overlay.classList.remove('active');
+  state.editingTask = null;
+  
+  const form = document.getElementById('task-form');
+  if (form) {
+    form.querySelectorAll('.form-control').forEach(el => el.removeAttribute('disabled'));
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.style.display = 'block';
+  }
+  const existingBanner = document.getElementById('task-view-only-banner');
+  if (existingBanner) existingBanner.remove();
+}
+
+async function handleTaskFormSubmit(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('task-form-name').value.trim();
+  const designer = document.getElementById('task-form-designer').value;
+  const assignedBy = document.getElementById('task-form-assigner').value;
+  const date = document.getElementById('task-form-date').value;
+  const time = document.getElementById('task-form-time').value;
+  const urgency = document.getElementById('task-form-urgency').value.trim();
+  const status = document.getElementById('task-form-status').value;
+  const deliveryLink = document.getElementById('task-form-delivery').value.trim();
+  const comments = document.getElementById('task-form-comments').value.trim();
+  const associatedPostId = document.getElementById('task-form-link-post') ? document.getElementById('task-form-link-post').value : '';
+  const jobType = document.getElementById('task-form-job-type').value;
+
+  if (!name) {
+    showToast('Please enter a task name', 'error');
+    return;
+  }
+
+  if (state.editingTask) {
+    const task = state.tasks.find(t => t.id === state.editingTask.id);
+    if (task) {
+      const oldPostId = task.associatedPostId;
+      task.name = name;
+      task.designer = designer;
+      task.assignedBy = assignedBy;
+      task.date = date;
+      task.time = time;
+      task.urgency = urgency;
+      task.status = status;
+      task.deliveryLink = deliveryLink;
+      task.comments = comments;
+      task.taskType = jobType;
+
+      if (jobType === 'general') {
+        task.associatedPostId = '';
+        try {
+          await setDoc(doc(db, "tasks", task.id), task);
+          if (oldPostId) {
+            await deleteDoc(doc(db, "posts", oldPostId));
+          }
+          showToast('Task updated successfully', 'success');
+          await logActivity(`updated General Design Task "${task.name}"`, db);
+        } catch (err) {
+          console.error(err);
+          showToast('Failed to save task changes to cloud', 'error');
+        }
+      } else {
+        task.associatedPostId = associatedPostId;
+        try {
+          await setDoc(doc(db, "tasks", task.id), task);
+          await syncTaskToPost(task, db);
+          showToast('Task updated successfully', 'success');
+          await logActivity(`updated Design Task "${task.name}"`, db);
+        } catch (err) {
+          console.error(err);
+          showToast('Failed to save task changes to cloud', 'error');
+        }
+      }
+    }
+  } else {
+    // Generate new task ID like T-20, T-21...
+    let maxId = 0;
+    state.tasks.forEach(t => {
+      const num = parseInt(t.id.replace('T-', ''));
+      if (!isNaN(num) && num > maxId) maxId = num;
+    });
+    const newNum = maxId + 1;
+    const newId = `T-${String(newNum).padStart(2, '0')}`;
+
+    const newTask = {
+      id: newId,
+      name,
+      designer,
+      assignedBy,
+      date,
+      time,
+      urgency,
+      status,
+      deliveryLink,
+      comments,
+      taskType: jobType,
+      associatedPostId: jobType === 'post' ? associatedPostId : ''
+    };
+
+    try {
+      await setDoc(doc(db, "tasks", newId), newTask);
+      if (jobType === 'post') {
+        await syncTaskToPost(newTask, db);
+      }
+      showToast(`Task ${newId} created successfully`, 'success');
+      await logActivity(`created task ${newId}: "${newTask.name}"`, db);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to save new task to cloud', 'error');
+    }
+  }
+
+  closeTaskModal();
+}
+
+async function deleteTask() {
+  if (!state.editingTask) return;
+  
+  if (confirm(`Are you sure you want to delete Task ${state.editingTask.id}?`)) {
+    const taskId = state.editingTask.id;
+    const associatedPostId = state.editingTask.associatedPostId;
+    try {
+      await deleteDoc(doc(db, "tasks", taskId));
+      if (associatedPostId) {
+        await deleteDoc(doc(db, "posts", associatedPostId));
+      }
+      showToast(`Task ${taskId} removed`, 'info');
+      await logActivity(`deleted task ${state.editingTask.id}: "${state.editingTask.name}"`, db);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete task from cloud', 'error');
+    }
+    closeTaskModal();
+  }
+}
+
+
+function updateModalDropdowns() {
+  // Populate dynamic creative filters
+  const designers = state.team.filter(p => p.isDesigner);
+  
+  const taskDesignerFilter = document.getElementById('task-designer-filter');
+  if (taskDesignerFilter) {
+    const currentVal = state.taskDesignerFilter;
+    taskDesignerFilter.innerHTML = '<option value="all">All Creatives</option>' + 
+      designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (designers.some(p => p.name === currentVal) || currentVal === 'all') {
+      taskDesignerFilter.value = currentVal;
+    } else {
+      taskDesignerFilter.value = 'all';
+      state.taskDesignerFilter = 'all';
+    }
+  }
+
+  const ideaDesignerFilter = document.getElementById('idea-designer-filter');
+  if (ideaDesignerFilter) {
+    const currentVal = state.ideaDesignerFilter;
+    ideaDesignerFilter.innerHTML = '<option value="all">All Creatives</option>' + 
+      designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (designers.some(p => p.name === currentVal) || currentVal === 'all') {
+      ideaDesignerFilter.value = currentVal;
+    } else {
+      ideaDesignerFilter.value = 'all';
+      state.ideaDesignerFilter = 'all';
+    }
+  }
+
+  // Populate task assigner filters dynamically from unique task assigners
+  const taskAssignerFilter = document.getElementById('task-assigner-filter');
+  if (taskAssignerFilter) {
+    const currentVal = state.taskAssignerFilter;
+    const assigners = new Set();
+    state.tasks.forEach(t => {
+      if (t.assignedBy) assigners.add(t.assignedBy);
+    });
+    taskAssignerFilter.innerHTML = '<option value="all">All Assigned By</option>';
+    Array.from(assigners).sort().forEach(a => {
+      taskAssignerFilter.innerHTML += `<option value="${a}">${a}</option>`;
+    });
+    taskAssignerFilter.value = currentVal;
+  }
+
+  // Populate link task dropdowns inside post and idea forms
+  const postTaskSelect = document.getElementById('post-link-task');
+  if (postTaskSelect) {
+    const currentVal = postTaskSelect.value;
+    postTaskSelect.innerHTML = '<option value="">-- None --</option>';
+    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
+    sortedTasks.forEach(t => {
+      postTaskSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
+    });
+    postTaskSelect.value = currentVal || (state.editingPost && state.editingPost.associatedTaskId) || '';
+  }
+
+  const ideaTaskSelect = document.getElementById('idea-form-link-task');
+  if (ideaTaskSelect) {
+    const currentVal = ideaTaskSelect.value;
+    ideaTaskSelect.innerHTML = '<option value="">-- None --</option>';
+    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
+    sortedTasks.forEach(t => {
+      ideaTaskSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
+    });
+    ideaTaskSelect.value = currentVal || (state.editingIdea && state.editingIdea.linkedTaskId) || '';
+  }
+
+  // Populate link post dropdown inside task form
+  const taskPostSelect = document.getElementById('task-form-link-post');
+  if (taskPostSelect) {
+    const currentVal = taskPostSelect.value;
+    taskPostSelect.innerHTML = '<option value="">-- None --</option>';
+    state.posts.forEach(p => {
+      taskPostSelect.innerHTML += `<option value="${p.id}">${p.title} [${p.id}]</option>`;
+    });
+    // Add ideas too!
+    state.ideas.forEach(i => {
+      taskPostSelect.innerHTML += `<option value="${i.id}">Idea: ${i.topic} [${i.id}]</option>`;
+    });
+    taskPostSelect.value = currentVal || (state.editingTask && state.editingTask.associatedPostId) || '';
+  }
+
+  // Populate dynamic people-based dropdowns from state.team
+  const assigners = state.team.filter(p => p.isWorkAssigner);
+  const initiators = state.team.filter(p => p.isIdeaInitiator);
+  const loginUsers = state.team.filter(p => p.password);
+
+  // Populate designers in Post Form Assignee select box
+  const postAssignee = document.getElementById('post-assignee');
+  if (postAssignee) {
+    const curVal = postAssignee.value;
+    postAssignee.innerHTML = designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (curVal && designers.some(p => p.name === curVal)) postAssignee.value = curVal;
+  }
+
+  // Populate designers in Task Form Designer select box
+  const taskFormDesigner = document.getElementById('task-form-designer');
+  if (taskFormDesigner) {
+    const curVal = taskFormDesigner.value;
+    taskFormDesigner.innerHTML = designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (curVal && designers.some(p => p.name === curVal)) taskFormDesigner.value = curVal;
+  }
+
+  // Populate work assigners in Task Form Assigner select box
+  const taskFormAssigner = document.getElementById('task-form-assigner');
+  if (taskFormAssigner) {
+    const curVal = taskFormAssigner.value;
+    taskFormAssigner.innerHTML = assigners.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (curVal && assigners.some(p => p.name === curVal)) taskFormAssigner.value = curVal;
+  }
+
+  // Populate designers in Idea Form Designer select box
+  const ideaFormDesigner = document.getElementById('idea-form-designer');
+  if (ideaFormDesigner) {
+    const curVal = ideaFormDesigner.value;
+    ideaFormDesigner.innerHTML = '<option value="">-- Unassigned --</option>' + designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (curVal) ideaFormDesigner.value = curVal;
+  }
+
+  // Populate initiators in Idea Form Initiator select box
+  const ideaFormInitiator = document.getElementById('idea-form-initiator');
+  if (ideaFormInitiator) {
+    const curVal = ideaFormInitiator.value;
+    ideaFormInitiator.innerHTML = '<option value="">-- None --</option>' + initiators.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (curVal) ideaFormInitiator.value = curVal;
+  }
+
+  // Populate users in Login Select box
+  const loginUser = document.getElementById('login-user');
+  if (loginUser) {
+    const curVal = loginUser.value;
+    loginUser.innerHTML = loginUsers.map(p => `<option value="${p.name}">${p.name} (${p.role})</option>`).join('');
+    if (curVal && loginUsers.some(p => p.name === curVal)) loginUser.value = curVal;
+  }
+}
+
+function navigateToTask(taskId) {
+  switchView('tasks');
+  setTimeout(() => {
+    const row = document.getElementById(`task-row-${taskId}`);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.add('highlighted-task');
+      setTimeout(() => {
+        row.classList.remove('highlighted-task');
+      }, 6000);
+    }
+  }, 300);
+}
+
+/* ==========================================================================
+   CONTENT PLANNER (IDEAS) CORE LOGIC & CONTROLLERS
+   ========================================================================== */
+
+function renderIdeas() {
+  const tableBody = document.getElementById('ideas-list-body');
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
+
+  // Filter ideas
+  let filteredIdeas = state.ideas;
+
+  // Search by topic name
+  if (state.ideaSearchFilter) {
+    const q = state.ideaSearchFilter.toLowerCase();
+    filteredIdeas = filteredIdeas.filter(i => i.topic.toLowerCase().includes(q) || i.id.toLowerCase().includes(q));
+  }
+
+  // Filter by designer
+  if (state.ideaDesignerFilter !== 'all') {
+    if (state.ideaDesignerFilter === 'Unassigned') {
+      filteredIdeas = filteredIdeas.filter(i => !i.designer);
+    } else {
+      filteredIdeas = filteredIdeas.filter(i => i.designer === state.ideaDesignerFilter);
+    }
+  }
+
+  // Filter by status
+  if (state.ideaStatusFilter !== 'all') {
+    filteredIdeas = filteredIdeas.filter(i => i.status === state.ideaStatusFilter);
+  }
+
+  // Calculate statistics
+  const totalCount = state.ideas.length;
+  const productionCount = state.ideas.filter(i => i.status === 'In Production').length;
+  const draftCount = state.ideas.filter(i => i.status === 'Draft Idea').length;
+  const unassignedCount = state.ideas.filter(i => !i.designer).length;
+
+  document.getElementById('idea-stat-total').textContent = totalCount;
+  document.getElementById('idea-stat-production').textContent = productionCount;
+  document.getElementById('idea-stat-draft').textContent = draftCount;
+  document.getElementById('idea-stat-unassigned').textContent = unassignedCount;
+
+  // Render rows
+  filteredIdeas.forEach(idea => {
+    const statusClass = idea.status.toLowerCase().replace(' ', '-');
+    const insLinkHtml = idea.inspiration 
+      ? `<a href="${idea.inspiration}" target="_blank" class="task-link-btn" title="Open Inspiration Link">
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+         </a>`
+      : '';
+
+    let linkedTaskHtml = '';
+    if (idea.linkedTaskId) {
+      linkedTaskHtml = `
+        <div class="card-task-link-badge" data-task-id="${idea.linkedTaskId}" style="margin-top: 0">
+          <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <span>Task ${idea.linkedTaskId}</span>
+        </div>
+      `;
+    }
+
+    const notesText = idea.notes ? `<div class="task-comments-text">${idea.notes}</div>` : '';
+    const dateFormatted = formatCardDate(idea.date);
+    const designerName = idea.designer || '<span style="color: #94a3b8; font-style: italic;">Unassigned</span>';
+    const designerAvatar = idea.designer 
+      ? `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(idea.designer)}</div>`
+      : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: #64748b">?</div>`;
+
+    const row = document.createElement('tr');
+    row.id = `idea-row-${idea.id}`;
+    row.innerHTML = `
+      <td>
+        <div style="font-weight: 600; color: #fff">${idea.topic}</div>
+        ${notesText}
+      </td>
+      <td>${dateFormatted}</td>
+      <td>${idea.urgency || 'N/A'}</td>
+      <td>
+        <span class="task-status-badge ${statusClass}">${idea.status}</span>
+      </td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px">
+          ${designerAvatar}
+          <span>${designerName}</span>
+        </div>
+      </td>
+      <td>${idea.initiator || 'N/A'}</td>
+      <td>
+        ${linkedTaskHtml}
+      </td>
+      <td>
+        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px">
+          ${insLinkHtml}
+          ${idea.dateLogged ? `<span style="font-size: 0.75rem; color: #64748b">Logged: ${formatCardDate(idea.dateLogged)}</span>` : ''}
+        </div>
+      </td>
+      <td>
+        <button class="btn-icon idea-edit-btn" data-id="${idea.id}" style="width: 32px; height: 32px" title="Edit Idea">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+      </td>
+    `;
+
+    // Hook edit button click
+    row.querySelector('.idea-edit-btn').addEventListener('click', () => {
+      openIdeaModal(idea);
+    });
+
+    // Hook linked task click
+    const linkedTaskBadge = row.querySelector('.card-task-link-badge');
+    if (linkedTaskBadge) {
+      linkedTaskBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigateToTask(idea.linkedTaskId);
+      });
+    }
+
+    tableBody.appendChild(row);
+  });
+}
+
+function openIdeaModal(idea = null) {
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+
+  // Accessibility: Guests cannot create new ideas
+  if (!idea && !currentUser) {
+    showToast('Access Denied: Please sign in to create planner ideas', 'error');
+    showLoginOverlay();
+    return;
+  }
+
+  state.editingIdea = idea;
+  const overlay = document.getElementById('idea-modal');
+  const modalTitle = document.getElementById('idea-modal-title');
+  const deleteBtn = document.getElementById('idea-modal-delete-btn');
+  const form = document.getElementById('idea-form');
+  
+  if (!overlay || !form) return;
+
+  form.reset();
+  form.querySelectorAll('.form-control').forEach(el => el.removeAttribute('disabled'));
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.style.display = 'block';
+
+  const existingBanner = document.getElementById('idea-view-only-banner');
+  if (existingBanner) existingBanner.remove();
+
+  // Populate link task dropdown
+  const linkTaskSelect = document.getElementById('idea-form-link-task');
+  if (linkTaskSelect) {
+    linkTaskSelect.innerHTML = '<option value="">-- None --</option>';
+    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
+    sortedTasks.forEach(t => {
+      linkTaskSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
+    });
+    linkTaskSelect.value = (idea && idea.linkedTaskId) ? idea.linkedTaskId : '';
+  }
+
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const account = findTeamMember(currentUser);
+  const isLimited = account && account.access === 'limited';
+
+  if (idea) {
+    // Edit mode
+    modalTitle.textContent = `Edit Idea`;
+    if (deleteBtn) {
+      deleteBtn.style.display = (!currentUser || isLimited) ? 'none' : 'block';
+    }
+
+    document.getElementById('idea-form-topic').value = idea.topic;
+    document.getElementById('idea-form-date').value = idea.date;
+    document.getElementById('idea-form-urgency').value = idea.urgency || '';
+    document.getElementById('idea-form-designer').value = idea.designer || '';
+    document.getElementById('idea-form-initiator').value = idea.initiator || '';
+    document.getElementById('idea-form-status').value = idea.status;
+    document.getElementById('idea-form-inspiration').value = idea.inspiration || '';
+    document.getElementById('idea-form-notes').value = idea.notes || '';
+
+    // Access control: Guest gets Read-Only
+    if (!currentUser) {
+      form.querySelectorAll('.form-control').forEach(el => el.setAttribute('disabled', 'true'));
+      if (submitBtn) submitBtn.style.display = 'none';
+      
+      const formBody = form.querySelector('.modal-body') || form;
+      formBody.insertAdjacentHTML('afterbegin', `
+        <div id="idea-view-only-banner" class="view-only-banner">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
+          <span>Guest Mode: Sign in to edit planner ideas.</span>
+        </div>
+      `);
+    }
+  } else {
+    // Add mode
+    modalTitle.textContent = 'Create New Content Idea';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+
+    // Autofill defaults
+    document.getElementById('idea-form-date').value = '2026-07-05';
+    document.getElementById('idea-form-status').value = 'Draft Idea';
+    document.getElementById('idea-form-initiator').value = currentUser ? currentUser.split(' ')[0] : '';
+  }
+
+  overlay.classList.add('active');
+}
+
+function closeIdeaModal() {
+  const overlay = document.getElementById('idea-modal');
+  if (overlay) overlay.classList.remove('active');
+  state.editingIdea = null;
+  
+  const form = document.getElementById('idea-form');
+  if (form) {
+    form.querySelectorAll('.form-control').forEach(el => el.removeAttribute('disabled'));
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.style.display = 'block';
+  }
+  const existingBanner = document.getElementById('idea-view-only-banner');
+  if (existingBanner) existingBanner.remove();
+}
+
+async function handleIdeaFormSubmit(e) {
+  e.preventDefault();
+
+  const topic = document.getElementById('idea-form-topic').value.trim();
+  const date = document.getElementById('idea-form-date').value;
+  const urgency = document.getElementById('idea-form-urgency').value.trim();
+  const designer = document.getElementById('idea-form-designer').value;
+  const initiator = document.getElementById('idea-form-initiator').value.trim();
+  const status = document.getElementById('idea-form-status').value;
+  const inspiration = document.getElementById('idea-form-inspiration').value.trim();
+  const notes = document.getElementById('idea-form-notes').value.trim();
+  const linkedTaskId = document.getElementById('idea-form-link-task') ? document.getElementById('idea-form-link-task').value : '';
+
+  if (!topic) {
+    showToast('Please enter a topic name', 'error');
+    return;
+  }
+
+  if (state.editingIdea) {
+    const idea = state.ideas.find(i => i.id === state.editingIdea.id);
+    if (idea) {
+      const oldTaskId = idea.linkedTaskId;
+      idea.topic = topic;
+      idea.date = date;
+      idea.urgency = urgency;
+      idea.designer = designer;
+      idea.initiator = initiator;
+      idea.status = status;
+      idea.inspiration = inspiration;
+      idea.notes = notes;
+      idea.linkedTaskId = linkedTaskId;
+
+      try {
+        await setDoc(doc(db, "ideas", idea.id), idea);
+
+        // Update task links bidirectionally
+        if (oldTaskId && oldTaskId !== linkedTaskId) {
+          const oldTask = state.tasks.find(t => t.id === oldTaskId);
+          if (oldTask) {
+            oldTask.associatedPostId = ''; // Clear task link if task associatedPostId was this idea
+            await setDoc(doc(db, "tasks", oldTaskId), oldTask);
+          }
+        }
+        if (linkedTaskId) {
+          const newTask = state.tasks.find(t => t.id === linkedTaskId);
+          if (newTask && newTask.associatedPostId !== idea.id) {
+            newTask.associatedPostId = idea.id;
+            await setDoc(doc(db, "tasks", linkedTaskId), newTask);
+          }
+        }
+
+        showToast('Idea updated successfully', 'success');
+        await logActivity(`updated content idea "${idea.topic}"`, db);
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to save idea changes to cloud', 'error');
+      }
+    }
+  } else {
+    const newId = 'idea-' + Date.now();
+    const newIdea = {
+      id: newId,
+      topic,
+      date,
+      urgency,
+      status,
+      designer,
+      initiator,
+      linkedTaskId,
+      inspiration,
+      notes,
+      dateLogged: '2026-07-05' // Logged date is today
+    };
+
+    try {
+      await setDoc(doc(db, "ideas", newId), newIdea);
+
+      if (linkedTaskId) {
+        const task = state.tasks.find(t => t.id === linkedTaskId);
+        if (task) {
+          task.associatedPostId = newId;
+          await setDoc(doc(db, "tasks", linkedTaskId), task);
+        }
+      }
+
+      showToast('New idea saved successfully', 'success');
+      await logActivity(`created content idea "${newIdea.topic}"`, db);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to save new idea to cloud', 'error');
+    }
+  }
+
+  closeIdeaModal();
+}
+
+async function deleteIdea() {
+  if (!state.editingIdea) return;
+  
+  if (confirm('Are you sure you want to delete this content idea?')) {
+    const ideaId = state.editingIdea.id;
+    const linkedTaskId = state.editingIdea.linkedTaskId;
+    try {
+      await deleteDoc(doc(db, "ideas", ideaId));
+
+      if (linkedTaskId) {
+        const task = state.tasks.find(t => t.id === linkedTaskId);
+        if (task) {
+          task.associatedPostId = '';
+          await setDoc(doc(db, "tasks", linkedTaskId), task);
+        }
+      }
+
+      showToast('Idea removed successfully', 'info');
+      await logActivity(`deleted content idea "${state.editingIdea.topic}"`, db);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete idea from cloud', 'error');
+    }
+    closeIdeaModal();
+  }
+}
+
+function navigateToIdea(ideaId) {
+  switchView('ideas');
+  setTimeout(() => {
+    const row = document.getElementById(`idea-row-${ideaId}`);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.add('highlighted-idea');
+      setTimeout(() => {
+        row.classList.remove('highlighted-idea');
+      }, 6000);
+    }
+  }, 300);
+}
+
+async function updateTaskStatus(taskId, kanbanStatus) {
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  if (!currentUser) {
+    showToast('Access Denied: Please sign in to reschedule items', 'error');
+    showLoginOverlay();
+    refreshViews();
+    return;
+  }
+
+  // Map kanban column to task status
+  let newTaskStatus = 'Not Started';
+  if (kanbanStatus === 'ideation') newTaskStatus = 'Not Started';
+  else if (kanbanStatus === 'development') newTaskStatus = 'On Progress';
+  else if (kanbanStatus === 'ready') newTaskStatus = 'Delayed';
+  else if (kanbanStatus === 'published') newTaskStatus = 'Finished';
+  else return; // Ignore scheduled for tasks
+
+  if (task.status === newTaskStatus) return;
+  task.status = newTaskStatus;
+
+  try {
+    await setDoc(doc(db, "tasks", taskId), task);
+    await syncTaskToPost(task, db);
+    showToast(`Task ${taskId} status updated to ${newTaskStatus}`, 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to update task status in cloud', 'error');
+    refreshViews();
+  }
+}
+
+async function updateIdeaStatus(ideaId, kanbanStatus) {
+  const idea = state.ideas.find(i => i.id === ideaId);
+  if (!idea) return;
+
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  if (!currentUser) {
+    showToast('Access Denied: Please sign in to reschedule items', 'error');
+    showLoginOverlay();
+    refreshViews();
+    return;
+  }
+
+  // Map kanban column to idea status
+  let newIdeaStatus = 'Draft Idea';
+  if (kanbanStatus === 'ideation') newIdeaStatus = 'Draft Idea';
+  else if (kanbanStatus === 'development' || kanbanStatus === 'ready' || kanbanStatus === 'scheduled') newIdeaStatus = 'In Production';
+  else if (kanbanStatus === 'published') newIdeaStatus = 'Completed';
+
+  if (idea.status === newIdeaStatus) return;
+  idea.status = newIdeaStatus;
+
+  try {
+    await setDoc(doc(db, "ideas", ideaId), idea);
+    showToast(`Idea status updated to ${newIdeaStatus}`, 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to update idea status in cloud', 'error');
+    refreshViews();
+  }
+}
+
+function renderTeam() {
+  const tbody = document.getElementById('team-list-body');
+  if (!tbody) return;
+
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  const userPerson = findTeamMember(currentUser);
+  const isAdmin = userPerson && userPerson.access === 'admin';
+
+  // Filter team
+  const searchFilter = (state.teamSearchFilter || '').toLowerCase();
+  const filteredTeam = state.team.filter(p => {
+    return p.name.toLowerCase().includes(searchFilter) || p.role.toLowerCase().includes(searchFilter);
+  });
+
+  // Calculate statistics
+  const total = state.team.length;
+  const designersCount = state.team.filter(p => p.isDesigner).length;
+  const assignersCount = state.team.filter(p => p.isWorkAssigner).length;
+  const initiatorsCount = state.team.filter(p => p.isIdeaInitiator).length;
+
+  document.getElementById('team-stat-total').textContent = total;
+  document.getElementById('team-stat-designers').textContent = designersCount;
+  document.getElementById('team-stat-assigners').textContent = assignersCount;
+  document.getElementById('team-stat-initiators').textContent = initiatorsCount;
+
+  tbody.innerHTML = '';
+  if (filteredTeam.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 32px 16px;">No team members found.</td></tr>`;
+    return;
+  }
+
+  filteredTeam.forEach(p => {
+    // Generate initials avatar
+    const initials = p.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const avatar = p.photo 
+      ? `<img src="${p.photo}" class="team-avatar-img" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="${p.name}">`
+      : `<div class="team-avatar-initials" style="background: rgba(245, 158, 11, 0.1); color: var(--honey-gold); border: 1px solid rgba(245, 158, 11, 0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">${initials}</div>`;
+
+    // Roles tags
+    let roleTagsHtml = '';
+    if (p.isDesigner) roleTagsHtml += `<span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.15); margin-right: 4px;">Creative</span>`;
+    if (p.isWorkAssigner) roleTagsHtml += `<span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.15); margin-right: 4px;">Work Assigner</span>`;
+    if (p.isIdeaInitiator) roleTagsHtml += `<span class="badge" style="background: rgba(6, 182, 212, 0.1); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.15); margin-right: 4px;">Idea Initiator</span>`;
+    if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
+
+    // Access tags
+    let accessTag = '';
+    if (p.access === 'admin') {
+      accessTag = `<span class="badge" style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.15);">Admin</span>`;
+    } else if (p.access === 'limited') {
+      accessTag = `<span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.15);">Limited</span>`;
+    } else {
+      accessTag = `<span class="badge" style="background: rgba(100, 116, 139, 0.1); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.15);">None / Guest</span>`;
+    }
+
+    const editBtn = isAdmin 
+      ? `<button class="action-btn edit-btn" aria-label="Edit member" style="background: none; border: none; cursor: pointer; color: var(--honey-gold);">
+          <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2;"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+         </button>`
+      : `<span style="color: #64748b; font-size: 0.75rem;">View Only</span>`;
+
+    const tr = document.createElement('tr');
+    tr.id = `team-row-${p.id}`;
+    tr.innerHTML = `
+      <td>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          ${avatar}
+          <div>
+            <div style="font-weight: 700; color: #fff;">${p.name}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="color: #cbd5e1; font-weight: 500;">${p.role}</span></td>
+      <td><div style="display: flex; flex-wrap: wrap; gap: 4px;">${roleTagsHtml}</div></td>
+      <td>${accessTag}</td>
+      <td><code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #fbbf24;">${p.password}</code></td>
+      <td>${editBtn}</td>
+    `;
+    tbody.appendChild(tr);
+
+    // Bind edit action programmatically
+    const editBtnEl = tr.querySelector('.edit-btn');
+    if (editBtnEl) {
+      editBtnEl.addEventListener('click', () => {
+        openPersonModal(p.id);
+      });
+    }
+  });
+}
+
+function openPersonModal(personId = null) {
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const userPerson = findTeamMember(currentUser);
+  if (!currentUser || (userPerson && userPerson.access !== 'admin')) {
+    showToast('Access Denied: Only admins can manage team members', 'error');
+    return;
+  }
+
+  state.editingPersonId = personId;
+  const modal = document.getElementById('person-modal');
+  const modalTitle = document.getElementById('person-modal-title');
+  const deleteBtn = document.getElementById('person-modal-delete-btn');
+  const form = document.getElementById('person-form');
+  
+  form.reset();
+  
+  if (personId) {
+    modalTitle.textContent = 'Edit Person';
+    if (deleteBtn) deleteBtn.style.display = 'block';
+    
+    const person = state.team.find(p => p.id === personId);
+    if (person) {
+      document.getElementById('person-form-name').value = person.name;
+      document.getElementById('person-form-name').disabled = true; // Don't allow changing name to avoid breaking reference links
+      document.getElementById('person-form-title').value = person.role;
+      document.getElementById('person-form-password').value = person.password || '';
+      document.getElementById('person-form-access').value = person.access || 'none';
+      document.getElementById('person-form-photo').value = person.photo || '';
+      
+      document.getElementById('person-role-designer').checked = !!person.isDesigner;
+      document.getElementById('person-role-assigner').checked = !!person.isWorkAssigner;
+      document.getElementById('person-role-initiator').checked = !!person.isIdeaInitiator;
+    }
+  } else {
+    modalTitle.textContent = 'Add New Person';
+    document.getElementById('person-form-name').disabled = false;
+    if (deleteBtn) deleteBtn.style.display = 'none';
+  }
+  
+  if (modal) modal.classList.add('active');
+}
+
+function closePersonModal() {
+  const modal = document.getElementById('person-modal');
+  if (modal) modal.classList.remove('active');
+  state.editingPersonId = null;
+}
+
+async function handlePersonFormSubmit(e) {
+  e.preventDefault();
+  
+  const name = document.getElementById('person-form-name').value.trim();
+  const role = document.getElementById('person-form-title').value.trim();
+  const password = document.getElementById('person-form-password').value.trim();
+  const access = document.getElementById('person-form-access').value;
+  const photo = document.getElementById('person-form-photo').value.trim();
+  
+  const isDesigner = document.getElementById('person-role-designer').checked;
+  const isWorkAssigner = document.getElementById('person-role-assigner').checked;
+  const isIdeaInitiator = document.getElementById('person-role-initiator').checked;
+
+  if (!name || !role || !password) {
+    showToast('Please fill out all required fields', 'error');
+    return;
+  }
+
+  const initial = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  
+  const personId = state.editingPersonId || `person-${Date.now()}`;
+  const personData = {
+    id: personId,
+    name,
+    role,
+    initial,
+    password,
+    access,
+    photo: photo || null,
+    isDesigner,
+    isWorkAssigner,
+    isIdeaInitiator
+  };
+
+  try {
+    await setDoc(doc(db, "team", personId), personData);
+    showToast(state.editingPersonId ? 'Person updated successfully' : 'Person added successfully', 'success');
+    await logActivity(state.editingPersonId ? `updated team member "${name}"` : `added team member "${name}"`, db);
+    closePersonModal();
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to save person to database', 'error');
+  }
+}
+
+async function deletePerson() {
+  const personId = state.editingPersonId;
+  if (!personId) return;
+
+  const person = state.team.find(p => p.id === personId);
+  if (!person) return;
+
+  if (!confirm(`Are you sure you want to remove ${person.name} from the team?`)) return;
+
+  try {
+    await deleteDoc(doc(db, "team", personId));
+    showToast('Person removed from team', 'info');
+    await logActivity(`removed team member "${person.name}"`, db);
+    closePersonModal();
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to delete person', 'error');
+  }
+}
+
+function mapPostStatusToTaskStatus(postStatus) {
+  if (postStatus === 'ideation') return 'Not Started';
+  if (postStatus === 'development') return 'On Progress';
+  if (postStatus === 'ready') return 'Delayed';
+  if (postStatus === 'scheduled') return 'On Progress';
+  if (postStatus === 'published') return 'Finished';
+  if (postStatus === 'correction') return 'Correction';
+  return 'Not Started';
+}
+
+function mapTaskStatusToPostStatus(taskStatus) {
+  if (taskStatus === 'Not Started') return 'ideation';
+  if (taskStatus === 'On Progress') return 'development';
+  if (taskStatus === 'Delayed') return 'ready';
+  if (taskStatus === 'Finished') return 'published';
+  if (taskStatus === 'Correction') return 'correction';
+  return 'ideation';
+}
+
+async function syncPostToTask(post, db) {
+  if (!post) return;
+  
+  // Find if a task is already associated
+  let task = null;
+  if (post.associatedTaskId) {
+    task = state.tasks.find(t => t.id === post.associatedTaskId);
+  } else {
+    // Try to find a task that has this associatedPostId
+    task = state.tasks.find(t => t.associatedPostId === post.id);
+  }
+  
+  const taskStatus = mapPostStatusToTaskStatus(post.status);
+  
+  if (task) {
+    // Update existing task
+    let changed = false;
+    if (task.name !== post.title) { task.name = post.title; changed = true; }
+    if (task.designer !== post.assignee) { task.designer = post.assignee; changed = true; }
+    if (task.date !== post.date) { task.date = post.date; changed = true; }
+    if (task.time !== post.time) { task.time = post.time; changed = true; }
+    if (task.status !== taskStatus) { task.status = taskStatus; changed = true; }
+    if (task.associatedPostId !== post.id) { task.associatedPostId = post.id; changed = true; }
+    
+    if (changed) {
+      await setDoc(doc(db, "tasks", task.id), task);
+    }
+    if (post.associatedTaskId !== task.id) {
+      post.associatedTaskId = task.id;
+      await setDoc(doc(db, "posts", post.id), post);
+    }
+  } else {
+    // Create new task
+    let maxId = 0;
+    state.tasks.forEach(t => {
+      const num = parseInt(t.id.replace('T-', ''));
+      if (!isNaN(num) && num > maxId) maxId = num;
+    });
+    const newNum = maxId + 1;
+    const newTaskId = `T-${String(newNum).padStart(2, '0')}`;
+    
+    const newTask = {
+      id: newTaskId,
+      name: post.title,
+      designer: post.assignee,
+      assignedBy: localStorage.getItem('hc_logged_in_user') || 'Razin',
+      date: post.date,
+      time: post.time || '12:00',
+      urgency: 'Medium',
+      status: taskStatus,
+      deliveryLink: '',
+      comments: '',
+      associatedPostId: post.id
+    };
+    
+    await setDoc(doc(db, "tasks", newTaskId), newTask);
+    
+    post.associatedTaskId = newTaskId;
+    await setDoc(doc(db, "posts", post.id), post);
+  }
+}
+
+async function syncTaskToPost(task, db) {
+  if (!task) return;
+  
+  // Find if a post is already associated
+  let post = null;
+  if (task.associatedPostId) {
+    post = state.posts.find(p => p.id === task.associatedPostId);
+  } else {
+    // Try to find a post that has this associatedTaskId
+    post = state.posts.find(p => p.associatedTaskId === task.id);
+  }
+  
+  const postStatus = mapTaskStatusToPostStatus(task.status);
+  
+  if (post) {
+    // Update existing post
+    let changed = false;
+    if (post.title !== task.name) { post.title = task.name; changed = true; }
+    if (post.assignee !== task.designer) { post.assignee = task.designer; changed = true; }
+    if (post.date !== task.date) { post.date = task.date; changed = true; }
+    if (post.time !== task.time) { post.time = task.time; changed = true; }
+    if (post.status !== postStatus) { post.status = postStatus; changed = true; }
+    if (post.associatedTaskId !== task.id) { post.associatedTaskId = task.id; changed = true; }
+    
+    if (changed) {
+      await setDoc(doc(db, "posts", post.id), post);
+    }
+    if (task.associatedPostId !== post.id) {
+      task.associatedPostId = post.id;
+      await setDoc(doc(db, "tasks", task.id), task);
+    }
+  } else {
+    // Create new post
+    const newPostId = 'post-' + Date.now();
+    const newPost = {
+      id: newPostId,
+      title: task.name,
+      brandId: 'tahams', // default brand
+      platforms: ['facebook', 'instagram'],
+      status: postStatus,
+      type: 'image',
+      assignee: task.designer,
+      date: task.date,
+      time: task.time || '12:00',
+      caption: '',
+      associatedTaskId: task.id
+    };
+    
+    await setDoc(doc(db, "posts", newPostId), newPost);
+    
+    task.associatedPostId = newPostId;
+    await setDoc(doc(db, "tasks", task.id), task);
+  }
+}
+
+let isInitialSyncDone = false;
+async function healPostTaskSync() {
+  if (isInitialSyncDone) return;
+  if (!state.posts || state.posts.length === 0) return;
+  if (!state.tasks || state.tasks.length === 0) return;
+  
+  isInitialSyncDone = true;
+  console.log("Healing Post-Task database synchronization...");
+  
+  // For each task, make sure it has taskType set
+  for (const task of state.tasks) {
+    if (!task.taskType) {
+      task.taskType = task.associatedPostId ? 'post' : 'general';
+      await setDoc(doc(db, "tasks", task.id), task);
+    }
+  }
+
+  // For each post, make sure it has an associated task
+  for (const post of state.posts) {
+    let task = null;
+    if (post.associatedTaskId) {
+      task = state.tasks.find(t => t.id === post.associatedTaskId);
+    } else {
+      task = state.tasks.find(t => t.associatedPostId === post.id);
+    }
+    if (!task) {
+      await syncPostToTask(post, db);
+    }
+  }
+
+  // For each task of type post, make sure it has an associated post
+  for (const task of state.tasks) {
+    if (task.taskType === 'post') {
+      let post = null;
+      if (task.associatedPostId) {
+        post = state.posts.find(p => p.id === task.associatedPostId);
+      } else {
+        post = state.posts.find(p => p.associatedTaskId === task.id);
+      }
+      if (!post) {
+        await syncTaskToPost(task, db);
+      }
+    }
+  }
+}
+
+
+
+
+

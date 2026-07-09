@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoneyComb Inc. Content Tracker & Planner</title>
   <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3.0.6">
 </head>
-<body>
+<body class="minimal-theme">
 
   <div class="app-container">
     
@@ -32,6 +32,10 @@
             </svg>
             Dashboard
           </a>
+          <a href="#" class="nav-item" id="nav-logs-link" data-view="logs" style="display: none;">
+            <svg viewBox="0 0 24 24" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Log Report
+          </a>
           <a href="#" class="nav-item" data-view="kanban">
             <svg viewBox="0 0 24 24">
               <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -52,6 +56,24 @@
             </svg>
             Analytics
           </a>
+          <a href="#" class="nav-item" data-view="tasks">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            Task Tracker
+          </a>
+          <a href="#" class="nav-item" data-view="ideas">
+            <svg viewBox="0 0 24 24">
+              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"/>
+            </svg>
+            Content Planner
+          </a>
+          <a href="#" class="nav-item" data-view="team">
+            <svg viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zm14 10v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"/>
+            </svg>
+            People & Roles
+          </a>
         </nav>
       </div>
 
@@ -70,6 +92,17 @@
         </div>
         
         <div class="header-actions">
+          <!-- Ideas Drawer Toggle -->
+          <button id="toggle-ideas-btn" class="btn-icon" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; color: #a3a3c2; cursor: pointer; transition: all 0.2s;" title="Idea Bank Drawer (Drag-and-Drop)">
+            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"></path></svg>
+          </button>
+
+          <!-- Activity Bell Button -->
+          <button id="toggle-activity-btn" class="btn-icon" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; color: #a3a3c2; cursor: pointer; transition: all 0.2s;" title="Real-Time Activity Log">
+            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span id="activity-badge" style="display: none; position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 1px solid #000;"></span>
+          </button>
+          
           <!-- Page Filter -->
           <select id="global-brand-filter" class="filter-select">
             <option value="all">All Brands & Pages</option>
@@ -237,9 +270,336 @@
             </div>
           </div>
         </div>
+
+        <div class="chart-grid" style="margin-top: 24px;">
+          <div class="chart-panel">
+            <h3>Creative Workload Balance</h3>
+            <div class="workload-chart-container" id="creative-workload-chart" style="display: flex; gap: 20px; align-items: flex-end; justify-content: space-around; height: 200px; padding-top: 20px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <!-- Dynamically populated Creative workload stacks -->
+            </div>
+            <div style="display: flex; justify-content: center; gap: 16px; margin-top: 14px; font-size: 0.8rem; color: #94a3b8;">
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #64748b;"></span>Not Started</span>
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #f59e0b;"></span>On Progress</span>
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #10b981;"></span>Finished</span>
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #ef4444;"></span>Delayed</span>
+            </div>
+          </div>
+
+          <div class="chart-panel">
+            <h3>Platform Scheduling Volume</h3>
+            <div class="legend-list" id="platform-breakdown-list">
+              <!-- Dynamically populated platform breakdown -->
+            </div>
+          </div>
+        </div>
       </section>
 
-    </main>
+        <!-- View 5: Task Tracker View -->
+        <section id="tasks-view" class="view-panel">
+          <!-- Top Stat Board for Tasks -->
+          <div class="tasks-summary-bar">
+            <div class="task-stat-box">
+              <h4>Total Tasks</h4>
+              <p id="task-stat-total">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>On Progress</h4>
+              <p id="task-stat-progress">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>Finished</h4>
+              <p id="task-stat-finished">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>Delayed</h4>
+              <p id="task-stat-delayed">0</p>
+            </div>
+            <div class="task-stat-box active-workload-box">
+              <h4>Active Workload Split</h4>
+              <p id="task-stat-workload">Loading...</p>
+            </div>
+          </div>
+
+          <!-- Filters & Actions for Tasks -->
+          <div class="tasks-actions-header">
+            <div class="tasks-filters">
+              <input type="text" id="task-search-input" placeholder="Search tasks..." class="search-input">
+              
+              <select id="task-designer-filter" class="filter-select">
+                <option value="all">All Creatives</option>
+                <option value="Razin">Razin</option>
+                <option value="Rabby">Rabby</option>
+                <option value="Niaz">Niaz</option>
+              </select>
+
+              <select id="task-assigner-filter" class="filter-select">
+                <option value="all">All Assigned By</option>
+              </select>
+
+              <select id="task-status-filter" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="Not Started">Not Started</option>
+                <option value="On Progress">On Progress</option>
+                <option value="Finished">Finished</option>
+                <option value="Delayed">Delayed</option>
+                <option value="Correction">Correction Required</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <input type="file" id="csv-import-input" accept=".csv" style="display: none;">
+              <button id="csv-import-btn" class="btn-secondary" style="height: 38px; padding: 0 14px;" title="Import Tasks from CSV">
+                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Import
+              </button>
+              
+              <button id="csv-export-btn" class="btn-secondary" style="height: 38px; padding: 0 14px;" title="Export Tasks to CSV">
+                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export
+              </button>
+
+              <button id="create-task-btn" class="btn-primary" aria-label="Add new task">
+                <svg viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Task
+              </button>
+            </div>
+          </div>
+
+          <!-- Tasks Table/List Area -->
+          <div class="tasks-table-container" style="display: flex; flex-direction: column; gap: 32px;">
+            
+            <!-- Section 1: Social Media Posts -->
+            <div class="tasks-section-block">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                <h3 style="color: var(--honey-gold); font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin: 0;">
+                  <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  Social Media Posts
+                </h3>
+                <span class="column-count" id="social-tasks-count" style="background: rgba(245, 158, 11, 0.15); color: var(--honey-gold); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">0</span>
+              </div>
+              <table class="tasks-table">
+                <thead>
+                  <tr>
+                    <th style="white-space: nowrap; width: 60px;">ID</th>
+                    <th>Task Name / Description</th>
+                    <th>Creative</th>
+                    <th>Assigned By</th>
+                    <th>Date / Time</th>
+                    <th>Need Within</th>
+                    <th>Status</th>
+                    <th>Links</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-list-body-posts">
+                  <!-- Dynamically Rendered Social Media Tasks -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Section 2: General Design Tasks -->
+            <div class="tasks-section-block">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                <h3 style="color: #a855f7; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin: 0;">
+                  <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                  General Design Tasks (Print, Correction, etc.)
+                </h3>
+                <span class="column-count" id="general-tasks-count" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">0</span>
+              </div>
+              <table class="tasks-table">
+                <thead>
+                  <tr>
+                    <th style="white-space: nowrap; width: 60px;">ID</th>
+                    <th>Task Name / Description</th>
+                    <th>Creative</th>
+                    <th>Assigned By</th>
+                    <th>Date / Time</th>
+                    <th>Need Within</th>
+                    <th>Status</th>
+                    <th>Links</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-list-body-general">
+                  <!-- Dynamically Rendered General Tasks -->
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- View 6: Content Planner (Ideas) View -->
+        <section id="ideas-view" class="view-panel">
+          <!-- Top Stat Board for Ideas -->
+          <div class="tasks-summary-bar">
+            <div class="task-stat-box">
+              <h4>Total Ideas</h4>
+              <p id="idea-stat-total">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>In Production</h4>
+              <p id="idea-stat-production">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>Planned / Draft</h4>
+              <p id="idea-stat-draft">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>Unassigned Ideas</h4>
+              <p id="idea-stat-unassigned">0</p>
+            </div>
+          </div>
+
+          <!-- Filters & Actions for Ideas -->
+          <div class="tasks-actions-header">
+            <div class="tasks-filters">
+              <input type="text" id="idea-search-input" placeholder="Search ideas..." class="search-input">
+              
+              <select id="idea-designer-filter" class="filter-select">
+                <option value="all">All Creatives</option>
+                <option value="Razin">Razin</option>
+                <option value="Rabby">Rabby</option>
+                <option value="Niaz">Niaz</option>
+                <option value="Unassigned">Unassigned</option>
+              </select>
+
+              <select id="idea-status-filter" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="Draft Idea">Draft Idea</option>
+                <option value="In Production">In Production</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            <button id="create-idea-btn" class="btn-primary" aria-label="Add new idea">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              New Idea
+            </button>
+          </div>
+
+          <!-- Ideas Table/List Area -->
+          <div class="tasks-table-container">
+            <table class="tasks-table">
+              <thead>
+                <tr>
+                  <th>Topic / Event Name</th>
+                  <th>Target Date</th>
+                  <th>Need Within</th>
+                  <th>Status</th>
+                  <th>Creative</th>
+                  <th>Initiator (Idea By)</th>
+                  <th>Linked Task</th>
+                  <th>Links & Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ideas-list-body">
+                <!-- Dynamically Rendered Ideas -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- View 7: Team & People Manager View -->
+        <section id="team-view" class="view-panel">
+          <!-- Top Stat Board for Team -->
+          <div class="tasks-summary-bar">
+            <div class="task-stat-box">
+              <h4>Total People</h4>
+              <p id="team-stat-total">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>Creatives</h4>
+              <p id="team-stat-designers">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>Work Assigners</h4>
+              <p id="team-stat-assigners">0</p>
+            </div>
+            <div class="task-stat-box">
+              <h4>Idea Initiators</h4>
+              <p id="team-stat-initiators">0</p>
+            </div>
+          </div>
+
+          <!-- Actions for Team -->
+          <div class="tasks-actions-header">
+            <div class="tasks-filters">
+              <input type="text" id="team-search-input" placeholder="Search people..." class="search-input">
+            </div>
+
+            <button id="create-person-btn" class="btn-primary" aria-label="Add new person">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Person
+            </button>
+          </div>
+
+          <!-- Team Table/List Area -->
+          <div class="tasks-table-container">
+            <table class="tasks-table">
+              <thead>
+                <tr>
+                  <th>Avatar & Name</th>
+                  <th>Professional Title</th>
+                  <th>Roles</th>
+                  <th>Accessibility</th>
+                  <th>Password</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="team-list-body">
+                <!-- Dynamically Rendered Team Members -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- View 8: System Log Report View -->
+        <section id="logs-view" class="view-panel">
+          <div class="header-title" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2>System Log Report</h2>
+              <p>Audit trail of all actions and state updates (Admin Only)</p>
+            </div>
+            <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 9999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Read-Only Audit</span>
+          </div>
+
+          <!-- Logs Filters -->
+          <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: center; max-width: 600px;">
+            <input type="text" id="logs-search-input" placeholder="Search log text or user..." class="search-input" style="flex: 2; height: 38px; padding: 0 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none; transition: border 0.2s;">
+            <select id="logs-user-filter" class="filter-select" style="flex: 1; height: 38px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; outline: none; cursor: pointer;">
+              <option value="all">All Users</option>
+            </select>
+          </div>
+
+          <!-- Logs Table Container -->
+          <div class="tasks-table-container" style="max-height: calc(100vh - 280px); overflow-y: auto;">
+            <table class="tasks-table" style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th style="width: 220px; text-align: left;">Timestamp</th>
+                  <th style="width: 200px; text-align: left;">User</th>
+                  <th style="text-align: left;">Action / Event Description</th>
+                </tr>
+              </thead>
+              <tbody id="logs-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
 
     <!-- Modal Form (Create / Edit Content Post) -->
     <div id="post-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -325,6 +685,16 @@
                   <option value="ready">Approved / Ready</option>
                   <option value="scheduled">Scheduled</option>
                   <option value="published">Published</option>
+                  <option value="correction">Needs Correction</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="grid-column: span 2">
+                <label for="post-link-task">Associated Design Task (Optional)</label>
+                <select id="post-link-task" class="form-control">
+                  <option value="">-- None --</option>
                 </select>
               </div>
             </div>
@@ -332,6 +702,18 @@
             <div class="form-group">
               <label for="post-caption">Caption / Notes</label>
               <textarea id="post-caption" class="form-control" placeholder="Copy/caption text, links, visual references, and post notes..."></textarea>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comments-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <label style="display: block; font-size: 0.9rem; font-weight: 600; color: var(--honey-gold); margin-bottom: 10px;">Discussion & Updates</label>
+              <div class="modal-comments-feed" id="post-comments-feed" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; padding: 4px; border-radius: 6px;">
+                <!-- Rendered dynamically -->
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="post-new-comment" class="form-control" placeholder="Write a note..." style="flex: 1; min-height: 38px;">
+                <button type="button" id="post-add-comment-btn" class="btn-primary" style="padding: 0 16px; height: 38px;">Send</button>
+              </div>
             </div>
 
           </div>
@@ -343,6 +725,274 @@
           </div>
         </form>
 
+      </div>
+    </div>
+
+    <!-- Modal Form (Create / Edit Design Task) -->
+    <div id="task-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="task-modal-title">Create New Task</h3>
+          <button class="close-btn" id="task-modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="task-form">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="task-form-name">Task Name / Description</label>
+              <input type="text" id="task-form-name" class="form-control" placeholder="e.g., Lovelife Memories 10 Years logo design" required>
+            </div>
+
+            <div class="form-group">
+              <label for="task-form-job-type">Job Type</label>
+              <select id="task-form-job-type" class="form-control" required>
+                <option value="general">General Design Task (Print, Correction, etc.)</option>
+                <option value="post">Social Media Post Deliverable</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="task-form-designer">Assigned Creative</label>
+                <select id="task-form-designer" class="form-control" required>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="task-form-assigner">Assigned By</label>
+                <select id="task-form-assigner" class="form-control" required>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="task-form-date">Date</label>
+                <input type="date" id="task-form-date" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="task-form-time">Time</label>
+                <input type="time" id="task-form-time" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="task-form-urgency">Need Within</label>
+                <input type="text" id="task-form-urgency" class="form-control" placeholder="e.g., 24 hours, ASAP, Week, N/A">
+              </div>
+              <div class="form-group">
+                <label for="task-form-status">Status</label>
+                <select id="task-form-status" class="form-control" required>
+                  <option value="Not Started">Not Started</option>
+                  <option value="On Progress">On Progress</option>
+                  <option value="Finished">Finished</option>
+                  <option value="Delayed">Delayed</option>
+                  <option value="Correction">Correction Required</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="task-form-delivery">Delivery Link (Google Drive, etc.)</label>
+              <input type="url" id="task-form-delivery" class="form-control" placeholder="https://drive.google.com/...">
+            </div>
+
+            <div class="form-group" style="display: none;">
+              <label for="task-form-comments">Comments (Legacy)</label>
+              <textarea id="task-form-comments" class="form-control"></textarea>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comments-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <label style="display: block; font-size: 0.9rem; font-weight: 600; color: var(--honey-gold); margin-bottom: 10px;">Discussion & Updates</label>
+              <div class="modal-comments-feed" id="task-comments-feed" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; padding: 4px; border-radius: 6px;">
+                <!-- Rendered dynamically -->
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="task-new-comment" class="form-control" placeholder="Write a note..." style="flex: 1; min-height: 38px;">
+                <button type="button" id="task-add-comment-btn" class="btn-primary" style="padding: 0 16px; height: 38px;">Send</button>
+              </div>
+            </div>
+
+            <!-- Linking content post -->
+            <div class="form-group" id="task-form-link-post-group">
+              <label for="task-form-link-post">Link to Content Post (Optional)</label>
+              <select id="task-form-link-post" class="form-control">
+                <option value="">-- None --</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="task-modal-delete-btn" style="background-color: var(--status-critical-glow); color: var(--status-critical); border-color: rgba(239, 68, 68, 0.15); margin-right: auto; display: none;">Delete Task</button>
+            <button type="button" class="btn-secondary modal-cancel" id="task-modal-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Form (Create / Edit Content Idea) -->
+    <div id="idea-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="idea-modal-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="idea-modal-title">Create New Idea</h3>
+          <button class="close-btn" id="idea-modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="idea-form">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="idea-form-topic">Topic / Event Name</label>
+              <input type="text" id="idea-form-topic" class="form-control" placeholder="e.g., Dc4 Google Map Reveal" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="idea-form-date">Target Date</label>
+                <input type="date" id="idea-form-date" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="idea-form-urgency">Need Within</label>
+                <input type="text" id="idea-form-urgency" class="form-control" placeholder="e.g., 2 weeks, ASAP, 3 days">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="idea-form-designer">Assigned Creative</label>
+                <select id="idea-form-designer" class="form-control">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="idea-form-initiator">Initiator / Idea By</label>
+                <select id="idea-form-initiator" class="form-control">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="idea-form-status">Planning Status</label>
+                <select id="idea-form-status" class="form-control" required>
+                  <option value="Draft Idea">Draft Idea</option>
+                  <option value="In Production">In Production</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="idea-form-link-task">Linked Task ID</label>
+                <select id="idea-form-link-task" class="form-control">
+                  <option value="">-- None --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="idea-form-inspiration">Inspiration / Reference Links</label>
+              <input type="url" id="idea-form-inspiration" class="form-control" placeholder="https://pinterest.com/...">
+            </div>
+
+            <div class="form-group">
+              <label for="idea-form-notes">Notes, Ideas & Brief</label>
+              <textarea id="idea-form-notes" class="form-control" placeholder="Describe the concept, styling rules, references..."></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="idea-modal-delete-btn" style="background-color: var(--status-critical-glow); color: var(--status-critical); border-color: rgba(239, 68, 68, 0.15); margin-right: auto; display: none;">Delete Idea</button>
+            <button type="button" class="btn-secondary modal-cancel" id="idea-modal-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Idea</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Form (Create / Edit Person) -->
+    <div id="person-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="person-modal-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="person-modal-title">Add New Person</h3>
+          <button class="close-btn" id="person-modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="person-form">
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="person-form-name">Full Name</label>
+                <input type="text" id="person-form-name" class="form-control" placeholder="e.g., Rifat Newaj Razin" required>
+              </div>
+              <div class="form-group">
+                <label for="person-form-title">Professional Title</label>
+                <input type="text" id="person-form-title" class="form-control" placeholder="e.g., Creative Design Associate, Producer" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="person-form-password">Login Password</label>
+                <input type="text" id="person-form-password" class="form-control" placeholder="e.g., rifat123 (For sign in)" required>
+              </div>
+              <div class="form-group">
+                <label for="person-form-access">Accessibility (Permissions)</label>
+                <select id="person-form-access" class="form-control" required>
+                  <option value="admin">Admin (Full Edit & Delete)</option>
+                  <option value="limited">Limited (Edit Assigned Only)</option>
+                  <option value="none">None / Guest (Read Only)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="person-form-photo">Photo/Avatar URL (Optional)</label>
+              <input type="text" id="person-form-photo" class="form-control" placeholder="e.g., assets/rifat-profile.jpg">
+            </div>
+
+            <div class="form-group">
+              <label>Functional Roles</label>
+              <div style="display: flex; gap: 20px; margin-top: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff;">
+                  <input type="checkbox" id="person-role-designer" style="width: 16px; height: 16px; accent-color: var(--honey-gold);">
+                  Creative
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff;">
+                  <input type="checkbox" id="person-role-assigner" style="width: 16px; height: 16px; accent-color: var(--honey-gold);">
+                  Work Assigner
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff;">
+                  <input type="checkbox" id="person-role-initiator" style="width: 16px; height: 16px; accent-color: var(--honey-gold);">
+                  Idea Initiator
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="person-modal-delete-btn" style="background-color: var(--status-critical-glow); color: var(--status-critical); border-color: rgba(239, 68, 68, 0.15); margin-right: auto; display: none;">Remove Person</button>
+            <button type="button" class="btn-secondary modal-cancel" id="person-modal-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Person</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -375,6 +1025,70 @@
 
   </div>
 
-  <script type="module" src="app.js"></script>
+  <!-- Real-time Activity Log Drawer -->
+  <div id="activity-drawer" class="activity-drawer">
+    <div class="activity-drawer-header">
+      <h3>
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        Activity Feed
+      </h3>
+      <button id="close-activity-btn" class="close-btn" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+    <div class="activity-drawer-body" id="activity-log-list">
+      <!-- Dynamically Rendered Activity Items -->
+    </div>
+  </div>
+
+  <!-- Unscheduled Ideas Drawer -->
+  <div id="ideas-drawer" class="activity-drawer" style="right: -400px; background: rgba(12, 18, 33, 0.95); border-left: 1px solid rgba(255,255,255,0.08);">
+    <div class="activity-drawer-header">
+      <h3>
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"></path></svg>
+        Unscheduled Ideas
+      </h3>
+      <button id="close-ideas-btn" class="close-btn" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+    <div style="padding: 10px 20px; font-size: 0.8rem; color: #94a3b8;">
+      Drag any idea card and drop it onto a Kanban column status group area to schedule it.
+    </div>
+    <div class="activity-drawer-body" id="unscheduled-ideas-list" style="gap: 12px;">
+      <!-- Dynamically Rendered Unscheduled Idea Cards -->
+    </div>
+  </div>
+
+  <!-- Brand Manager Modal -->
+  <div id="brand-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="brand-modal-title">
+    <div class="modal-content" style="max-width: 500px; width: 90%; background: #070a0e; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 id="brand-modal-title" style="margin: 0; font-size: 1.25rem;">Add Page / Brand</h3>
+        <button class="close-btn" id="brand-modal-close-btn" aria-label="Close dialog" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <form id="brand-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="hidden" id="brand-edit-id">
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="brand-name" style="font-size: 0.85rem; color: #94a3b8;">Brand/Page Name</label>
+          <input type="text" id="brand-name" class="form-control" placeholder="e.g. Evoka Visiting Card" required style="background: #0b0f19; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; color: #fff; width: 100%;">
+        </div>
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="brand-type" style="font-size: 0.85rem; color: #94a3b8;">Professional Description</label>
+          <input type="text" id="brand-type" class="form-control" placeholder="e.g. POD, Custom Clothing" required style="background: #0b0f19; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; color: #fff; width: 100%;">
+        </div>
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="brand-goal" style="font-size: 0.85rem; color: #94a3b8;">Weekly Frequency Goal</label>
+          <input type="number" id="brand-goal" class="form-control" min="0" value="0" required style="background: #0b0f19; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; color: #fff; width: 100%;">
+        </div>
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="brand-logo" style="font-size: 0.85rem; color: #94a3b8;">Logo / Avatar Image URL (Optional)</label>
+          <input type="text" id="brand-logo" class="form-control" placeholder="e.g. assets/logos/evoka.png" style="background: #0b0f19; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; color: #fff; width: 100%;">
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 12px;">
+          <button type="button" class="btn-secondary" id="brand-modal-cancel-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 9999px; padding: 10px 20px; color: #fff; cursor: pointer;">Cancel</button>
+          <button type="submit" class="btn-primary" style="background: #fff; color: #000; border: none; border-radius: 9999px; padding: 10px 20px; font-weight: 600; cursor: pointer;">Save Brand</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="app.js?v=3.0.6"></script>
 </body>
 </html>
