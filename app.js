@@ -103,38 +103,37 @@ const DEFAULT_BRANDS = [
   }
 ];
 
-// Default Team members
-// Default Team members
+// Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isWorkAssigner: true, isIdeaInitiator: true, aliases: [] },
-  { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', password: 'mahim123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
-  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', password: 'rabby123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Yasin Arafat Rabby'] },
-  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', password: 'niaz123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'p-5', name: 'Jubayer Hossain', role: 'Social Media Manager', initial: 'JH', photo: 'assets/jubayer-profile.jpg', password: 'jubayer123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: [] },
-  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', password: 'zahid123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
-  { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', password: 'ashiq123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Ashiq Bhaia'] },
-  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', password: 'tohfa123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Tohfa Apu'] },
-  { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', password: 'saddam123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', password: 'naim123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', password: 'oisarjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', password: 'orthee123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
-  { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', password: 'rafi123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-8', name: 'Md. Nurujjaman Shagor', role: 'Senior Office Associate', initial: 'NS', password: 'shagor123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', password: 'anik123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-10', name: 'Nazir Ahmed Talukder', role: 'General Manager', initial: 'NT', password: 'nazir123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Nazir'] },
-  { id: 'person-11', name: 'Md Abdul Haye Molla', role: 'Senior Driver', initial: 'HM', password: 'molla123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-12', name: 'Md. Shihab Uddin', role: 'Junior Office Associate', initial: 'SU', password: 'shihab123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-13', name: 'Shahriyar Shafin', role: 'Junior Office Associate', initial: 'SS', password: 'shafin123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-14', name: 'Mizanur Rahman Mamun', role: 'Cinematographer & Post Production Lead', initial: 'MM', password: 'mamun123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', password: 'esha123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: [] },
-  { id: 'person-16', name: 'Sohel Rana', role: 'Senior Sales Executive', initial: 'SR', password: 'sohel123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] },
-  { id: 'person-17', name: 'Md Abir Hasan', role: 'Temporary Sales Executive', initial: 'AH', password: 'abir123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: [] }
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Mahim'] },
+  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
+  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Niaz'] },
+  { id: 'p-5', name: 'Jubayer Hossain', role: 'Social Media Manager', initial: 'JH', photo: 'assets/avatars/Jubayer-Hossain.png', password: 'jubayer123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Jubayer'] },
+  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Zahid', 'Zahidul Islam'] },
+  { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Ashiq Bhaia', 'Ashiq'] },
+  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Tohfa Apu', 'Tohfa'] },
+  { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Saddam'] },
+  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
+  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Oisarjo'] },
+  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Orthee'] },
+  { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Rafi'] },
+  { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', password: 'anik123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Anik', 'Milon'] },
+  { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', photo: 'assets/avatars/Labiba-Laisa-Esha.png', password: 'esha123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Esha'] },
+  { id: 'person-16', name: 'Rafiunoor Rahman Rajjo', role: 'Event Decor & Management', initial: 'RR', photo: 'assets/avatars/Rafiunoor-Rahman-Rajjo.png', password: 'rajjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Rajjo', 'Rafiunoor Rahman Rajjo', 'Rafiunoor'] },
+  { id: 'person-17', name: 'Nazmul Hoseen Emon', role: 'Manager, Display Center', initial: 'NE', photo: 'assets/avatars/Nazmul-Hoseen-Emon.png', password: 'emon123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Emon', 'Emon Bhai', 'Nazmul Hoseen Emon', 'Nazmul'] }
 ];
 
 function findTeamMember(name) {
   if (!name) return null;
   const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
-  return teamList.find(p => p.name === name || (p.aliases && p.aliases.includes(name)));
+  const clean = name.trim().toLowerCase();
+  return teamList.find(p => {
+    if ((p.name || '').trim().toLowerCase() === clean) return true;
+    if (p.aliases && Array.isArray(p.aliases) && p.aliases.some(a => a.trim().toLowerCase() === clean)) return true;
+    if (p.name && (p.name.toLowerCase().includes(clean) || clean.includes(p.name.toLowerCase()))) return true;
+    return false;
+  });
 }
 
 function isItemArchived(item) {
@@ -144,7 +143,6 @@ function isItemArchived(item) {
 function isAssignedToUser(item, user) {
   if (!user) return false;
   const namesToMatch = [user.name, ...(user.aliases || [])];
-  
   if (item.assignee) {
     return namesToMatch.some(n => n.toLowerCase() === item.assignee.toLowerCase() || item.assignee.toLowerCase().includes(n.toLowerCase()));
   }
@@ -154,6 +152,1074 @@ function isAssignedToUser(item, user) {
   return false;
 }
 
+
+// Default spreadsheet tasks (DESIGNER TASK TRACKER & WORKFLOW)
+const DEFAULT_TASKS = [
+  {
+    "id": "T-01",
+    "name": "Evoka Visiting Card Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-06-29",
+    "time": "3:00 PM",
+    "urgency": "24 hours",
+    "status": "Delayed",
+    "deliveryLink": "Evoka Visiting Card Design",
+    "notes": "Will start and finish on 4th.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-02",
+    "name": "Tahams DC2 Visiting Card Order Update",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-06-29",
+    "time": "11:15 AM",
+    "urgency": "24 hours",
+    "status": "Finished",
+    "deliveryLink": "Tahams DC2 Visiting Card",
+    "notes": "Monday Delivery.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-03",
+    "name": "Lovelife Memories 10 Years",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-06-29",
+    "time": "9:00 PM",
+    "urgency": "16 hours",
+    "status": "Finished",
+    "deliveryLink": "10 Years of Tahams",
+    "notes": "Will finish on 30th.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-04",
+    "name": "Brand Identity Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-06-30",
+    "time": "3:45 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Brand Identity Tahams",
+    "notes": "Font done, working on the color section.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-05",
+    "name": "Asad Rasel Investment Post Tahams",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-06-30",
+    "time": "3:00 PM",
+    "urgency": "Today",
+    "status": "Finished",
+    "deliveryLink": "Tahams Investment Post AR",
+    "notes": "On correction.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-06",
+    "name": "Perfume Box Resize + Roll on Box",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-06-30",
+    "time": "6:00 PM",
+    "urgency": "24 hours",
+    "status": "Finished",
+    "deliveryLink": "Perfume Box Redesign",
+    "notes": "Handed over to Saddam Bhai",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-07",
+    "name": "Emon Bhai DC2 Cameo Machine Troubleshoot",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Nazmul Hoseen Emon",
+    "date": "2026-07-01",
+    "time": "4:00 PM",
+    "urgency": "24 hours",
+    "status": "Finished",
+    "deliveryLink": "Cameo Troubleshoot",
+    "notes": "Talked and Fixed.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-08",
+    "name": "Font Guideline for Tahams",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-02",
+    "time": "1:00 PM",
+    "urgency": "ASAP",
+    "status": "Finished",
+    "deliveryLink": "https://rifatnewajrazin.github.io/tahams-font-guidelines/",
+    "notes": "Finished finally.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-09",
+    "name": "Asad Rasel Investment Post Tahams (More Correction)",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-03",
+    "time": "11:00 AM",
+    "urgency": "ASAP",
+    "status": "Finished",
+    "deliveryLink": "Tahams Investment Post AR",
+    "notes": "Confirmed.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-10",
+    "name": "Cuban Collar Shirt 4 color",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-04",
+    "time": "10:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Cuban Collar Hawai Shirt",
+    "notes": "4 color diye diyechi",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-11",
+    "name": "Evoka Experiences Logo Format Delivery",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-04",
+    "time": "10:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Evoka Experiences Logo and Cover",
+    "notes": "Done and dusted.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-12",
+    "name": "Investor Post Delivery - Asad Rasel",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-04",
+    "time": "10:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Tahams Investment Post New",
+    "notes": "Updated",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-13",
+    "name": "New Billboard Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-05",
+    "time": "4:00 PM",
+    "urgency": "ASAP",
+    "status": "Finished",
+    "deliveryLink": "New Billboard Design",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-14",
+    "name": "DC4 Opening Soon Post + Cover",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-05",
+    "time": "4:00 PM",
+    "urgency": "ASAP",
+    "status": "Finished",
+    "deliveryLink": "Tahams DC4 Post and Cover",
+    "notes": "Notepad for Details",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-15",
+    "name": "All Brands Social Media Refinement",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rifat Newaj Razin",
+    "date": "2026-07-05",
+    "time": "12:00 PM",
+    "urgency": "ASAP",
+    "status": "On Progress",
+    "deliveryLink": "Social Media Refinement",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-16",
+    "name": "Merchandiser Formalities : ID Card , Mug, Database",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Oisarjo Tarafder",
+    "date": "2026-07-05",
+    "time": "12:00 PM",
+    "urgency": "ASAP",
+    "status": "Not Started",
+    "deliveryLink": "Merchandiser Formalities",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-17",
+    "name": "750 Ml Water Bottle (Straw) Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-05",
+    "time": "3:00 PM",
+    "urgency": "ASAP",
+    "status": "Finished",
+    "deliveryLink": "Strow Water Bottle design PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-18",
+    "name": "Big Boss Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-05",
+    "time": "3:00 PM",
+    "urgency": "Week",
+    "status": "Finished",
+    "deliveryLink": "Big Boss New Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-19",
+    "name": "DC4 Google Map Reveal Post Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Jubayer Hossain",
+    "date": "2026-07-05",
+    "time": "6:11 PM",
+    "urgency": "Week",
+    "status": "Delayed",
+    "deliveryLink": "Tahams DC4 Post and Cover",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-20",
+    "name": "Fantasy Inner Beauty Perfume Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-07",
+    "time": "10:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Fantasy Inner Beauty PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-21",
+    "name": "Vampire Blood Dark Elegance Perfume Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-07",
+    "time": "10:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Vampire Blood Dark Elegance PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-22",
+    "name": "Together in Comfort Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-07",
+    "time": "10:00 AM",
+    "urgency": "1 Hour",
+    "status": "Finished",
+    "deliveryLink": "Together in Comfort PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-23",
+    "name": "Argentina Content Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-08",
+    "time": "11.59 PM",
+    "urgency": "1 Hour",
+    "status": "Finished",
+    "deliveryLink": "Committee'r Lok Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-24",
+    "name": "Fifa Content Design",
+    "designer": "Niaz Uddin",
+    "assignedBy": "Rifat Newaj Razin",
+    "date": "2026-07-09",
+    "time": "11.59 PM",
+    "urgency": "1 Day",
+    "status": "Finished",
+    "deliveryLink": "Fifa Content Design",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-25",
+    "name": "Mafia Messi Mockup Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rifat Newaj Razin",
+    "date": "2026-07-09",
+    "time": "11.59 PM",
+    "urgency": "1 Day",
+    "status": "Finished",
+    "deliveryLink": "Mafia Messi",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-26",
+    "name": "Evoka Carousel Post Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rifat Newaj Razin",
+    "date": "2026-07-09",
+    "time": "3:30 AM",
+    "urgency": "1 Day",
+    "status": "On Progress",
+    "deliveryLink": "Evoka Carousel",
+    "notes": "Sunday",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-27",
+    "name": "Metro Drop Shoulder",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-08",
+    "time": "10:00 AM",
+    "urgency": "1 Day",
+    "status": "Finished",
+    "deliveryLink": "Metro Drop Shoulder Post design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-28",
+    "name": "Outdoor Kids tshirt with Psnt Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-07",
+    "time": "4:00 PM",
+    "urgency": "2",
+    "status": "Finished",
+    "deliveryLink": "Outdor Kids Tshirt With Pant Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-29",
+    "name": "Merchtile Service Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-09",
+    "time": "11:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "MT-ServicesPost Design PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-30",
+    "name": "SamTech Services Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-09",
+    "time": "11:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Our Services Post Design PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-31",
+    "name": "Lumina Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-09",
+    "time": "11:00 AM",
+    "urgency": "N/A",
+    "status": "Not Started",
+    "deliveryLink": "https://www.facebook.com/share/p/19RE2WbxLh/",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-32",
+    "name": "Spider Man Adult Series Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-09",
+    "time": "1:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Spider Man Tshirt Post Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-33",
+    "name": "Tahams DC4 In Mirpur Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-09",
+    "time": "1:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "https://www.facebook.com/share/p/19EGr3jGMM/",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-35",
+    "name": "Best Trio Perfume For Men & Women Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-11",
+    "time": "12:30 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Trio Best Perfume for Men & Women Post Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-36",
+    "name": "Kids Spiderman Cut & Sew Tshirt Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-11",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Kids Spider Man Cut & Sew Tshirt Post Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-38",
+    "name": "Lokman Measurement",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-11",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Lokman Measurements",
+    "notes": "Sunday",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-39",
+    "name": "Fotua post design needed",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Jubayer Hossain",
+    "date": "2026-07-12",
+    "time": "15:35",
+    "urgency": "ASAP",
+    "status": "Finished",
+    "deliveryLink": "Fotua Post Design PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-40",
+    "name": "July Revolution Tshirt Designs",
+    "designer": "Niaz Uddin",
+    "assignedBy": "Rifat Newaj Razin",
+    "date": "2026-07-13",
+    "time": "6:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "BANGLAdesh-Niaz",
+    "notes": "Posted",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-41",
+    "name": "Water bottle Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-14",
+    "time": "10:30 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "750 Ml Water Bottle",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-42",
+    "name": "DC1 Layout",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-14",
+    "time": "1:30 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "https://www.facebook.com/share/p/19AhyB1TLh/",
+    "notes": "Yet to handover",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-43",
+    "name": "Female CO-ORD Set Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-14",
+    "time": "4:00 AM",
+    "urgency": "N/A",
+    "status": "Delayed",
+    "deliveryLink": "Co-ord Post Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-44",
+    "name": "Trademark Certification Post Research and Create Tahams",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-14",
+    "time": "4:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Trademark Post",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-45",
+    "name": "Ultra male perfume post design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-15",
+    "time": "1:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Ultra Male",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-46",
+    "name": "Evoka Invoice",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rafiunoor Rahman Rajjo",
+    "date": "2026-07-16",
+    "time": "1:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Evoka Documents",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-47",
+    "name": "DC 4 Opening Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-15",
+    "time": "3:20 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "DC4 Printables",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-48",
+    "name": "Coming Soon Banner - DC4 (Only Banner, no cover/post)",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-15",
+    "time": "3:20 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "DC4 Printables",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-49",
+    "name": "DC1 Shifting Banner (2nd Floor) - We are shifting from 2nd Floor 4:5 Cover",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-15",
+    "time": "3:20 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "DC1 Printables",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-50",
+    "name": "DC1 Shifting Banner (1st Floor) - We are coming",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-15",
+    "time": "3:20 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "DC1 Printables",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-51",
+    "name": "Customize Kids Tshirt Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-16",
+    "time": "11:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Kids Tshirt Design",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-52",
+    "name": "Freshness That Defines You Cool Water Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-16",
+    "time": "3:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Freshness That Defines You Cool Water PNG.png",
+    "notes": ".",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-53",
+    "name": "Monsoon Sale",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-16",
+    "time": "6:00 PM",
+    "urgency": "N/A",
+    "status": "Delayed",
+    "deliveryLink": "Monsoon Sale",
+    "notes": ".",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-54",
+    "name": "DC1 Layout",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-18",
+    "time": "6:00 PM",
+    "urgency": "N/A",
+    "status": "On Progress",
+    "deliveryLink": "DC1 Layout",
+    "notes": "",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-55",
+    "name": "Tahams Own The City Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-09",
+    "time": "12:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Tahams Own The City PNG",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-56",
+    "name": "Evoka post: \" What is Evoka Experiences? \"",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rafiunoor Rahman Rajjo",
+    "date": "2026-07-19",
+    "time": "12:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Evoka Documents",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-57",
+    "name": "Evoka Moodboard for Client",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rafiunoor Rahman Rajjo",
+    "date": "2026-07-19",
+    "time": "12:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Evoka Documents",
+    "notes": "",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-58",
+    "name": "Evoka Pad Page Doc",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rafiunoor Rahman Rajjo",
+    "date": "2026-07-19",
+    "time": "12:10 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Evoka Documents",
+    "notes": "",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-59",
+    "name": "Spain Tshirt Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Niaz Uddin",
+    "date": "2026-07-19",
+    "time": "3:40 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "https://www.facebook.com/share/p/1HndvJUULq/",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-60",
+    "name": "Friendship Day Wish Post",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Jubayer Hossain",
+    "date": "2026-07-19",
+    "time": "7:30 PM",
+    "urgency": "29/07/26",
+    "status": "Finished",
+    "deliveryLink": "Friendship Day Post Design 26",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-61",
+    "name": "Friendship Day Product Design Post",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Jubayer Hossain",
+    "date": "2026-07-19",
+    "time": "7:30 PM",
+    "urgency": "21/07/26",
+    "status": "On Progress",
+    "deliveryLink": "Friendship Day Post Design",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-62",
+    "name": "Kids Stripe Tshirt Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-20",
+    "time": "15:00",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Kids Stripe tshirt Design PNG",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-63",
+    "name": "Mug Post Design For Friendship Day",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-20",
+    "time": "5:00 PM",
+    "urgency": "N/A",
+    "status": "On Progress",
+    "deliveryLink": "https://www.facebook.com/share/p/1EkpV5RsgL/",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-64",
+    "name": "Uncommon Looks Begin here",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-21",
+    "time": "10:00 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Uncommn Looks Begin Here PNG.png",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-65",
+    "name": "Neck Printed Tshirt Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-21",
+    "time": "2: PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Neck Printed Tshirt Design PNG.png",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-66",
+    "name": "Spain Fan made tshirt design",
+    "designer": "Niaz Uddin",
+    "assignedBy": "Niaz Uddin",
+    "date": "2026-07-21",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Spain Niaz",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-67",
+    "name": "Tshirt Post Design For Friendship Day",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Jubayer Hossain",
+    "date": "2026-07-21",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Friendship Day post design PNG.png",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-68",
+    "name": "Water Bottle Post Design For Friendship Day",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Jubayer Hossain",
+    "date": "2026-07-21",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Not Started",
+    "deliveryLink": "Start Prepared Water Bottle post Design",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-69",
+    "name": "Perfume Post Design For Friendship Day",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Jubayer Hossain",
+    "date": "2026-07-21",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Not Started",
+    "deliveryLink": "3mm Board PVC Prints",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-70",
+    "name": "Printing Charge এর তালিকা",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-21",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Printing Charge এর তালিকা =PNG.png",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-71",
+    "name": "Male Female Washroom, DTF Pricing PVC Print",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-21",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "3mm Board PVC Prints",
+    "notes": "Handed over to Lokman.",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-72",
+    "name": "The Solid Series Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-23",
+    "time": "9:45 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "The Solid Series Post Design",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-73",
+    "name": "Boylar murgi & cockroach funny tshirt post design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-25",
+    "time": "9:45 AM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Funny Tshirt Post Design",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-74",
+    "name": "Cuban Collar Shirt & Denim Pants Combo Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-25",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Cuban Collar & Denim Pants Combo Offer Design",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-75",
+    "name": "Tahams DC Reallocation Post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Israt Sultana Tohfa",
+    "date": "2026-07-25",
+    "time": "6:30 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Tahams DC1 Reallocation Post PNG.png",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-76",
+    "name": "Evoka Introduction Post Design",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Rafiunoor Rahman Rajjo",
+    "date": "2026-07-26",
+    "time": "3:50 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Evoka First Post Carousel",
+    "notes": "",
+    "taskType": "general",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-77",
+    "name": "Start Prepared Water Bottle post Design",
+    "designer": "Md. Yasin Arafat",
+    "assignedBy": "Md. Yasin Arafat",
+    "date": "2026-07-26",
+    "time": "1:00 PM",
+    "urgency": "N/A",
+    "status": "Finished",
+    "deliveryLink": "Start Prepared Water Bottle post Design",
+    "notes": "",
+    "taskType": "post",
+    "associatedPostId": ""
+  },
+  {
+    "id": "T-78",
+    "name": "Signboard Design DC4",
+    "designer": "Rifat Newaj Razin",
+    "assignedBy": "Ashiq Ahmed",
+    "date": "2026-07-26",
+    "time": "6:24 PM",
+    "urgency": "N/A",
+    "status": "On Progress",
+    "deliveryLink": "DC4 Signboard",
+    "notes": "",
+    "taskType": "general",
+    "associatedPostId": ""
+  }
+];
 
 // Default mock content posts matching date around 2026-07-05
 const DEFAULT_POSTS = [
@@ -328,29 +1394,6 @@ const DEFAULT_POSTS = [
   }
 ];
 
-// Default spreadsheet tasks (DESIGNER TASK TRACKER & WORKFLOW)
-const DEFAULT_TASKS = [
-  { id: 'T-01', name: 'Evoka Visiting Card Design', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-06-29', time: '15:00', urgency: '24 hours', status: 'Delayed', deliveryLink: '', comments: 'Will start and finish on 4th.', associatedPostId: '' },
-  { id: 'T-02', name: 'Tahams DC2 Visiting Card Order Update', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-06-29', time: '11:15', urgency: '24 hours', status: 'Finished', deliveryLink: '', comments: 'Monday Delivery.', associatedPostId: '' },
-  { id: 'T-03', name: 'Lovelife Memories 10 Years', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-06-29', time: '21:00', urgency: '16 hours', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1vByO-XJiwCMlFgZnx-TiE8l9TjltXj-F?usp=drive_link', comments: 'Will finish on 30th.', associatedPostId: 'post-2' },
-  { id: 'T-04', name: 'Brand Identity Design', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-06-30', time: '03:45', urgency: 'N/A', status: 'Not Started', deliveryLink: '', comments: 'Font done, working on the color section.', associatedPostId: '' },
-  { id: 'T-05', name: 'Asad Rasel Investment Post Tahams', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-06-30', time: '15:00', urgency: 'Today', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1ct478xgJfzpnyhzoaE2qcwxrB3PMffMj?usp=drive_link', comments: 'On correction.', associatedPostId: '' },
-  { id: 'T-06', name: 'Perfume Box Resize + Roll on Box', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-06-30', time: '18:00', urgency: '24 hours', status: 'On Progress', deliveryLink: '', comments: 'Will start tomorrow.', associatedPostId: 'post-11' },
-  { id: 'T-07', name: 'Emon Bhai DC2 Cameo Machine Troubleshoot', designer: 'Razin', assignedBy: 'Emon Bhai', date: '2026-07-01', time: '16:00', urgency: '24 hours', status: 'Finished', deliveryLink: '', comments: 'Talked and Fixed.', associatedPostId: '' },
-  { id: 'T-08', name: 'Font Guideline for Tahams', designer: 'Razin', assignedBy: 'Tohfa Apu', date: '2026-07-02', time: '13:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://rifatnewajrazin.github.io/tahams-font-guidelines/', comments: 'Finished finally.', associatedPostId: '' },
-  { id: 'T-09', name: 'Asad Rasel Investment Post Tahams (More Correction)', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-03', time: '11:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1ct478xgJfzpnyhzoaE2qcwxrB3PMffMj?usp=drive_link', comments: 'Confirmed.', associatedPostId: '' },
-  { id: 'T-10', name: 'Cuban Collar Shirt 4 color', designer: 'Rabby', assignedBy: 'Tohfa Apu', date: '2026-07-04', time: '10:00', urgency: 'N/A', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1eF8T19MMr0bY5mrKBjM36PCXfzy021zR?usp=sharing', comments: '4 color diye diyechi', associatedPostId: '' },
-  { id: 'T-11', name: 'Evoka Experiences Logo Format Delivery', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-04', time: '10:00', urgency: 'N/A', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/10G_E8vwnC8xmxGOqgJknhT7FVApSz9G8?usp=drive_link', comments: 'Done and dusted.', associatedPostId: '' },
-  { id: 'T-12', name: 'Investor Post Delivery - Asad Rasel', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-04', time: '10:00', urgency: 'N/A', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1G5vyaHnDf3Prbn2N0vm-ebu1HwxYeaUW?usp=sharing', comments: 'Updated', associatedPostId: '' },
-  { id: 'T-13', name: 'New Billboard Design', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-05', time: '16:00', urgency: 'ASAP', status: 'Not Started', deliveryLink: '', comments: 'Notepad for Details', associatedPostId: '' },
-  { id: 'T-14', name: 'DC4 Opening Soon Post + Cover', designer: 'Razin', assignedBy: 'Ashiq Bhaia', date: '2026-07-05', time: '16:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://drive.google.com/drive/folders/1xkbX95S6SLr3GeJLzJPRkzZuWyfqCHqC?usp=sharing', comments: 'Notepad for Details', associatedPostId: '' },
-  { id: 'T-15', name: 'All Brands Social Media Refinement', designer: 'Razin', assignedBy: 'Razin', date: '2026-07-05', time: '12:00', urgency: 'ASAP', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' },
-  { id: 'T-16', name: 'Merchandiser Formalities : ID Card , Mug, Database', designer: 'Razin', assignedBy: 'Oishi Apu', date: '2026-07-05', time: '12:00', urgency: 'ASAP', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' },
-  { id: 'T-17', name: '750 Ml Water Bottle (Straw) Design', designer: 'Rabby', assignedBy: 'Tohfa Apu', date: '2026-07-05', time: '15:00', urgency: 'ASAP', status: 'Finished', deliveryLink: 'https://drive.google.com/file/d/1Hk-du-Ua4Ft7JNvL1e0enf6DYt2JB6DK/view?usp=sharing', comments: '', associatedPostId: '' },
-  { id: 'T-18', name: 'Big Boss Post Design', designer: 'Rabby', assignedBy: 'Ashiq Bhaia', date: '2026-07-05', time: '15:00', urgency: 'Week', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' },
-  { id: 'T-19', name: 'DC4 Google Map Reveal Post Design', designer: 'Razin', assignedBy: 'Jubaer Bhai', date: '2026-07-05', time: '18:11', urgency: 'week', status: 'Not Started', deliveryLink: '', comments: '', associatedPostId: '' }
-];
-
 // Default Content Planner Ideas (CONTENT PLANNER & IDEA BANK)
 const DEFAULT_IDEAS = [
   {
@@ -388,9 +1431,17 @@ let state = {
   taskDesignerFilter: 'all',
   taskAssignerFilter: 'all',
   taskStatusFilter: 'all',
+  taskSortCol: 'id',
+  taskSortDir: 'desc',
+  contentLinksSortCol: 'date',
+  contentLinksSortDir: 'desc',
   ideaSearchFilter: '',
   ideaDesignerFilter: 'all',
-  ideaStatusFilter: 'all'
+  ideaStatusFilter: 'all',
+  ideaSortCol: 'date',
+  ideaSortDir: 'desc',
+  teamSortCol: 'name',
+  teamSortDir: 'asc'
 };
 
 // Initialize Application
@@ -447,7 +1498,8 @@ function runAppInit() {
   initData();
   setupEventListeners();
   renderUserProfile();
-  switchView('dashboard');
+  const lastView = localStorage.getItem('hc_last_view') || 'dashboard';
+  switchView(lastView);
   renderDashboard();
   renderKanban();
   renderCalendar();
@@ -469,6 +1521,20 @@ function renderUserProfile() {
     } else {
       logsLink.style.display = 'none';
       if (state.currentView === 'logs') {
+        switchView('dashboard');
+      }
+    }
+  }
+
+  // Toggle Publishing Queue (Kanban) link in sidebar (Restricted to Admins & Social Media Manager)
+  const kanbanLink = document.getElementById('nav-kanban-link');
+  if (kanbanLink) {
+    const isQueueAuthorized = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
+    if (isQueueAuthorized) {
+      kanbanLink.style.display = 'flex';
+    } else {
+      kanbanLink.style.display = 'none';
+      if (state.currentView === 'kanban') {
         switchView('dashboard');
       }
     }
@@ -622,12 +1688,20 @@ function initData() {
           t.taskType = t.associatedPostId ? 'post' : 'general';
           setDoc(doc(db, "tasks", docSnap.id), t);
         }
+
+        const designerPerson = findTeamMember(t.designer);
+        if (designerPerson) t.designer = designerPerson.name;
+
+        const assignerPerson = findTeamMember(t.assignedBy);
+        if (assignerPerson) t.assignedBy = assignerPerson.name;
+
         loadedTasks.push(t);
       });
       state.tasks = loadedTasks.sort((a, b) => a.id.localeCompare(b.id));
       updateModalDropdowns();
       refreshViews();
       healPostTaskSync();
+      updatePublishingQueueBadge();
     }
   }, (error) => {
     console.error("Firestore tasks sync error:", error);
@@ -655,70 +1729,29 @@ function initData() {
 
   // Sync team members from Firestore in real-time
   onSnapshot(collection(db, "team"), (querySnapshot) => {
-    if (!localStorage.getItem('team_list_seeded_v3')) {
-      // Force seed the new integrated team list
+    if (querySnapshot.empty) {
+      // Seed Firestore only if database is completely empty
       DEFAULT_TEAM.forEach(async (t) => {
         await setDoc(doc(db, "team", t.id), t);
       });
-      localStorage.setItem('team_list_seeded_v3', 'true');
-    } else if (querySnapshot.empty) {
-      // Seed Firestore with default team members if database is completely empty
-      DEFAULT_TEAM.forEach(async (t) => {
-        await setDoc(doc(db, "team", t.id), t);
-      });
-    } else {
-      const loadedTeam = [];
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const dataName = data.name || '';
-        const defaultMatch = DEFAULT_TEAM.find(t => {
-          const nameMatches = t.name === dataName;
-          const aliasMatches1 = data.aliases && Array.isArray(data.aliases) && data.aliases.includes(t.name);
-          const aliasMatches2 = t.aliases && Array.isArray(t.aliases) && t.aliases.includes(dataName);
-          return nameMatches || aliasMatches1 || aliasMatches2;
-        });
-
-        if (defaultMatch) {
-          const hasLegacyRole = data.role && typeof data.role === 'string' && data.role.includes("Awaiting Assignment");
-          const isMissingFields = data.role === undefined || data.access === undefined || data.isDesigner === undefined;
-          if (hasLegacyRole || isMissingFields) {
-            const updated = { 
-              ...defaultMatch, 
-              ...data, 
-              id: defaultMatch.id,
-              role: defaultMatch.role,
-              isDesigner: defaultMatch.isDesigner,
-              isWorkAssigner: defaultMatch.isWorkAssigner,
-              isIdeaInitiator: defaultMatch.isIdeaInitiator,
-              access: defaultMatch.access,
-              password: defaultMatch.password
-            };
-            setDoc(doc(db, "team", defaultMatch.id), updated);
-            if (docSnap.id !== defaultMatch.id) {
-              deleteDoc(doc(db, "team", docSnap.id));
-            }
-            loadedTeam.push(updated);
-            return;
-          }
-        }
-        loadedTeam.push(data);
-      });
-
-      // Find any default team members that are completely missing
-      const missingMembers = DEFAULT_TEAM.filter(dt => !loadedTeam.some(lt => lt.name === dt.name || (lt.aliases && lt.aliases.includes(dt.name)) || (dt.aliases && dt.aliases.includes(lt.name))));
-      if (missingMembers.length > 0) {
-        console.log(`Seeding ${missingMembers.length} missing team members to Firestore...`);
-        missingMembers.forEach((t) => {
-          setDoc(doc(db, "team", t.id), t);
-          loadedTeam.push(t);
-        });
-      }
-
-      state.team = loadedTeam.sort((a, b) => a.name.localeCompare(b.name));
-      updateModalDropdowns();
-      renderUserProfile();
-      refreshViews();
+      return;
     }
+
+    const loadedTeam = [];
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const dataName = data.name || '';
+      const defaultMatch = DEFAULT_TEAM.find(t => t.name === dataName || (t.aliases && t.aliases.includes(dataName)));
+      if (defaultMatch && defaultMatch.photo) {
+        data.photo = defaultMatch.photo;
+      }
+      loadedTeam.push(data);
+    });
+
+    state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    updateModalDropdowns();
+    renderUserProfile();
+    refreshViews();
   }, (error) => {
     console.error("Firestore team sync error:", error);
   });
@@ -1295,6 +2328,35 @@ function setupEventListeners() {
     }
   });
 
+  // Publishing Queue Drawer Listeners
+  const pubToggleBtn = document.getElementById('toggle-publishing-btn');
+  const pubCloseBtn = document.getElementById('close-publishing-btn');
+  const pubDrawer = document.getElementById('publishing-queue-drawer');
+
+  if (pubToggleBtn && pubDrawer) {
+    pubToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      pubDrawer.classList.toggle('open');
+      if (pubDrawer.classList.contains('open')) {
+        renderPublishingQueue();
+      }
+    });
+  }
+
+  if (pubCloseBtn && pubDrawer) {
+    pubCloseBtn.addEventListener('click', () => {
+      pubDrawer.classList.remove('open');
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (pubDrawer && pubDrawer.classList.contains('open')) {
+      if (!pubDrawer.contains(e.target) && !pubToggleBtn.contains(e.target)) {
+        pubDrawer.classList.remove('open');
+      }
+    }
+  });
+
   // Comments submit listeners
   const postAddCommentBtn = document.getElementById('post-add-comment-btn');
   if (postAddCommentBtn) {
@@ -1360,6 +2422,81 @@ function setupEventListeners() {
       renderLogs();
     });
   }
+
+  // Content Links filters
+  const clSearchInput = document.getElementById('content-links-search-input');
+  if (clSearchInput) {
+    clSearchInput.addEventListener('input', () => {
+      renderContentLinks();
+    });
+  }
+
+  const clCreativeFilter = document.getElementById('content-links-creative-filter');
+  if (clCreativeFilter) {
+    clCreativeFilter.addEventListener('change', () => {
+      renderContentLinks();
+    });
+  }
+
+  // Task Tracker table column header click to sort (Ascending / Descending)
+  document.querySelectorAll('.tasks-table th.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const sortCol = th.getAttribute('data-sort');
+      if (!sortCol) return;
+      if (state.taskSortCol === sortCol) {
+        state.taskSortDir = state.taskSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.taskSortCol = sortCol;
+        state.taskSortDir = (sortCol === 'id' || sortCol === 'date') ? 'desc' : 'asc';
+      }
+      renderTasks();
+    });
+  });
+
+  // Content Links table column header click to sort (Ascending / Descending)
+  document.querySelectorAll('#content-links-view th.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const sortCol = th.getAttribute('data-sort');
+      if (!sortCol) return;
+      if (state.contentLinksSortCol === sortCol) {
+        state.contentLinksSortDir = state.contentLinksSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.contentLinksSortCol = sortCol;
+        state.contentLinksSortDir = (sortCol === 'id' || sortCol === 'date') ? 'desc' : 'asc';
+      }
+      renderContentLinks();
+    });
+  });
+
+  // Idea Bank / Content Planner table column header click to sort
+  document.querySelectorAll('#ideas-view th.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const sortCol = th.getAttribute('data-sort');
+      if (!sortCol) return;
+      if (state.ideaSortCol === sortCol) {
+        state.ideaSortDir = state.ideaSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.ideaSortCol = sortCol;
+        state.ideaSortDir = (sortCol === 'date' || sortCol === 'id') ? 'desc' : 'asc';
+      }
+      renderIdeas();
+    });
+  });
+
+  // People & Roles table column header click to sort
+  document.querySelectorAll('#people-view th.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const sortCol = th.getAttribute('data-sort');
+      if (!sortCol) return;
+      if (state.teamSortCol === sortCol) {
+        state.teamSortDir = state.teamSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.teamSortCol = sortCol;
+        state.teamSortDir = 'asc';
+      }
+      renderTeam();
+    });
+  });
 
   // Create post button
   const createBtn = document.getElementById('create-post-btn');
@@ -1606,6 +2743,22 @@ function setupEventListeners() {
     });
   }
 
+  const teamDesigFilter = document.getElementById('team-designation-filter');
+  if (teamDesigFilter) {
+    teamDesigFilter.addEventListener('change', (e) => {
+      state.teamDesignationFilter = e.target.value;
+      renderTeam();
+    });
+  }
+
+  const teamSortSelect = document.getElementById('team-sort-select');
+  if (teamSortSelect) {
+    teamSortSelect.addEventListener('change', (e) => {
+      state.teamSortOrder = e.target.value;
+      renderTeam();
+    });
+  }
+
   const createPersonBtn = document.getElementById('create-person-btn');
   if (createPersonBtn) {
     createPersonBtn.addEventListener('click', () => {
@@ -1622,10 +2775,35 @@ function setupEventListeners() {
   if (deletePersonBtn) {
     deletePersonBtn.addEventListener('click', deletePerson);
   }
+
+  const closePersonBtn = document.getElementById('person-modal-close-btn');
+  if (closePersonBtn) {
+    closePersonBtn.addEventListener('click', closePersonModal);
+  }
+
+  const cancelPersonBtn = document.getElementById('person-modal-cancel-btn');
+  if (cancelPersonBtn) {
+    cancelPersonBtn.addEventListener('click', closePersonModal);
+  }
 }
 
 function switchView(viewName) {
+  // Access control for Publishing Queue (Kanban)
+  if (viewName === 'kanban') {
+    const currentUser = localStorage.getItem('hc_logged_in_user');
+    const person = findTeamMember(currentUser);
+    const canAccessQueue = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
+    if (!canAccessQueue) {
+      showToast('Access Denied: Publishing Queue is restricted to Admins and Social Media Manager', 'error');
+      if (state.currentView !== 'dashboard') {
+        switchView('dashboard');
+      }
+      return;
+    }
+  }
+
   state.currentView = viewName;
+  localStorage.setItem('hc_last_view', viewName);
   
   // Update sidebar active status
   document.querySelectorAll('.nav-item').forEach(item => {
@@ -1647,7 +2825,7 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
@@ -1698,6 +2876,8 @@ function refreshViews() {
   renderIdeas();
   renderTeam();
   renderLogs();
+  renderContentLinks();
+  updatePublishingQueueBadge();
 }
 
 function renderLogs() {
@@ -1758,6 +2938,167 @@ function populateLogsUserFilter() {
   if (activeLogUsers.includes(currentVal)) {
     userFilterSelect.value = currentVal;
   }
+}
+
+/* ==========================================================================
+   CONTENT LINKS DIRECTORY CONTROLLER
+   ========================================================================== */
+
+function renderContentLinks() {
+  const tableBody = document.getElementById('content-links-list-body');
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
+
+  // Get all tasks with delivery links
+  let linkedItems = state.tasks.filter(t => t.deliveryLink && t.deliveryLink.trim() !== '');
+
+  // Also include posts if any have delivery/drive links
+  state.posts.forEach(p => {
+    if (p.deliveryLink && p.deliveryLink.trim() !== '') {
+      linkedItems.push({
+        id: p.id,
+        name: p.title,
+        designer: p.assignee,
+        assignedBy: 'Social Media Desk',
+        date: p.date,
+        deliveryLink: p.deliveryLink
+      });
+    }
+  });
+
+  // Filter by search
+  const searchInput = document.getElementById('content-links-search-input');
+  if (searchInput && searchInput.value) {
+    const q = searchInput.value.toLowerCase().trim();
+    linkedItems = linkedItems.filter(item => {
+      const nameMatch = (item.name || '').toLowerCase().includes(q);
+      const idMatch = (item.id || '').toLowerCase().includes(q);
+      const designerMatch = (item.designer || '').toLowerCase().includes(q);
+      const assignerMatch = (item.assignedBy || '').toLowerCase().includes(q);
+      return nameMatch || idMatch || designerMatch || assignerMatch;
+    });
+  }
+
+  // Filter by creative
+  const creativeSelect = document.getElementById('content-links-creative-filter');
+  if (creativeSelect && creativeSelect.value !== 'all') {
+    linkedItems = linkedItems.filter(item => {
+      const person = findTeamMember(item.designer);
+      const resolvedName = person ? person.name : item.designer;
+      return resolvedName === creativeSelect.value || item.designer === creativeSelect.value;
+    });
+  }
+
+  // Dynamic column sorting
+  const linkCol = state.contentLinksSortCol || 'date';
+  const linkDir = state.contentLinksSortDir === 'asc' ? 1 : -1;
+
+  linkedItems.sort((a, b) => {
+    let valA = a[linkCol] || '';
+    let valB = b[linkCol] || '';
+
+    if (linkCol === 'id') {
+      const numA = parseInt((valA || '').replace('T-', '')) || 0;
+      const numB = parseInt((valB || '').replace('T-', '')) || 0;
+      return (numA - numB) * linkDir;
+    }
+
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+
+    if (valA < valB) return -1 * linkDir;
+    if (valA > valB) return 1 * linkDir;
+    return 0;
+  });
+
+  // Update Content Links header sort UI indicators
+  document.querySelectorAll('#content-links-view th.sortable-th').forEach(th => {
+    const sCol = th.getAttribute('data-sort');
+    const icon = th.querySelector('.sort-icon');
+    if (sCol === state.contentLinksSortCol) {
+      th.classList.add('active-sort');
+      if (icon) icon.textContent = state.contentLinksSortDir === 'asc' ? '▲' : '▼';
+    } else {
+      th.classList.remove('active-sort');
+      if (icon) icon.textContent = '↕';
+    }
+  });
+
+  // Update total count badge
+  const totalCountEl = document.getElementById('content-links-total-count');
+  if (totalCountEl) totalCountEl.textContent = linkedItems.length;
+
+  if (linkedItems.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; color: #64748b; font-style: italic; padding: 40px;">
+          No content delivery links found. Upload a drive link in tasks/posts to display here.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  linkedItems.forEach(item => {
+    const creativePerson = findTeamMember(item.designer);
+    const creativeName = creativePerson ? creativePerson.name : (item.designer || 'Unassigned');
+    const creativePhoto = creativePerson && creativePerson.photo
+      ? `<img src="${creativePerson.photo}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="${creativeName}" title="${creativeName}">`
+      : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(creativeName)}</div>`;
+
+    const assignerPerson = findTeamMember(item.assignedBy);
+    const assignerName = assignerPerson ? assignerPerson.name : (item.assignedBy || 'Unassigned');
+    const assignerPhoto = assignerPerson && assignerPerson.photo
+      ? `<img src="${assignerPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${assignerName}" title="${assignerName}">`
+      : '';
+
+    const dateFormatted = formatCardDate(item.date);
+    let rawLink = (item.deliveryLink || '').trim();
+    let finalUrl = rawLink;
+    let displayLinkLabel = 'Google Drive';
+
+    if (rawLink) {
+      if (rawLink.startsWith('http://') || rawLink.startsWith('https://')) {
+        finalUrl = rawLink;
+        if (rawLink.includes('facebook.com')) {
+          displayLinkLabel = 'Facebook Post';
+        } else {
+          displayLinkLabel = 'Open Link';
+        }
+      } else {
+        finalUrl = `https://drive.google.com/drive/search?q=${encodeURIComponent(rawLink)}`;
+        displayLinkLabel = rawLink.length > 24 ? rawLink.substring(0, 21) + '...' : rawLink;
+      }
+    }
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="white-space: nowrap;"><strong>${item.id}</strong></td>
+      <td>
+        <div style="font-weight: 600; color: #fff; font-size: 0.95rem;">${item.name}</div>
+      </td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px">
+          ${creativePhoto}
+          <span style="font-weight: 500; color: #fff">${creativeName}</span>
+        </div>
+      </td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px">
+          ${assignerPhoto}
+          <span>${assignerName}</span>
+        </div>
+      </td>
+      <td>${dateFormatted}</td>
+      <td style="text-align: center;">
+        <a href="${finalUrl}" target="_blank" rel="noopener noreferrer" class="drive-link-btn" title="Open: ${rawLink}">
+          <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; margin-right: 6px;"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+          ${displayLinkLabel} ↗
+        </a>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
 }
 
 
@@ -2053,9 +3394,13 @@ function renderKanban() {
       card.setAttribute('data-id', task.id);
       card.style.borderLeft = '4px solid #8b5cf6';
       
-      const designerAvatar = task.designer 
-        ? `<div class="card-assignee-avatar" style="background: #8b5cf6; color: #fff">${getAssigneeInitials(task.designer)}</div>`
-        : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`;
+      const designerPerson = findTeamMember(task.designer);
+      const designerName = designerPerson ? designerPerson.name : (task.designer || '');
+      const designerAvatar = designerPerson && designerPerson.photo 
+        ? `<img src="${designerPerson.photo}" class="card-assignee-avatar-img" title="${designerName}">`
+        : (task.designer
+            ? `<div class="card-assignee-avatar" style="background: #8b5cf6; color: #fff">${getAssigneeInitials(task.designer)}</div>`
+            : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`);
 
       card.innerHTML = `
         <div class="card-top">
@@ -2068,7 +3413,7 @@ function renderKanban() {
         <div class="card-meta">
           <div class="card-assignee">
             ${designerAvatar}
-            <span>${(task.designer || '').split(' ')[0]}</span>
+            <span>${(designerName || '').split(' ')[0]}</span>
           </div>
           <div class="card-due-date">
             <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
@@ -2101,9 +3446,13 @@ function renderKanban() {
       card.setAttribute('data-id', idea.id);
       card.style.borderLeft = '4px solid #06b6d4';
       
-      const designerAvatar = idea.designer 
-        ? `<div class="card-assignee-avatar" style="background: #06b6d4; color: #fff">${getAssigneeInitials(idea.designer)}</div>`
-        : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`;
+      const ideaDesignerPerson = findTeamMember(idea.designer);
+      const ideaDesignerName = ideaDesignerPerson ? ideaDesignerPerson.name : (idea.designer || '');
+      const designerAvatar = ideaDesignerPerson && ideaDesignerPerson.photo 
+        ? `<img src="${ideaDesignerPerson.photo}" class="card-assignee-avatar-img" title="${ideaDesignerName}">`
+        : (idea.designer
+            ? `<div class="card-assignee-avatar" style="background: #06b6d4; color: #fff">${getAssigneeInitials(idea.designer)}</div>`
+            : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`);
 
       card.innerHTML = `
         <div class="card-top">
@@ -2116,7 +3465,7 @@ function renderKanban() {
         <div class="card-meta">
           <div class="card-assignee">
             ${designerAvatar}
-            <span>${(idea.designer || '').split(' ')[0]}</span>
+            <span>${(ideaDesignerName || '').split(' ')[0]}</span>
           </div>
           <div class="card-due-date">
             <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
@@ -2867,18 +4216,61 @@ function renderTasks() {
 
   // Filter by designer
   if (state.taskDesignerFilter !== 'all') {
-    filteredTasks = filteredTasks.filter(t => t.designer === state.taskDesignerFilter);
+    filteredTasks = filteredTasks.filter(t => {
+      const person = findTeamMember(t.designer);
+      const name = person ? person.name : t.designer;
+      return name === state.taskDesignerFilter || t.designer === state.taskDesignerFilter;
+    });
   }
 
   // Filter by assigner
   if (state.taskAssignerFilter !== 'all') {
-    filteredTasks = filteredTasks.filter(t => t.assignedBy === state.taskAssignerFilter);
+    filteredTasks = filteredTasks.filter(t => {
+      const person = findTeamMember(t.assignedBy);
+      const name = person ? person.name : t.assignedBy;
+      return name === state.taskAssignerFilter || t.assignedBy === state.taskAssignerFilter;
+    });
   }
 
   // Filter by status
   if (state.taskStatusFilter !== 'all') {
     filteredTasks = filteredTasks.filter(t => t.status === state.taskStatusFilter);
   }
+
+  // Dynamic column sorting
+  const taskCol = state.taskSortCol || 'id';
+  const taskDir = state.taskSortDir === 'asc' ? 1 : -1;
+
+  filteredTasks.sort((a, b) => {
+    let valA = a[taskCol] || '';
+    let valB = b[taskCol] || '';
+
+    if (taskCol === 'id') {
+      const numA = parseInt((valA || '').replace('T-', '')) || 0;
+      const numB = parseInt((valB || '').replace('T-', '')) || 0;
+      return (numA - numB) * taskDir;
+    }
+
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+
+    if (valA < valB) return -1 * taskDir;
+    if (valA > valB) return 1 * taskDir;
+    return 0;
+  });
+
+  // Update header sort UI indicators across Task Tracker tables
+  document.querySelectorAll('.tasks-table th.sortable-th').forEach(th => {
+    const sCol = th.getAttribute('data-sort');
+    const icon = th.querySelector('.sort-icon');
+    if (sCol === state.taskSortCol) {
+      th.classList.add('active-sort');
+      if (icon) icon.textContent = state.taskSortDir === 'asc' ? '▲' : '▼';
+    } else {
+      th.classList.remove('active-sort');
+      if (icon) icon.textContent = '↕';
+    }
+  });
 
   // Calculate statistics (always on all tasks, not filtered)
   const totalCount = state.tasks.length;
@@ -2891,22 +4283,32 @@ function renderTasks() {
   document.getElementById('task-stat-finished').textContent = finishedCount;
   document.getElementById('task-stat-delayed').textContent = delayedCount;
 
-  // Calculate active workload split
+  // Calculate active workload split dynamically across active designers
   const activeTasks = state.tasks.filter(t => t.status !== 'Finished');
-  const workloadCounts = { Razin: 0, Rabby: 0, Niaz: 0 };
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const designersList = teamList.filter(p => p.isDesigner);
+  
+  const workloadCounts = {};
+  designersList.forEach(c => { workloadCounts[c.name] = 0; });
+
   activeTasks.forEach(t => {
-    if (workloadCounts[t.designer] !== undefined) {
-      workloadCounts[t.designer]++;
+    const person = findTeamMember(t.designer);
+    const name = person ? person.name : t.designer;
+    if (workloadCounts[name] !== undefined) {
+      workloadCounts[name]++;
+    } else if (name) {
+      workloadCounts[name] = (workloadCounts[name] || 0) + 1;
     }
   });
   
   const workloadEl = document.getElementById('task-stat-workload');
   if (workloadEl) {
-    workloadEl.innerHTML = `
-      Razin: <strong>${workloadCounts.Razin}</strong> &nbsp;|&nbsp; 
-      Rabby: <strong>${workloadCounts.Rabby}</strong> &nbsp;|&nbsp; 
-      Niaz: <strong>${workloadCounts.Niaz}</strong>
-    `;
+    const splitHtml = Object.entries(workloadCounts).map(([name, count]) => {
+      const person = findTeamMember(name);
+      const fullName = person ? person.name : name;
+      return `${fullName}: <strong>${count}</strong>`;
+    }).join(' &nbsp;|&nbsp; ');
+    workloadEl.innerHTML = splitHtml;
   }
 
   // Split filtered tasks into Social Media Posts and General Design Tasks
@@ -2918,8 +4320,14 @@ function renderTasks() {
 
   const renderRow = (task, targetBody) => {
     const statusClass = task.status.toLowerCase().replace(' ', '-');
-    const driveLinkHtml = task.deliveryLink 
-      ? `<a href="${task.deliveryLink}" target="_blank" class="task-link-btn" title="Open Delivery Link">
+    let rawDeliveryLink = (task.deliveryLink || '').trim();
+    let finalDeliveryUrl = rawDeliveryLink;
+    if (rawDeliveryLink && !rawDeliveryLink.startsWith('http://') && !rawDeliveryLink.startsWith('https://')) {
+      finalDeliveryUrl = `https://drive.google.com/drive/search?q=${encodeURIComponent(rawDeliveryLink)}`;
+    }
+
+    const driveLinkHtml = rawDeliveryLink 
+      ? `<a href="${finalDeliveryUrl}" target="_blank" rel="noopener noreferrer" class="task-link-btn" title="Open: ${rawDeliveryLink}">
           <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
          </a>`
       : '';
@@ -2952,6 +4360,18 @@ function renderTasks() {
     const commentsText = task.comments ? `<div class="task-comments-text">${task.comments}</div>` : '';
     const dateFormatted = formatCardDate(task.date);
 
+    const creativePerson = findTeamMember(task.designer);
+    const creativeName = creativePerson ? creativePerson.name : (task.designer || 'Unassigned');
+    const creativePhoto = creativePerson && creativePerson.photo 
+      ? `<img src="${creativePerson.photo}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="${creativeName}" title="${creativeName}">`
+      : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(creativeName)}</div>`;
+
+    const assignerPerson = findTeamMember(task.assignedBy);
+    const assignerName = assignerPerson ? assignerPerson.name : (task.assignedBy || 'Unassigned');
+    const assignerPhoto = assignerPerson && assignerPerson.photo 
+      ? `<img src="${assignerPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${assignerName}" title="${assignerName}">`
+      : '';
+
     const row = document.createElement('tr');
     row.id = `task-row-${task.id}`;
     if (task.status === 'Correction') {
@@ -2965,11 +4385,16 @@ function renderTasks() {
       </td>
       <td>
         <div style="display: flex; align-items: center; gap: 8px">
-          <div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(task.designer)}</div>
-          <span>${task.designer}</span>
+          ${creativePhoto}
+          <span style="font-weight: 500; color: #fff">${creativeName}</span>
         </div>
       </td>
-      <td>${task.assignedBy}</td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px">
+          ${assignerPhoto}
+          <span>${assignerName}</span>
+        </div>
+      </td>
       <td>${dateFormatted} ${task.time || ''}</td>
       <td>${task.urgency || 'N/A'}</td>
       <td>
@@ -2993,6 +4418,14 @@ function renderTasks() {
       openTaskModal(task);
     });
 
+    // Hook task link button click
+    const taskLinkBtn = row.querySelector('.task-link-btn');
+    if (taskLinkBtn) {
+      taskLinkBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
+
     // Hook linked item click
     const linkedPostBadge = row.querySelector('.linked-post-badge');
     if (linkedPostBadge) {
@@ -3003,16 +4436,9 @@ function renderTasks() {
         } else {
           const post = state.posts.find(p => p.id === task.associatedPostId);
           if (post) {
-            switchView('kanban');
-            // Find the card and scroll to it
-            setTimeout(() => {
-              const cardEl = document.querySelector(`.post-card[data-id="${post.id}"]`);
-              if (cardEl) {
-                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                cardEl.style.boxShadow = '0 0 20px var(--honey-gold)';
-                setTimeout(() => cardEl.style.boxShadow = '', 4000);
-              }
-            }, 300);
+            navigateToKanbanCard(post.id);
+          } else {
+            navigateToKanbanCard(task.id);
           }
         }
       });
@@ -3305,19 +4731,45 @@ function updateModalDropdowns() {
     }
   }
 
-  // Populate task assigner filters dynamically from unique task assigners
+  // Populate task assigner filters dynamically from all work assigners + existing task assigners
   const taskAssignerFilter = document.getElementById('task-assigner-filter');
   if (taskAssignerFilter) {
     const currentVal = state.taskAssignerFilter;
-    const assigners = new Set();
+    const assignersSet = new Set();
+    const activeTeamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+    activeTeamList.filter(p => p.isWorkAssigner).forEach(p => assignersSet.add(p.name));
+    
     state.tasks.forEach(t => {
-      if (t.assignedBy) assigners.add(t.assignedBy);
+      if (t.assignedBy) {
+        const p = findTeamMember(t.assignedBy);
+        assignersSet.add(p ? p.name : t.assignedBy);
+      }
     });
+
     taskAssignerFilter.innerHTML = '<option value="all">All Assigned By</option>';
-    Array.from(assigners).sort().forEach(a => {
+    Array.from(assignersSet).sort().forEach(a => {
       taskAssignerFilter.innerHTML += `<option value="${a}">${a}</option>`;
     });
-    taskAssignerFilter.value = currentVal;
+
+    if (Array.from(assignersSet).includes(currentVal) || currentVal === 'all') {
+      taskAssignerFilter.value = currentVal;
+    } else {
+      taskAssignerFilter.value = 'all';
+      state.taskAssignerFilter = 'all';
+    }
+  }
+
+  // Populate content links creative filter
+  const contentLinksCreativeFilter = document.getElementById('content-links-creative-filter');
+  if (contentLinksCreativeFilter) {
+    const currentVal = contentLinksCreativeFilter.value;
+    contentLinksCreativeFilter.innerHTML = '<option value="all">All Creatives</option>' + 
+      designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (designers.some(p => p.name === currentVal) || currentVal === 'all') {
+      contentLinksCreativeFilter.value = currentVal;
+    } else {
+      contentLinksCreativeFilter.value = 'all';
+    }
   }
 
   // Populate link task dropdowns inside post and idea forms
@@ -3358,10 +4810,11 @@ function updateModalDropdowns() {
     taskPostSelect.value = currentVal || (state.editingTask && state.editingTask.associatedPostId) || '';
   }
 
-  // Populate dynamic people-based dropdowns from state.team
-  const assigners = state.team.filter(p => p.isWorkAssigner);
-  const initiators = state.team.filter(p => p.isIdeaInitiator);
-  const loginUsers = state.team.filter(p => p.password);
+  // Populate dynamic people-based dropdowns from active team list
+  const activeTeam = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const assigners = activeTeam.filter(p => p.isWorkAssigner);
+  const initiators = activeTeam.filter(p => p.isIdeaInitiator);
+  const loginUsers = activeTeam.filter(p => p.password);
 
   // Populate designers in Post Form Assignee select box
   const postAssignee = document.getElementById('post-assignee');
@@ -3426,6 +4879,29 @@ function navigateToTask(taskId) {
   }, 300);
 }
 
+function navigateToKanbanCard(itemId) {
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  const person = findTeamMember(currentUser);
+  const canAccessQueue = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
+  
+  if (!canAccessQueue) {
+    showToast('Access Denied: Publishing Queue is restricted to Admins and Social Media Manager', 'error');
+    return;
+  }
+
+  switchView('kanban');
+  setTimeout(() => {
+    const cardEl = document.querySelector(`.post-card[data-id="${itemId}"]`);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      cardEl.classList.add('flash-outline-kanban');
+      setTimeout(() => {
+        cardEl.classList.remove('flash-outline-kanban');
+      }, 5000);
+    }
+  }, 350);
+}
+
 /* ==========================================================================
    CONTENT PLANNER (IDEAS) CORE LOGIC & CONTROLLERS
    ========================================================================== */
@@ -3457,6 +4933,41 @@ function renderIdeas() {
   if (state.ideaStatusFilter !== 'all') {
     filteredIdeas = filteredIdeas.filter(i => i.status === state.ideaStatusFilter);
   }
+
+  // Dynamic column sorting
+  const ideaCol = state.ideaSortCol || 'date';
+  const ideaDir = state.ideaSortDir === 'asc' ? 1 : -1;
+
+  filteredIdeas.sort((a, b) => {
+    let valA = a[ideaCol] || '';
+    let valB = b[ideaCol] || '';
+
+    if (ideaCol === 'id') {
+      const numA = parseInt((valA || '').replace('idea-', '')) || 0;
+      const numB = parseInt((valB || '').replace('idea-', '')) || 0;
+      return (numA - numB) * ideaDir;
+    }
+
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+
+    if (valA < valB) return -1 * ideaDir;
+    if (valA > valB) return 1 * ideaDir;
+    return 0;
+  });
+
+  // Update Idea Bank header sort UI indicators
+  document.querySelectorAll('#ideas-view th.sortable-th').forEach(th => {
+    const sCol = th.getAttribute('data-sort');
+    const icon = th.querySelector('.sort-icon');
+    if (sCol === state.ideaSortCol) {
+      th.classList.add('active-sort');
+      if (icon) icon.textContent = state.ideaSortDir === 'asc' ? '▲' : '▼';
+    } else {
+      th.classList.remove('active-sort');
+      if (icon) icon.textContent = '↕';
+    }
+  });
 
   // Calculate statistics
   const totalCount = state.ideas.length;
@@ -3490,10 +5001,20 @@ function renderIdeas() {
 
     const notesText = idea.notes ? `<div class="task-comments-text">${idea.notes}</div>` : '';
     const dateFormatted = formatCardDate(idea.date);
-    const designerName = idea.designer || '<span style="color: #94a3b8; font-style: italic;">Unassigned</span>';
-    const designerAvatar = idea.designer 
-      ? `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(idea.designer)}</div>`
-      : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: #64748b">?</div>`;
+    
+    const ideaDesignerPerson = findTeamMember(idea.designer);
+    const designerName = ideaDesignerPerson ? ideaDesignerPerson.name : (idea.designer || '<span style="color: #94a3b8; font-style: italic;">Unassigned</span>');
+    const designerAvatar = ideaDesignerPerson && ideaDesignerPerson.photo 
+      ? `<img src="${ideaDesignerPerson.photo}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="${designerName}" title="${designerName}">`
+      : (idea.designer
+          ? `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(idea.designer)}</div>`
+          : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: #64748b">?</div>`);
+
+    const initiatorPerson = findTeamMember(idea.initiator);
+    const initiatorName = initiatorPerson ? initiatorPerson.name : (idea.initiator || 'N/A');
+    const initiatorPhoto = initiatorPerson && initiatorPerson.photo
+      ? `<img src="${initiatorPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${initiatorName}" title="${initiatorName}">`
+      : '';
 
     const row = document.createElement('tr');
     row.id = `idea-row-${idea.id}`;
@@ -3513,7 +5034,12 @@ function renderIdeas() {
           <span>${designerName}</span>
         </div>
       </td>
-      <td>${idea.initiator || 'N/A'}</td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px">
+          ${initiatorPhoto}
+          <span>${initiatorName}</span>
+        </div>
+      </td>
       <td>
         ${linkedTaskHtml}
       </td>
@@ -3857,10 +5383,56 @@ function renderTeam() {
   const userPerson = findTeamMember(currentUser);
   const isAdmin = userPerson && userPerson.access === 'admin';
 
+  // Populate Designation Filter Dropdown (preserve active selection)
+  const desigSelect = document.getElementById('team-designation-filter');
+  if (desigSelect) {
+    const currentVal = state.teamDesignationFilter || 'all';
+    const designations = Array.from(new Set(state.team.map(p => p.role).filter(Boolean))).sort();
+    const existingOptions = Array.from(desigSelect.options).map(o => o.value).slice(1).join(',');
+    const newOptions = designations.join(',');
+    if (existingOptions !== newOptions) {
+      desigSelect.innerHTML = `<option value="all">All Designations</option>` +
+        designations.map(d => `<option value="${d}" ${d === currentVal ? 'selected' : ''}>${d}</option>`).join('');
+    } else {
+      desigSelect.value = currentVal;
+    }
+  }
+
   // Filter team
   const searchFilter = (state.teamSearchFilter || '').toLowerCase();
-  const filteredTeam = state.team.filter(p => {
-    return p.name.toLowerCase().includes(searchFilter) || p.role.toLowerCase().includes(searchFilter);
+  const desigFilter = state.teamDesignationFilter || 'all';
+  
+  let filteredTeam = state.team.filter(p => {
+    const name = (p.name || '').toLowerCase();
+    const role = (p.role || '').toLowerCase();
+    const matchesText = name.includes(searchFilter) || role.includes(searchFilter);
+    const matchesDesig = desigFilter === 'all' || p.role === desigFilter;
+    return matchesText && matchesDesig;
+  });
+
+  // Sort sequence
+  const tCol = state.teamSortCol || 'name';
+  const tDir = state.teamSortDir === 'asc' ? 1 : -1;
+
+  filteredTeam.sort((a, b) => {
+    let valA = (a[tCol] || '').toLowerCase();
+    let valB = (b[tCol] || '').toLowerCase();
+    if (valA < valB) return -1 * tDir;
+    if (valA > valB) return 1 * tDir;
+    return 0;
+  });
+
+  // Update People & Roles header sort UI indicators
+  document.querySelectorAll('#people-view th.sortable-th').forEach(th => {
+    const sCol = th.getAttribute('data-sort');
+    const icon = th.querySelector('.sort-icon');
+    if (sCol === state.teamSortCol) {
+      th.classList.add('active-sort');
+      if (icon) icon.textContent = state.teamSortDir === 'asc' ? '▲' : '▼';
+    } else {
+      th.classList.remove('active-sort');
+      if (icon) icon.textContent = '↕';
+    }
   });
 
   // Calculate statistics
@@ -3876,15 +5448,16 @@ function renderTeam() {
 
   tbody.innerHTML = '';
   if (filteredTeam.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 32px 16px;">No team members found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 32px 16px;">No team members found matching your search.</td></tr>`;
     return;
   }
 
   filteredTeam.forEach(p => {
     // Generate initials avatar
-    const initials = p.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const safeName = p.name || 'Unknown';
+    const initials = safeName.split(' ').map(n => (n[0] || '')).join('').toUpperCase().substring(0, 2);
     const avatar = p.photo 
-      ? `<img src="${p.photo}" class="team-avatar-img" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="${p.name}">`
+      ? `<img src="${p.photo}" class="team-avatar-img" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="${safeName}">`
       : `<div class="team-avatar-initials" style="background: rgba(245, 158, 11, 0.1); color: var(--honey-gold); border: 1px solid rgba(245, 158, 11, 0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">${initials}</div>`;
 
     // Roles tags
@@ -3917,15 +5490,15 @@ function renderTeam() {
         <div style="display: flex; align-items: center; gap: 12px;">
           ${avatar}
           <div>
-            <div style="font-weight: 700; color: #fff;">${p.name}</div>
+            <div style="font-weight: 700; color: #fff;">${safeName}</div>
           </div>
         </div>
       </td>
-      <td><span style="color: #cbd5e1; font-weight: 500;">${p.role}</span></td>
+      <td><span style="color: #cbd5e1; font-weight: 500;">${p.role || 'No Role Assigned'}</span></td>
       <td><div style="display: flex; flex-wrap: wrap; gap: 4px;">${roleTagsHtml}</div></td>
       <td>${accessTag}</td>
-      <td><code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #fbbf24;">${p.password}</code></td>
-      <td>${editBtn}</td>
+      <td><code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #fbbf24;">${p.password || 'none'}</code></td>
+      <td style="text-align: right;">${editBtn}</td>
     `;
     tbody.appendChild(tr);
 
@@ -4235,7 +5808,59 @@ async function healPostTaskSync() {
   }
 }
 
+// --- Publishing Queue Logic ---
+function updatePublishingQueueBadge() {
+  const badge = document.getElementById('publishing-queue-badge');
+  if (!badge) return;
+  
+  const pendingPublishing = state.tasks.filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
+  const count = pendingPublishing.length;
+  
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
 
+function renderPublishingQueue() {
+  const list = document.getElementById('publishing-queue-list');
+  if (!list) return;
 
+  const pendingPublishing = state.tasks.filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
+  
+  if (pendingPublishing.length === 0) {
+    list.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">No pending posts to publish.</div>`;
+    return;
+  }
 
+  list.innerHTML = pendingPublishing.map(task => {
+    const post = task.associatedPostId ? state.posts.find(p => p.id === task.associatedPostId) : null;
+    const postInfo = post ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Platform: ${post.platforms.join(', ')} | Brand: ${post.brandId}</div>` : '';
+    
+    return `
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+        <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">${task.name}</div>
+        <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 8px;">Delivery Link: <a href="${task.deliveryLink || '#'}" target="_blank" style="color: var(--honey-gold); text-decoration: none;">${task.deliveryLink ? 'Open Asset' : 'None'}</a></div>
+        ${postInfo}
+        <button onclick="markTaskPosted('${task.id}')" style="margin-top: 10px; width: 100%; background: var(--honey-gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer;">Mark as Posted</button>
+      </div>
+    `;
+  }).join('');
+}
 
+window.markTaskPosted = async function(taskId) {
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  
+  task.isPosted = true;
+  await setDoc(doc(db, "tasks", taskId), task);
+  
+  logActivity(`Marked task "${task.name}" as posted`, db);
+  showToast('Task marked as posted', 'success');
+  
+  renderPublishingQueue();
+  updatePublishingQueueBadge();
+  refreshViews();
+};

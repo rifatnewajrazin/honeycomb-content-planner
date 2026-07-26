@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoneyComb Inc. Content Tracker & Planner</title>
   <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
-  <link rel="stylesheet" href="style.css?v=3.0.6">
+  <link rel="stylesheet" href="style.css?v=3.6.2">
 </head>
 <body class="minimal-theme">
 
@@ -36,12 +36,12 @@
             <svg viewBox="0 0 24 24" style="fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Log Report
           </a>
-          <a href="#" class="nav-item" data-view="kanban">
+          <a href="#" class="nav-item" id="nav-kanban-link" data-view="kanban">
             <svg viewBox="0 0 24 24">
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M9 3v18M15 3v18" />
             </svg>
-            Kanban Board
+            Publishing Queue
           </a>
           <a href="#" class="nav-item" data-view="calendar">
             <svg viewBox="0 0 24 24">
@@ -67,6 +67,13 @@
               <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"/>
             </svg>
             Content Planner
+          </a>
+          <a href="#" class="nav-item" data-view="content-links">
+            <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+            </svg>
+            Content Links
           </a>
           <a href="#" class="nav-item" data-view="team">
             <svg viewBox="0 0 24 24">
@@ -101,6 +108,12 @@
           <button id="toggle-activity-btn" class="btn-icon" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; color: #a3a3c2; cursor: pointer; transition: all 0.2s;" title="Real-Time Activity Log">
             <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <span id="activity-badge" style="display: none; position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 1px solid #000;"></span>
+          </button>
+
+          <!-- Publishing Queue Button -->
+          <button id="toggle-publishing-btn" class="btn-icon" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; color: #a3a3c2; cursor: pointer; transition: all 0.2s;" title="Social Media Publishing Queue">
+            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+            <span id="publishing-queue-badge" style="display: none; position: absolute; top: -3px; right: -3px; background: #f59e0b; color: #000; font-size: 0.65rem; font-weight: 800; min-width: 16px; height: 16px; border-radius: 50%; border: 1px solid #000; display: flex; align-items: center; justify-content: center;">0</span>
           </button>
           
           <!-- Page Filter -->
@@ -383,13 +396,13 @@
               <table class="tasks-table">
                 <thead>
                   <tr>
-                    <th style="white-space: nowrap; width: 60px;">ID</th>
-                    <th>Task Name / Description</th>
-                    <th>Creative</th>
-                    <th>Assigned By</th>
-                    <th>Date / Time</th>
-                    <th>Need Within</th>
-                    <th>Status</th>
+                    <th class="sortable-th" data-sort="id" style="white-space: nowrap; width: 60px;">ID <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="name">Task Name / Description <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="designer">Creative <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="assignedBy">Assigned By <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="date">Date / Time <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="urgency">Need Within <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="status">Status <span class="sort-icon">↕</span></th>
                     <th>Links</th>
                     <th>Actions</th>
                   </tr>
@@ -412,13 +425,13 @@
               <table class="tasks-table">
                 <thead>
                   <tr>
-                    <th style="white-space: nowrap; width: 60px;">ID</th>
-                    <th>Task Name / Description</th>
-                    <th>Creative</th>
-                    <th>Assigned By</th>
-                    <th>Date / Time</th>
-                    <th>Need Within</th>
-                    <th>Status</th>
+                    <th class="sortable-th" data-sort="id" style="white-space: nowrap; width: 60px;">ID <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="name">Task Name / Description <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="designer">Creative <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="assignedBy">Assigned By <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="date">Date / Time <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="urgency">Need Within <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="status">Status <span class="sort-icon">↕</span></th>
                     <th>Links</th>
                     <th>Actions</th>
                   </tr>
@@ -489,12 +502,12 @@
             <table class="tasks-table">
               <thead>
                 <tr>
-                  <th>Topic / Event Name</th>
-                  <th>Target Date</th>
-                  <th>Need Within</th>
-                  <th>Status</th>
-                  <th>Creative</th>
-                  <th>Initiator (Idea By)</th>
+                  <th class="sortable-th" data-sort="topic">Topic / Event Name <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="date">Target Date <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="urgency">Need Within <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="status">Status <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="designer">Creative <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="initiator">Initiator (Idea By) <span class="sort-icon">↕</span></th>
                   <th>Linked Task</th>
                   <th>Links & Notes</th>
                   <th>Actions</th>
@@ -531,8 +544,19 @@
 
           <!-- Actions for Team -->
           <div class="tasks-actions-header">
-            <div class="tasks-filters">
-              <input type="text" id="team-search-input" placeholder="Search people..." class="search-input">
+            <div class="tasks-filters" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex: 1;">
+              <input type="text" id="team-search-input" placeholder="Search by name or designation..." class="search-input" style="min-width: 240px; flex: 1;">
+              
+              <select id="team-designation-filter" class="filter-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; padding: 8px 12px; font-size: 0.85rem; outline: none;">
+                <option value="all">All Designations</option>
+              </select>
+
+              <select id="team-sort-select" class="filter-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; padding: 8px 12px; font-size: 0.85rem; outline: none;">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="role-asc">Designation (A-Z)</option>
+                <option value="role-desc">Designation (Z-A)</option>
+              </select>
             </div>
 
             <button id="create-person-btn" class="btn-primary" aria-label="Add new person">
@@ -549,10 +573,10 @@
             <table class="tasks-table">
               <thead>
                 <tr>
-                  <th>Avatar & Name</th>
-                  <th>Professional Title</th>
+                  <th class="sortable-th" data-sort="name">Avatar & Name <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="role">Professional Title <span class="sort-icon">↕</span></th>
                   <th>Roles</th>
-                  <th>Accessibility</th>
+                  <th class="sortable-th" data-sort="access">Accessibility <span class="sort-icon">↕</span></th>
                   <th>Password</th>
                   <th>Actions</th>
                 </tr>
@@ -594,6 +618,48 @@
               </thead>
               <tbody id="logs-table-body">
                 <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- View 9: Content Links Directory View -->
+        <section id="content-links-view" class="view-panel">
+          <div class="header-title" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <h2>Content Links</h2>
+              <p>Directory of completed content deliverables and Google Drive links posted by creatives.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px; padding: 6px 16px; font-size: 0.8rem; font-weight: 600;">
+                Total Delivered Links: <strong id="content-links-total-count">0</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Content Links Filters -->
+          <div style="display: flex; gap: 12px; margin-bottom: 24px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="content-links-search-input" placeholder="Search content title or creative..." class="search-input" style="flex: 2; min-width: 200px; height: 38px; padding: 0 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none;">
+            <select id="content-links-creative-filter" class="filter-select" style="flex: 1; min-width: 150px; height: 38px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; outline: none; cursor: pointer;">
+              <option value="all">All Creatives</option>
+            </select>
+          </div>
+
+          <!-- Content Links Table Container -->
+          <div class="tasks-table-container" style="max-height: calc(100vh - 280px); overflow-y: auto;">
+            <table class="tasks-table" style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th class="sortable-th" data-sort="id" style="width: 90px; text-align: left;">ID <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="name" style="text-align: left;">Content Title / Description <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="designer" style="width: 240px; text-align: left;">Done By (Creative) <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="assignedBy" style="width: 220px; text-align: left;">Assigned By <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="date" style="width: 130px; text-align: left;">Date <span class="sort-icon">↕</span></th>
+                  <th style="width: 180px; text-align: center;">Delivery Link</th>
+                </tr>
+              </thead>
+              <tbody id="content-links-list-body">
+                <!-- Populated dynamically in app.js -->
               </tbody>
             </table>
           </div>
@@ -1039,8 +1105,25 @@
     </div>
   </div>
 
+  <!-- Social Media Publishing Queue Drawer -->
+  <div id="publishing-queue-drawer" class="activity-drawer" style="background: rgba(10, 15, 26, 0.98); border-left: 1px solid rgba(245, 158, 11, 0.15);">
+    <div class="activity-drawer-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 16px;">
+      <h3 style="display: flex; align-items: center; gap: 10px; color: var(--honey-gold);">
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+        Publishing Queue
+      </h3>
+      <button id="close-publishing-btn" class="close-btn" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    </div>
+    <div style="padding: 12px 20px; font-size: 0.8rem; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.04);">
+      Pending social media uploads from finished design tasks.
+    </div>
+    <div class="activity-drawer-body" id="publishing-queue-list" style="gap: 16px; padding: 20px; max-height: calc(100vh - 150px); overflow-y: auto;">
+      <!-- Dynamically Rendered Queue Items -->
+    </div>
+  </div>
+
   <!-- Unscheduled Ideas Drawer -->
-  <div id="ideas-drawer" class="activity-drawer" style="right: -400px; background: rgba(12, 18, 33, 0.95); border-left: 1px solid rgba(255,255,255,0.08);">
+  <div id="ideas-drawer" class="activity-drawer" style="background: rgba(12, 18, 33, 0.95); border-left: 1px solid rgba(255,255,255,0.08);">
     <div class="activity-drawer-header">
       <h3>
         <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"></path></svg>
@@ -1089,6 +1172,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.0.6"></script>
+  <script type="module" src="app.js?v=3.0.8"></script>
 </body>
 </html>
