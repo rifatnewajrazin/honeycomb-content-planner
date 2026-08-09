@@ -1949,6 +1949,18 @@ function initData() {
 
   if (localBrands) {
     state.brands = JSON.parse(localBrands);
+
+    // Merge any missing DEFAULT_BRANDS into state.brands
+    DEFAULT_BRANDS.forEach(def => {
+      let b = state.brands.find(x => x.id === def.id || (x.name && x.name.toLowerCase() === def.name.toLowerCase()));
+      if (!b) {
+        state.brands.push({ ...def });
+      } else {
+        if (!b.logo || b.id === 'evoka-experiences' || b.name.toLowerCase().includes('evoka')) {
+          b.logo = def.logo || 'assets/logos/evoka-experiences.png';
+        }
+      }
+    });
     
     // Forcefully align brand colors and glows to monochrome
     const monochromeMap = {
@@ -1958,7 +1970,8 @@ function initData() {
       'perfume-tahams': { color: '#888888', glow: 'transparent' },
       'lumina-tahams': { color: '#dddddd', glow: 'transparent' },
       'star-tahams': { color: '#bbbbbb', glow: 'transparent' },
-      'merchtile': { color: '#999999', glow: 'transparent' }
+      'merchtile': { color: '#999999', glow: 'transparent' },
+      'evoka-experiences': { color: '#d4af37', glow: 'rgba(212, 175, 55, 0.2)' }
     };
     let colorsUpdated = false;
     state.brands.forEach(b => {
@@ -1971,44 +1984,22 @@ function initData() {
       }
     });
 
-    // Ensure all weekly goals are strictly set to matching user selection
-    const goalsMap = {
-      'sammtech': 2,
-      'lovelife': 0,
-      'tahams': 14,
-      'perfume-tahams': 2,
-      'lumina-tahams': 1,
-      'star-tahams': 1,
-      'merchtile': 2
+    const logoMap = {
+      'sammtech': 'assets/logos/sammtech.png',
+      'lovelife': 'assets/logos/lovelife.png',
+      'tahams': 'assets/logos/tahams.png',
+      'perfume-tahams': 'assets/logos/perfume-tahams.png',
+      'lumina-tahams': 'assets/logos/lumina-tahams.png',
+      'star-tahams': 'assets/logos/star-tahams.png',
+      'merchtile': 'assets/logos/merchtile.png',
+      'evoka-experiences': 'assets/logos/evoka-experiences.png'
     };
-    let goalsUpdated = false;
     state.brands.forEach(b => {
-      if (goalsMap[b.id] !== undefined && b.frequencyGoal !== goalsMap[b.id]) {
-        b.frequencyGoal = goalsMap[b.id];
-        goalsUpdated = true;
+      if (logoMap[b.id]) {
+        b.logo = logoMap[b.id];
       }
     });
-    if (goalsUpdated || colorsUpdated) {
-      saveToStorage();
-    }
-
-    // Check if the loaded brands need to have logo paths attached
-    const sammtechBrandRef = state.brands.find(b => b.id === 'sammtech');
-    if (!sammtechBrandRef || sammtechBrandRef.logo === null || sammtechBrandRef.logo === undefined) {
-      const logoMap = {
-        'sammtech': 'assets/logos/sammtech.png',
-        'lovelife': 'assets/logos/lovelife.png',
-        'tahams': 'assets/logos/tahams.png',
-        'perfume-tahams': 'assets/logos/perfume-tahams.png',
-        'lumina-tahams': 'assets/logos/lumina-tahams.png',
-        'star-tahams': 'assets/logos/star-tahams.png',
-        'merchtile': 'assets/logos/merchtile.png'
-      };
-      state.brands.forEach(b => {
-        b.logo = logoMap[b.id] || null;
-      });
-      saveToStorage();
-    }
+    saveToStorage();
   } else {
     state.brands = [...DEFAULT_BRANDS];
     saveToStorage();
