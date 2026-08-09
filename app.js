@@ -100,6 +100,18 @@ const DEFAULT_BRANDS = [
     color: '#999999',
     glow: 'transparent',
     lastPostDate: '2026-07-03'
+  },
+  {
+    id: 'evoka-experiences',
+    name: 'Evoka Experiences',
+    type: 'Event Decor & Management',
+    sub: false,
+    frequencyGoal: 2,
+    logo: 'assets/logos/evoka-experiences.png',
+    grad: 'linear-gradient(135deg, #d4af37 0%, #0d1b2a 100%)',
+    color: '#d4af37',
+    glow: 'rgba(212, 175, 55, 0.2)',
+    lastPostDate: '2026-07-26'
   }
 ];
 
