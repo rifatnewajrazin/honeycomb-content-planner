@@ -2002,41 +2002,57 @@ function initData() {
     saveToStorage();
   }
 
+  // Pre-fill state with default local datasets so UI is never empty
+  state.tasks = [...DEFAULT_TASKS];
+  state.ideas = [...DEFAULT_IDEAS];
+  state.posts = [...DEFAULT_POSTS];
+  state.team = [...DEFAULT_TEAM];
+
   // Sync posts from Firestore in real-time
   onSnapshot(collection(db, "posts"), (querySnapshot) => {
     if (querySnapshot.empty) {
-      // Seed Firestore with default mock posts if database is completely empty
       DEFAULT_POSTS.forEach(async (p) => {
-        await setDoc(doc(db, "posts", p.id), p);
+        try { await setDoc(doc(db, "posts", p.id), p); } catch(e){}
       });
+      state.posts = [...DEFAULT_POSTS];
     } else {
       const loadedPosts = [];
       querySnapshot.forEach((doc) => {
         loadedPosts.push(doc.data());
       });
+
+      DEFAULT_POSTS.forEach(def => {
+        if (!loadedPosts.some(p => p.id === def.id)) {
+          loadedPosts.push(def);
+        }
+      });
+
       state.posts = loadedPosts;
-      updateModalDropdowns();
-      refreshViews();
-      healPostTaskSync();
     }
+    updateModalDropdowns();
+    refreshViews();
+    healPostTaskSync();
   }, (error) => {
     console.error("Firestore sync error:", error);
+    state.posts = [...DEFAULT_POSTS];
+    updateModalDropdowns();
+    refreshViews();
   });
 
   // Sync tasks from Firestore in real-time
   onSnapshot(collection(db, "tasks"), (querySnapshot) => {
     if (querySnapshot.empty) {
-      // Seed Firestore with default spreadsheet tasks if database is completely empty
       DEFAULT_TASKS.forEach(async (t) => {
-        await setDoc(doc(db, "tasks", t.id), t);
+        try { await setDoc(doc(db, "tasks", t.id), t); } catch(e){}
       });
+      state.tasks = [...DEFAULT_TASKS];
     } else {
       const loadedTasks = [];
       querySnapshot.forEach((docSnap) => {
         const t = docSnap.data();
         if (!t.taskType) {
           t.taskType = t.associatedPostId ? 'post' : 'general';
-          setDoc(doc(db, "tasks", docSnap.id), t);
+          try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
         }
 
         const designerPerson = findTeamMember(t.designer);
@@ -2047,71 +2063,94 @@ function initData() {
 
         loadedTasks.push(t);
       });
+
+      // Guarantee all DEFAULT_TASKS are present
+      DEFAULT_TASKS.forEach(def => {
+        if (!loadedTasks.some(t => t.id === def.id)) {
+          loadedTasks.push(def);
+        }
+      });
+
       state.tasks = loadedTasks.sort((a, b) => a.id.localeCompare(b.id));
-      updateModalDropdowns();
-      refreshViews();
-      healPostTaskSync();
-      updatePublishingQueueBadge();
     }
+    updateModalDropdowns();
+    refreshViews();
+    healPostTaskSync();
+    updatePublishingQueueBadge();
   }, (error) => {
     console.error("Firestore tasks sync error:", error);
+    state.tasks = [...DEFAULT_TASKS];
+    updateModalDropdowns();
+    refreshViews();
   });
 
   // Sync ideas from Firestore in real-time
   onSnapshot(collection(db, "ideas"), (querySnapshot) => {
     if (querySnapshot.empty) {
-      // Seed Firestore with default spreadsheet ideas if database is completely empty
       DEFAULT_IDEAS.forEach(async (i) => {
-        await setDoc(doc(db, "ideas", i.id), i);
+        try { await setDoc(doc(db, "ideas", i.id), i); } catch(e){}
       });
+      state.ideas = [...DEFAULT_IDEAS];
     } else {
       const loadedIdeas = [];
       querySnapshot.forEach((doc) => {
         loadedIdeas.push(doc.data());
       });
+
+      DEFAULT_IDEAS.forEach(def => {
+        if (!loadedIdeas.some(i => i.id === def.id)) {
+          loadedIdeas.push(def);
+        }
+      });
+
       state.ideas = loadedIdeas.sort((a, b) => a.id.localeCompare(b.id));
-      updateModalDropdowns();
-      refreshViews();
     }
+    updateModalDropdowns();
+    refreshViews();
   }, (error) => {
     console.error("Firestore ideas sync error:", error);
+    state.ideas = [...DEFAULT_IDEAS];
+    updateModalDropdowns();
+    refreshViews();
   });
 
   // Sync team members from Firestore in real-time
   onSnapshot(collection(db, "team"), (querySnapshot) => {
     if (querySnapshot.empty) {
-      // Seed Firestore only if database is completely empty
       DEFAULT_TEAM.forEach(async (t) => {
-        await setDoc(doc(db, "team", t.id), t);
+        try { await setDoc(doc(db, "team", t.id), t); } catch(e){}
       });
-      return;
+      state.team = [...DEFAULT_TEAM];
+    } else {
+      const loadedTeam = [];
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const dataName = data.name || '';
+        const defaultMatch = DEFAULT_TEAM.find(t => t.name === dataName || (t.aliases && t.aliases.includes(dataName)));
+        if (defaultMatch && defaultMatch.photo) {
+          data.photo = defaultMatch.photo;
+        }
+        loadedTeam.push(data);
+      });
+
+      DEFAULT_TEAM.forEach(def => {
+        const exists = loadedTeam.some(t => t.name === def.name || t.id === def.id || (t.aliases && t.aliases.includes(def.name)));
+        if (!exists) {
+          loadedTeam.push(def);
+        }
+      });
+
+      state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
-
-    const loadedTeam = [];
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const dataName = data.name || '';
-      const defaultMatch = DEFAULT_TEAM.find(t => t.name === dataName || (t.aliases && t.aliases.includes(dataName)));
-      if (defaultMatch && defaultMatch.photo) {
-        data.photo = defaultMatch.photo;
-      }
-      loadedTeam.push(data);
-    });
-
-    // Always merge missing default team members
-    DEFAULT_TEAM.forEach(def => {
-      const exists = loadedTeam.some(t => t.name === def.name || t.id === def.id || (t.aliases && t.aliases.includes(def.name)));
-      if (!exists) {
-        loadedTeam.push(def);
-      }
-    });
-
-    state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     updateModalDropdowns();
     renderUserProfile();
     refreshViews();
   }, (error) => {
     console.error("Firestore team sync error:", error);
+    state.team = [...DEFAULT_TEAM];
+    updateModalDropdowns();
+    renderUserProfile();
+    refreshViews();
   });
 }
 
