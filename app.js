@@ -5868,6 +5868,12 @@ function renderTeam() {
          </button>`
       : `<span style="color: #64748b; font-size: 0.75rem;">View Only</span>`;
 
+    const isSelf = currentUser && (p.name === currentUser || (p.aliases && p.aliases.includes(currentUser)));
+    const canSeePassword = isAdmin || isSelf;
+    const passwordHtml = canSeePassword 
+      ? `<code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #fbbf24;">${p.password || 'none'}</code>`
+      : `<span style="color: #64748b; letter-spacing: 2px;">••••••••</span>`;
+
     const tr = document.createElement('tr');
     tr.id = `team-row-${p.id}`;
     tr.innerHTML = `
@@ -5882,7 +5888,7 @@ function renderTeam() {
       <td><span style="color: #cbd5e1; font-weight: 500;">${p.role || 'No Role Assigned'}</span></td>
       <td><div style="display: flex; flex-wrap: wrap; gap: 4px;">${roleTagsHtml}</div></td>
       <td>${accessTag}</td>
-      <td><code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; color: #fbbf24;">${p.password || 'none'}</code></td>
+      <td>${passwordHtml}</td>
       <td style="text-align: right;">${editBtn}</td>
     `;
     tbody.appendChild(tr);
