@@ -109,13 +109,13 @@ const DEFAULT_TEAM = [
   { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Mahim'] },
   { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
   { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Niaz'] },
-  { id: 'p-5', name: 'Jubayer Hossain', role: 'Social Media Manager', initial: 'JH', photo: 'assets/avatars/Jubayer-Hossain.png', password: 'jubayer123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Jubayer'] },
+  { id: 'p-5', name: 'Jubayer Hossain', role: 'Social Media Manager', initial: 'JH', photo: 'assets/avatars/Jubayer-Hossain.png', password: 'jubayer123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Jubayer', 'Jubaer Bhai', 'Jubaer', 'Jubayer Bhai'] },
   { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Zahid', 'Zahidul Islam'] },
   { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Ashiq Bhaia', 'Ashiq'] },
   { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Tohfa Apu', 'Tohfa'] },
   { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Saddam'] },
   { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
-  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Oisarjo'] },
+  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
   { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Orthee'] },
   { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Rafi'] },
   { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', password: 'anik123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Anik', 'Milon'] },
@@ -2096,6 +2096,14 @@ function initData() {
         data.photo = defaultMatch.photo;
       }
       loadedTeam.push(data);
+    });
+
+    // Always merge missing default team members
+    DEFAULT_TEAM.forEach(def => {
+      const exists = loadedTeam.some(t => t.name === def.name || t.id === def.id || (t.aliases && t.aliases.includes(def.name)));
+      if (!exists) {
+        loadedTeam.push(def);
+      }
     });
 
     state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
