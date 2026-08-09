@@ -109,7 +109,7 @@ const DEFAULT_TEAM = [
   { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Mahim'] },
   { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
   { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Niaz'] },
-  { id: 'p-5', name: 'Jubayer Hossain', role: 'Social Media Manager', initial: 'JH', photo: 'assets/avatars/Jubayer-Hossain.png', password: 'jubayer123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Jubayer', 'Jubaer Bhai', 'Jubaer', 'Jubayer Bhai'] },
+  { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, password: 'smm123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
   { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Zahid', 'Zahidul Islam'] },
   { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Ashiq Bhaia', 'Ashiq'] },
   { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Tohfa Apu', 'Tohfa'] },
@@ -4374,7 +4374,7 @@ function openPostModal(post = null, targetDate = null) {
 
     // Default assignee to creator for limited users to avoid mistakes
     if (isLimited) {
-      document.getElementById('post-assignee').value = 'Jubayer Hossain';
+      document.getElementById('post-assignee').value = 'Social Media Manager';
     }
   }
 
