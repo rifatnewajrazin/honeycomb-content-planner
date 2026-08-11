@@ -2916,6 +2916,23 @@ function setupEventListeners() {
     });
   });
 
+  // Calendar month navigation buttons
+  const calPrevBtn = document.getElementById('cal-prev');
+  if (calPrevBtn) {
+    calPrevBtn.addEventListener('click', () => {
+      state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
+      renderCalendar();
+    });
+  }
+
+  const calNextBtn = document.getElementById('cal-next');
+  if (calNextBtn) {
+    calNextBtn.addEventListener('click', () => {
+      state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
+      renderCalendar();
+    });
+  }
+
 
 
   // People & Roles table column header click to sort
@@ -3731,6 +3748,22 @@ function renderKanban() {
   });
 }
 
+function normalizeDateString(dStr) {
+  if (!dStr) return '';
+  dStr = dStr.trim();
+  let match = dStr.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (match) {
+    return `${match[1]}-${String(match[2]).padStart(2, '0')}-${String(match[3]).padStart(2, '0')}`;
+  }
+  match = dStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+  if (match) {
+    let year = match[3];
+    if (year.length === 2) year = '20' + year;
+    return `${year}-${String(match[2]).padStart(2, '0')}-${String(match[1]).padStart(2, '0')}`;
+  }
+  return dStr;
+}
+
 // Render Calendar View
 function renderCalendar() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -3759,6 +3792,9 @@ function renderCalendar() {
     calDaysArea.appendChild(dayCell);
   }
 
+  // Today formatted string
+  const todayStr = new Date().toISOString().split('T')[0];
+
   // Draw current month's days
   for (let day = 1; day <= numDays; day++) {
     const dayCell = document.createElement('div');
@@ -3766,8 +3802,7 @@ function renderCalendar() {
     // Format cell date string: YYYY-MM-DD
     const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
-    // Check if it is today (2026-07-05)
-    const isToday = dateStr === '2026-07-05';
+    const isToday = dateStr === todayStr || dateStr === '2026-07-05';
     dayCell.className = `calendar-day-cell${isToday ? ' today' : ''}`;
     
     dayCell.innerHTML = `
@@ -3775,14 +3810,13 @@ function renderCalendar() {
       <div class="calendar-events"></div>
     `;
 
-    // Filter posts, tasks, and ideas for this date
-    let dayPosts = state.posts.filter(p => p.date === dateStr);
+    // Filter posts and tasks for this date
+    let dayPosts = state.posts.filter(p => normalizeDateString(p.date) === dateStr);
     if (state.selectedBrandFilter !== 'all') {
       dayPosts = dayPosts.filter(p => p.brandId === state.selectedBrandFilter);
     }
 
-    let dayTasks = state.tasks.filter(t => t.date === dateStr && t.taskType !== 'post');
-    let dayIdeas = state.ideas.filter(i => i.date === dateStr);
+    let dayTasks = state.tasks.filter(t => normalizeDateString(t.date) === dateStr && t.taskType !== 'post' && !isItemArchived(t));
 
     if (state.selectedBrandFilter !== 'all') {
       const selectedBrand = state.brands.find(b => b.id === state.selectedBrandFilter);
@@ -3791,10 +3825,6 @@ function renderCalendar() {
         dayTasks = dayTasks.filter(t => 
           t.name.toLowerCase().includes(brandNameLower) || 
           (t.comments || '').toLowerCase().includes(brandNameLower)
-        );
-        dayIdeas = dayIdeas.filter(i => 
-          i.topic.toLowerCase().includes(brandNameLower) || 
-          (i.notes || '').toLowerCase().includes(brandNameLower)
         );
       }
     }
@@ -3808,8 +3838,8 @@ function renderCalendar() {
 
       const eventItem = document.createElement('div');
       eventItem.className = 'calendar-event-item';
-      eventItem.style.setProperty('--brand-glow', brand.glow);
-      eventItem.style.setProperty('--brand-color', brand.color);
+      eventItem.style.setProperty('--brand-glow', brand.glow || 'rgba(255,69,58,0.2)');
+      eventItem.style.setProperty('--brand-color', brand.color || '#ff453a');
       
       const taskIndicator = post.associatedTaskId ? ` [Task ${post.associatedTaskId}]` : '';
       eventItem.textContent = `[${brand.name.substring(0,3)}] ${post.title}${taskIndicator}`;
@@ -3827,8 +3857,8 @@ function renderCalendar() {
     dayTasks.forEach(task => {
       const eventItem = document.createElement('div');
       eventItem.className = 'calendar-event-item';
-      eventItem.style.setProperty('--brand-glow', 'rgba(139, 92, 246, 0.2)');
-      eventItem.style.setProperty('--brand-color', '#8b5cf6');
+      eventItem.style.setProperty('--brand-glow', 'rgba(255, 69, 58, 0.2)');
+      eventItem.style.setProperty('--brand-color', '#ff5e3a');
       eventItem.textContent = `[Task] ${task.name}`;
       eventItem.title = `Task ${task.id}: ${task.name} (${task.designer})`;
       
@@ -3840,32 +3870,15 @@ function renderCalendar() {
       eventsArea.appendChild(eventItem);
     });
 
-    // Render planner ideas
-    dayIdeas.forEach(idea => {
-      const eventItem = document.createElement('div');
-      eventItem.className = 'calendar-event-item';
-      eventItem.style.setProperty('--brand-glow', 'rgba(6, 182, 212, 0.2)');
-      eventItem.style.setProperty('--brand-color', '#06b6d4');
-      eventItem.textContent = `[Idea] ${idea.topic}`;
-      eventItem.title = `Idea: ${idea.topic} (${idea.designer || 'Unassigned'})`;
-      
-      eventItem.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openIdeaModal(idea);
-      });
-
-      eventsArea.appendChild(eventItem);
-    });
-
-    // Quick add click event on cell
+    // Quick add task click event on cell
     dayCell.addEventListener('click', () => {
-      openPostModal(null, dateStr);
+      openTaskModal(null, dateStr);
     });
 
     calDaysArea.appendChild(dayCell);
   }
 
-  // Draw next month's leading days to complete the calendar grid (rows of 7 days, up to 42 cells)
+  // Draw next month's leading days to complete the calendar grid
   const totalCells = firstDayIndex + numDays;
   const nextMonthDays = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
   for (let i = 1; i <= nextMonthDays; i++) {
