@@ -5094,28 +5094,23 @@ async function handleTaskFormSubmit(e) {
 
       if (jobType === 'general') {
         task.associatedPostId = '';
-        try {
-          await setDoc(doc(db, "tasks", task.id), task);
-          if (oldPostId) {
-            await deleteDoc(doc(db, "posts", oldPostId));
-          }
-          showToast('Task updated successfully', 'success');
-          await logActivity(`updated General Design Task "${task.name}"`, db);
-        } catch (err) {
-          console.error(err);
-          showToast('Failed to save task changes to cloud', 'error');
-        }
       } else {
         task.associatedPostId = associatedPostId;
-        try {
-          await setDoc(doc(db, "tasks", task.id), task);
+      }
+
+      showToast('Task updated successfully', 'success');
+      logActivity(`updated Task ${task.id}: "${task.name}"`, db);
+      refreshViews();
+
+      try {
+        await setDoc(doc(db, "tasks", task.id), task);
+        if (jobType === 'general' && oldPostId) {
+          try { await deleteDoc(doc(db, "posts", oldPostId)); } catch(e){}
+        } else if (jobType === 'post') {
           await syncTaskToPost(task, db);
-          showToast('Task updated successfully', 'success');
-          await logActivity(`updated Design Task "${task.name}"`, db);
-        } catch (err) {
-          console.error(err);
-          showToast('Failed to save task changes to cloud', 'error');
         }
+      } catch (err) {
+        console.warn("Firestore task update warning (saved locally):", err);
       }
     }
   } else {
@@ -5143,16 +5138,18 @@ async function handleTaskFormSubmit(e) {
       associatedPostId: jobType === 'post' ? associatedPostId : ''
     };
 
+    state.tasks.push(newTask);
+    showToast(`Task ${newId} created successfully`, 'success');
+    logActivity(`created task ${newId}: "${newTask.name}"`, db);
+    refreshViews();
+
     try {
       await setDoc(doc(db, "tasks", newId), newTask);
       if (jobType === 'post') {
         await syncTaskToPost(newTask, db);
       }
-      showToast(`Task ${newId} created successfully`, 'success');
-      await logActivity(`created task ${newId}: "${newTask.name}"`, db);
     } catch (err) {
-      console.error(err);
-      showToast('Failed to save new task to cloud', 'error');
+      console.warn("Firestore new task save warning (saved locally):", err);
     }
   }
 
@@ -5165,18 +5162,27 @@ async function deleteTask() {
   if (confirm(`Are you sure you want to delete Task ${state.editingTask.id}?`)) {
     const taskId = state.editingTask.id;
     const associatedPostId = state.editingTask.associatedPostId;
+    const taskName = state.editingTask.name;
+
+    // Remove locally
+    state.tasks = state.tasks.filter(t => t.id !== taskId);
+    if (associatedPostId) {
+      state.posts = state.posts.filter(p => p.id !== associatedPostId);
+    }
+
+    showToast(`Task ${taskId} removed`, 'info');
+    logActivity(`deleted task ${taskId}: "${taskName}"`, db);
+    refreshViews();
+    closeTaskModal();
+
     try {
       await deleteDoc(doc(db, "tasks", taskId));
       if (associatedPostId) {
-        await deleteDoc(doc(db, "posts", associatedPostId));
+        try { await deleteDoc(doc(db, "posts", associatedPostId)); } catch(e){}
       }
-      showToast(`Task ${taskId} removed`, 'info');
-      await logActivity(`deleted task ${state.editingTask.id}: "${state.editingTask.name}"`, db);
     } catch (err) {
-      console.error(err);
-      showToast('Failed to delete task from cloud', 'error');
+      console.warn("Firestore delete warning (removed locally):", err);
     }
-    closeTaskModal();
   }
 }
 
