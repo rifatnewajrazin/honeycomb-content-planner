@@ -134,16 +134,16 @@ const DEFAULT_BRANDS = [
 
 // Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
   { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: false, aliases: ['Mahim'] },
   { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
   { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Niaz'] },
   { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, password: 'smm123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
-  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Zahid', 'Zahidul Islam'] },
+  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canMarkPosted: true, aliases: ['Zahid', 'Zahidul Islam'] },
   { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Ashiq Bhaia', 'Ashiq'] },
   { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Tohfa Apu', 'Tohfa'] },
   { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Saddam'] },
-  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
+  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isAssigner: true, canLogin: true, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
   { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
   { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Orthee'] },
   { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Rafi'] },
@@ -163,6 +163,21 @@ function findTeamMember(name) {
     if (p.name && (p.name.toLowerCase().includes(clean) || clean.includes(p.name.toLowerCase()))) return true;
     return false;
   });
+}
+
+// Returns the full team-roster record for whoever is currently signed in, or null if signed out.
+function getCurrentUserPerson() {
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  if (!currentUser) return null;
+  return findTeamMember(currentUser);
+}
+
+// Gate for the "mark social media posts as posted" feature — only people with
+// canMarkPosted: true on their team-roster record (set in Firestore/DEFAULT_TEAM)
+// may see or use the bulk "Mark as Posted" controls.
+function canCurrentUserMarkPosted() {
+  const person = getCurrentUserPerson();
+  return !!(person && person.canMarkPosted);
 }
 
 function isItemArchived(item) {
@@ -4513,7 +4528,7 @@ function renderTasks() {
   document.getElementById('social-tasks-count').textContent = socialTasks.length;
   document.getElementById('general-tasks-count').textContent = generalTasks.length;
 
-  const renderRow = (task, targetBody) => {
+  const renderRow = (task, targetBody, isSocialRow, postedCellHtml) => {
     const statusClass = task.status.toLowerCase().replace(' ', '-');
     let rawDeliveryLink = (task.deliveryLink || '').trim();
     let finalDeliveryUrl = rawDeliveryLink;
@@ -4589,6 +4604,7 @@ function renderTasks() {
           ${linkedPostHtml}
         </div>
       </td>
+      ${isSocialRow ? `<td class="posted-cell" style="text-align: center;">${postedCellHtml}</td>` : ''}
       <td>
         <button class="btn-icon task-edit-btn" data-id="${task.id}" style="width: 32px; height: 32px" title="Edit Task">
           <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -4624,11 +4640,125 @@ function renderTasks() {
       });
     }
 
+    // Hook "Posted" checkbox — only present for social rows the current user is allowed to mark
+    const postedCheckbox = row.querySelector('.post-select-checkbox');
+    if (postedCheckbox) {
+      postedCheckbox.addEventListener('change', updateMarkSelectedPostedButtonState);
+    }
+
     targetBody.appendChild(row);
   };
 
-  socialTasks.forEach(t => renderRow(t, tableBodyPosts));
-  generalTasks.forEach(t => renderRow(t, tableBodyGeneral));
+  const canMarkPosted = canCurrentUserMarkPosted();
+
+  const buildPostedCellHtml = (task) => {
+    if (task.isPosted) {
+      return `<span class="posted-badge" title="Already marked posted" style="display:inline-flex;align-items:center;gap:4px;color:#22c55e;font-weight:700;font-size:0.78rem;">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;"><path d="M20 6L9 17l-5-5"/></svg>Posted
+      </span>`;
+    }
+    if (canMarkPosted) {
+      return `<input type="checkbox" class="post-select-checkbox" data-task-id="${task.id}" title="Select to mark as posted">`;
+    }
+    return `<span style="color:#64748b;font-size:0.78rem;">Pending</span>`;
+  };
+
+  socialTasks.forEach(t => {
+    const isSocialRow = true;
+    const postedCellHtml = buildPostedCellHtml(t);
+    renderRow(t, tableBodyPosts, isSocialRow, postedCellHtml);
+  });
+  generalTasks.forEach(t => renderRow(t, tableBodyGeneral, false, ''));
+
+  setupMarkAsPostedControls(canMarkPosted, socialTasks);
+}
+
+// Wires up the "Posted" column header select-all checkbox and the bulk
+// "Mark Selected as Posted" button. Controls are only shown to team members
+// with canMarkPosted: true (see findTeamMember/DEFAULT_TEAM); everyone else
+// just sees a read-only "Posted"/"Pending" label per row.
+function setupMarkAsPostedControls(canMarkPosted, socialTasks) {
+  const selectAllWrap = document.getElementById('posted-select-all-wrap');
+  const readonlyLabel = document.getElementById('posted-col-label-readonly');
+  const bulkBtn = document.getElementById('mark-selected-posted-btn');
+  const selectAllCheckbox = document.getElementById('posted-select-all');
+
+  const anyUnposted = socialTasks.some(t => !t.isPosted);
+
+  if (selectAllWrap) selectAllWrap.style.display = (canMarkPosted && anyUnposted) ? 'flex' : 'none';
+  if (readonlyLabel) readonlyLabel.style.display = (canMarkPosted && anyUnposted) ? 'none' : 'inline';
+  if (bulkBtn) bulkBtn.style.display = (canMarkPosted && anyUnposted) ? 'inline-flex' : 'none';
+
+  if (selectAllCheckbox) {
+    selectAllCheckbox.checked = false;
+    selectAllCheckbox.onchange = () => {
+      document.querySelectorAll('.post-select-checkbox').forEach(cb => { cb.checked = selectAllCheckbox.checked; });
+      updateMarkSelectedPostedButtonState();
+    };
+  }
+
+  if (bulkBtn) {
+    bulkBtn.onclick = async () => {
+      const checked = Array.from(document.querySelectorAll('.post-select-checkbox:checked'));
+      const taskIds = checked.map(cb => cb.getAttribute('data-task-id'));
+      if (taskIds.length === 0) return;
+      await markTasksPostedBulk(taskIds);
+    };
+  }
+
+  updateMarkSelectedPostedButtonState();
+}
+
+function updateMarkSelectedPostedButtonState() {
+  const bulkBtn = document.getElementById('mark-selected-posted-btn');
+  if (!bulkBtn) return;
+  const checkedCount = document.querySelectorAll('.post-select-checkbox:checked').length;
+  bulkBtn.disabled = checkedCount === 0;
+  const label = checkedCount > 0 ? `Mark ${checkedCount} Selected as Posted` : 'Mark Selected as Posted';
+  const svgHtml = bulkBtn.querySelector('svg') ? bulkBtn.querySelector('svg').outerHTML : '';
+  bulkBtn.innerHTML = `${svgHtml} ${label}`;
+}
+
+// Marks a batch of tasks (and their linked posts) as posted in one action.
+// Reuses the same per-task logic as the original single-item markTaskPosted,
+// but writes everything and logs one summarized activity entry.
+async function markTasksPostedBulk(taskIds) {
+  if (!canCurrentUserMarkPosted()) {
+    showToast('You do not have permission to mark posts as posted', 'error');
+    return;
+  }
+
+  let successCount = 0;
+  for (const taskId of taskIds) {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (!task || task.isPosted) continue;
+
+    task.isPosted = true;
+
+    if (task.associatedPostId) {
+      const post = state.posts.find(p => p.id === task.associatedPostId);
+      if (post) {
+        post.status = 'published';
+        try { await setDoc(doc(db, "posts", post.id), post); } catch (e) {}
+      }
+    }
+
+    try {
+      await setDoc(doc(db, "tasks", taskId), task);
+      successCount++;
+    } catch (err) {
+      console.error(`Failed to mark task ${taskId} as posted:`, err);
+    }
+  }
+
+  if (successCount > 0) {
+    logActivity(`Marked ${successCount} post${successCount === 1 ? '' : 's'} as posted`, db);
+    showToast(`Marked ${successCount} post${successCount === 1 ? '' : 's'} as posted`, 'success');
+  }
+
+  renderActivityLog();
+  updateActivityBadge();
+  refreshViews();
 }
 
 function openTaskModal(task = null) {
