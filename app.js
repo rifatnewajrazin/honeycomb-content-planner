@@ -2857,35 +2857,7 @@ function setupEventListeners() {
     });
   }
 
-  const toggleBtn = document.getElementById('toggle-activity-btn');
-  const closeBtn = document.getElementById('close-activity-btn');
-  const drawer = document.getElementById('activity-drawer');
 
-  if (toggleBtn && drawer) {
-    toggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      drawer.classList.toggle('open');
-      if (drawer.classList.contains('open')) {
-        lastViewedLogTime = new Date().toISOString();
-        localStorage.setItem('hc_last_viewed_log_time', lastViewedLogTime);
-        updateActivityBadge();
-      }
-    });
-  }
-
-  if (closeBtn && drawer) {
-    closeBtn.addEventListener('click', () => {
-      drawer.classList.remove('open');
-    });
-  }
-
-  document.addEventListener('click', (e) => {
-    if (drawer && drawer.classList.contains('open')) {
-      if (!drawer.contains(e.target) && !toggleBtn.contains(e.target)) {
-        drawer.classList.remove('open');
-      }
-    }
-  });
 
 
 

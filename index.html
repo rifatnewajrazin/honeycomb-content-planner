@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoneyComb Inc. Content Tracker & Planner</title>
   <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
-  <link rel="stylesheet" href="style.css?v=3.8.2">
+  <link rel="stylesheet" href="style.css?v=3.8.3">
 </head>
 <body class="minimal-theme">
 
@@ -93,11 +93,7 @@
             <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"></path></svg>
           </button>
 
-          <!-- Activity Bell Button -->
-          <button id="toggle-activity-btn" class="btn-icon" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; color: #a3a3c2; cursor: pointer; transition: all 0.2s;" title="Real-Time Activity Log">
-            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <span id="activity-badge" style="display: none; position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 1px solid #000;"></span>
-          </button>
+
 
 
           
@@ -922,19 +918,7 @@
 
   </div>
 
-  <!-- Real-time Activity Log Drawer -->
-  <div id="activity-drawer" class="activity-drawer">
-    <div class="activity-drawer-header">
-      <h3>
-        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        Notifications & Activity
-      </h3>
-      <button id="close-activity-btn" class="close-btn" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
-    </div>
-    <div class="activity-drawer-body" id="activity-log-list">
-      <!-- Dynamically Rendered Activity Items -->
-    </div>
-  </div>
+
 
 
 
