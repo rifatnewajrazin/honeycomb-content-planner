@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoneyComb Inc. Content Tracker & Planner</title>
   <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
-  <link rel="stylesheet" href="style.css?v=3.8.3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="style.css?v=3.9.1">
 </head>
 <body class="minimal-theme">
 
@@ -51,12 +53,6 @@
             </svg>
             Task Tracker
           </a>
-          <a href="#" class="nav-item" data-view="ideas">
-            <svg viewBox="0 0 24 24">
-              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"/>
-            </svg>
-            Content Planner
-          </a>
           <a href="#" class="nav-item" data-view="content-links">
             <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
               <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
@@ -88,15 +84,6 @@
         </div>
         
         <div class="header-actions">
-          <!-- Ideas Drawer Toggle -->
-          <button id="toggle-ideas-btn" class="btn-icon" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; color: #a3a3c2; cursor: pointer; transition: all 0.2s;" title="Idea Bank Drawer (Drag-and-Drop)">
-            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"></path></svg>
-          </button>
-
-
-
-
-          
           <!-- Page Filter -->
           <select id="global-brand-filter" class="filter-select">
             <option value="all">All Brands & Pages</option>
@@ -190,6 +177,7 @@
                 <option value="Razin">Razin</option>
                 <option value="Rabby">Rabby</option>
                 <option value="Niaz">Niaz</option>
+                <option value="Mahim">Mahim</option>
               </select>
 
               <select id="task-assigner-filter" class="filter-select">
@@ -292,81 +280,6 @@
           </div>
         </section>
 
-        <!-- View 6: Content Planner (Ideas) View -->
-        <section id="ideas-view" class="view-panel">
-          <!-- Top Stat Board for Ideas -->
-          <div class="tasks-summary-bar">
-            <div class="task-stat-box">
-              <h4>Total Ideas</h4>
-              <p id="idea-stat-total">0</p>
-            </div>
-            <div class="task-stat-box">
-              <h4>In Production</h4>
-              <p id="idea-stat-production">0</p>
-            </div>
-            <div class="task-stat-box">
-              <h4>Planned / Draft</h4>
-              <p id="idea-stat-draft">0</p>
-            </div>
-            <div class="task-stat-box">
-              <h4>Unassigned Ideas</h4>
-              <p id="idea-stat-unassigned">0</p>
-            </div>
-          </div>
-
-          <!-- Filters & Actions for Ideas -->
-          <div class="tasks-actions-header">
-            <div class="tasks-filters">
-              <input type="text" id="idea-search-input" placeholder="Search ideas..." class="search-input">
-              
-              <select id="idea-designer-filter" class="filter-select">
-                <option value="all">All Creatives</option>
-                <option value="Razin">Razin</option>
-                <option value="Rabby">Rabby</option>
-                <option value="Niaz">Niaz</option>
-                <option value="Unassigned">Unassigned</option>
-              </select>
-
-              <select id="idea-status-filter" class="filter-select">
-                <option value="all">All Statuses</option>
-                <option value="Draft Idea">Draft Idea</option>
-                <option value="In Production">In Production</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-
-            <button id="create-idea-btn" class="btn-primary" aria-label="Add new idea">
-              <svg viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              New Idea
-            </button>
-          </div>
-
-          <!-- Ideas Table/List Area -->
-          <div class="tasks-table-container">
-            <table class="tasks-table">
-              <thead>
-                <tr>
-                  <th class="sortable-th" data-sort="topic">Topic / Event Name <span class="sort-icon">↕</span></th>
-                  <th class="sortable-th" data-sort="date">Target Date <span class="sort-icon">↕</span></th>
-                  <th class="sortable-th" data-sort="urgency">Need Within <span class="sort-icon">↕</span></th>
-                  <th class="sortable-th" data-sort="status">Status <span class="sort-icon">↕</span></th>
-                  <th class="sortable-th" data-sort="designer">Creative <span class="sort-icon">↕</span></th>
-                  <th class="sortable-th" data-sort="initiator">Initiator (Idea By) <span class="sort-icon">↕</span></th>
-                  <th>Linked Task</th>
-                  <th>Links & Notes</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="ideas-list-body">
-                <!-- Dynamically Rendered Ideas -->
-              </tbody>
-            </table>
-          </div>
-        </section>
-
         <!-- View 7: Team & People Manager View -->
         <section id="team-view" class="view-panel">
           <!-- Top Stat Board for Team -->
@@ -380,12 +293,8 @@
               <p id="team-stat-designers">0</p>
             </div>
             <div class="task-stat-box">
-              <h4>Work Assigners</h4>
+              <h4>Assigners</h4>
               <p id="team-stat-assigners">0</p>
-            </div>
-            <div class="task-stat-box">
-              <h4>Idea Initiators</h4>
-              <p id="team-stat-initiators">0</p>
             </div>
           </div>
 
@@ -562,27 +471,17 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label for="post-type">Content Type</label>
-                <select id="post-type" class="form-control" required>
-                  <option value="post">Social Media Post</option>
-                  <option value="story">Story</option>
-                  <option value="video">Reel/Video</option>
-                  <option value="status">Status</option>
-                </select>
-              </div>
-
-              <div class="form-group">
                 <label for="post-assignee">Assignee</label>
                 <select id="post-assignee" class="form-control" required></select>
               </div>
-            </div>
 
-            <div class="form-row">
               <div class="form-group">
                 <label for="post-date">Target Date</label>
                 <input type="date" id="post-date" class="form-control" required>
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
                 <label for="post-time">Target Time</label>
                 <input type="time" id="post-time" class="form-control" required>
@@ -732,89 +631,6 @@
       </div>
     </div>
 
-    <!-- Modal Form (Create / Edit Content Idea) -->
-    <div id="idea-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="idea-modal-title">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 id="idea-modal-title">Create New Idea</h3>
-          <button class="close-btn" id="idea-modal-close-btn" aria-label="Close dialog">
-            <svg viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-
-        <form id="idea-form">
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="idea-form-topic">Topic / Event Name</label>
-              <input type="text" id="idea-form-topic" class="form-control" placeholder="e.g., Dc4 Google Map Reveal" required>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="idea-form-date">Target Date</label>
-                <input type="date" id="idea-form-date" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label for="idea-form-urgency">Need Within</label>
-                <input type="text" id="idea-form-urgency" class="form-control" placeholder="e.g., 2 weeks, ASAP, 3 days">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="idea-form-designer">Assigned Creative</label>
-                <select id="idea-form-designer" class="form-control">
-                  <!-- Populated dynamically -->
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="idea-form-initiator">Initiator / Idea By</label>
-                <select id="idea-form-initiator" class="form-control">
-                  <!-- Populated dynamically -->
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="idea-form-status">Planning Status</label>
-                <select id="idea-form-status" class="form-control" required>
-                  <option value="Draft Idea">Draft Idea</option>
-                  <option value="In Production">In Production</option>
-                  <option value="Completed">Completed</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="idea-form-link-task">Linked Task ID</label>
-                <select id="idea-form-link-task" class="form-control">
-                  <option value="">-- None --</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="idea-form-inspiration">Inspiration / Reference Links</label>
-              <input type="url" id="idea-form-inspiration" class="form-control" placeholder="https://pinterest.com/...">
-            </div>
-
-            <div class="form-group">
-              <label for="idea-form-notes">Notes, Ideas & Brief</label>
-              <textarea id="idea-form-notes" class="form-control" placeholder="Describe the concept, styling rules, references..."></textarea>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn-secondary" id="idea-modal-delete-btn" style="background-color: var(--status-critical-glow); color: var(--status-critical); border-color: rgba(239, 68, 68, 0.15); margin-right: auto; display: none;">Delete Idea</button>
-            <button type="button" class="btn-secondary modal-cancel" id="idea-modal-cancel-btn">Cancel</button>
-            <button type="submit" class="btn-primary">Save Idea</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <!-- Modal Form (Create / Edit Person) -->
     <div id="person-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="person-modal-title">
       <div class="modal-content">
@@ -870,11 +686,7 @@
                 </label>
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff;">
                   <input type="checkbox" id="person-role-assigner" style="width: 16px; height: 16px; accent-color: var(--honey-gold);">
-                  Work Assigner
-                </label>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff;">
-                  <input type="checkbox" id="person-role-initiator" style="width: 16px; height: 16px; accent-color: var(--honey-gold);">
-                  Idea Initiator
+                  Assigner
                 </label>
               </div>
             </div>
@@ -904,7 +716,8 @@
             <label for="login-user" style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">User Profile</label>
             <select id="login-user" class="form-control" style="width: 100%; margin-top: 8px;" required>
               <option value="Rifat Newaj Razin">Rifat Newaj Razin (Head of Multimedia & Creative)</option>
-              <option value="Jubayer Hossain">Jubayer Hossain (Content Planner and Researcher)</option>
+              <option value="Md. Yasin Arafat">Md. Yasin Arafat (Rabby) — Creative Design Associate</option>
+              <option value="Niaz">Niaz — Junior Designer</option>
             </select>
           </div>
           <div class="form-group" style="text-align: left; margin-bottom: 24px;">
@@ -916,27 +729,6 @@
       </div>
     </div>
 
-  </div>
-
-
-
-
-
-  <!-- Unscheduled Ideas Drawer -->
-  <div id="ideas-drawer" class="activity-drawer" style="background: rgba(12, 18, 33, 0.95); border-left: 1px solid rgba(255,255,255,0.08);">
-    <div class="activity-drawer-header">
-      <h3>
-        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"></path></svg>
-        Unscheduled Ideas
-      </h3>
-      <button id="close-ideas-btn" class="close-btn" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
-    </div>
-    <div style="padding: 10px 20px; font-size: 0.8rem; color: #94a3b8;">
-      Drag any idea card and drop it onto a Kanban column status group area to schedule it.
-    </div>
-    <div class="activity-drawer-body" id="unscheduled-ideas-list" style="gap: 12px;">
-      <!-- Dynamically Rendered Unscheduled Idea Cards -->
-    </div>
   </div>
 
   <!-- Brand Manager Modal -->
@@ -972,6 +764,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.0.8"></script>
+  <script type="module" src="app.js?v=3.9.0"></script>
 </body>
 </html>

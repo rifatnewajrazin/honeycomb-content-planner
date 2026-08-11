@@ -117,23 +117,23 @@ const DEFAULT_BRANDS = [
 
 // Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
-  { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Mahim'] },
-  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
-  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Niaz'] },
-  { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, password: 'smm123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
-  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Zahid', 'Zahidul Islam'] },
-  { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Ashiq Bhaia', 'Ashiq'] },
-  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Tohfa Apu', 'Tohfa'] },
-  { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Saddam'] },
-  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
-  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
-  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Orthee'] },
-  { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Rafi'] },
-  { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', password: 'anik123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: false, aliases: ['Anik', 'Milon'] },
-  { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', photo: 'assets/avatars/Labiba-Laisa-Esha.png', password: 'esha123', access: 'limited', isDesigner: false, isWorkAssigner: false, isIdeaInitiator: true, aliases: ['Esha'] },
-  { id: 'person-16', name: 'Rafiunoor Rahman Rajjo', role: 'Event Decor & Management', initial: 'RR', photo: 'assets/avatars/Rafiunoor-Rahman-Rajjo.png', password: 'rajjo123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Rajjo', 'Rafiunoor Rahman Rajjo', 'Rafiunoor'] },
-  { id: 'person-17', name: 'Nazmul Hoseen Emon', role: 'Manager, Display Center', initial: 'NE', photo: 'assets/avatars/Nazmul-Hoseen-Emon.png', password: 'emon123', access: 'limited', isDesigner: false, isWorkAssigner: true, isIdeaInitiator: true, aliases: ['Emon', 'Emon Bhai', 'Nazmul Hoseen Emon', 'Nazmul'] }
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: false, aliases: ['Mahim'] },
+  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
+  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Niaz'] },
+  { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, password: 'smm123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
+  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Zahid', 'Zahidul Islam'] },
+  { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Ashiq Bhaia', 'Ashiq'] },
+  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Tohfa Apu', 'Tohfa'] },
+  { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Saddam'] },
+  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
+  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
+  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Orthee'] },
+  { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Rafi'] },
+  { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', password: 'anik123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Anik', 'Milon'] },
+  { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', photo: 'assets/avatars/Labiba-Laisa-Esha.png', password: 'esha123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Esha'] },
+  { id: 'person-16', name: 'Rafiunoor Rahman Rajjo', role: 'Event Decor & Management', initial: 'RR', photo: 'assets/avatars/Rafiunoor-Rahman-Rajjo.png', password: 'rajjo123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Rajjo', 'Rafiunoor Rahman Rajjo', 'Rafiunoor'] },
+  { id: 'person-17', name: 'Nazmul Hoseen Emon', role: 'Manager, Display Center', initial: 'NE', photo: 'assets/avatars/Nazmul-Hoseen-Emon.png', password: 'emon123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Emon', 'Emon Bhai', 'Nazmul Hoseen Emon', 'Nazmul'] }
 ];
 
 function findTeamMember(name) {
@@ -1840,31 +1840,11 @@ const DEFAULT_POSTS = [
   }
 ];
 
-// Default Content Planner Ideas (CONTENT PLANNER & IDEA BANK)
-const DEFAULT_IDEAS = [
-  {
-    id: 'idea-1',
-    topic: 'Dc4 Google Map Reveal',
-    date: '2026-07-20',
-    urgency: '2 week',
-    status: 'Draft Idea',
-    designer: 'Razin',
-    initiator: 'Jubaer Bhai',
-    linkedTaskId: 'T-19',
-    inspiration: '',
-    notes: '',
-    dateLogged: '2026-07-05'
-  }
-];
-
-// App State
-
 // App State
 let state = {
   brands: [],
   posts: [],
   tasks: [],
-  ideas: [],
   team: [],
   currentView: 'dashboard',
   selectedBrandFilter: 'all',
@@ -1872,7 +1852,6 @@ let state = {
   calendarDate: new Date('2026-07-05T12:00:00'),
   editingPost: null,
   editingTask: null,
-  editingIdea: null,
   taskSearchFilter: '',
   taskDesignerFilter: 'all',
   taskAssignerFilter: 'all',
@@ -1881,11 +1860,6 @@ let state = {
   taskSortDir: 'desc',
   contentLinksSortCol: 'date',
   contentLinksSortDir: 'desc',
-  ideaSearchFilter: '',
-  ideaDesignerFilter: 'all',
-  ideaStatusFilter: 'all',
-  ideaSortCol: 'date',
-  ideaSortDir: 'desc',
   teamSortCol: 'name',
   teamSortDir: 'asc'
 };
@@ -2090,7 +2064,6 @@ function initData() {
 
   // Pre-fill state with default local datasets so UI is never empty
   state.tasks = [...DEFAULT_TASKS];
-  state.ideas = [...DEFAULT_IDEAS];
   state.posts = [...DEFAULT_POSTS];
   state.team = [...DEFAULT_TEAM];
 
@@ -2179,35 +2152,6 @@ function initData() {
     refreshViews();
   });
 
-  // Sync ideas from Firestore in real-time
-  onSnapshot(collection(db, "ideas"), (querySnapshot) => {
-    if (querySnapshot.empty) {
-      DEFAULT_IDEAS.forEach(async (i) => {
-        try { await setDoc(doc(db, "ideas", i.id), i); } catch(e){}
-      });
-      state.ideas = [...DEFAULT_IDEAS];
-    } else {
-      const loadedIdeas = [];
-      querySnapshot.forEach((doc) => {
-        loadedIdeas.push(doc.data());
-      });
-
-      DEFAULT_IDEAS.forEach(def => {
-        if (!loadedIdeas.some(i => i.id === def.id)) {
-          loadedIdeas.push(def);
-        }
-      });
-
-      state.ideas = loadedIdeas.sort((a, b) => a.id.localeCompare(b.id));
-    }
-    updateModalDropdowns();
-    refreshViews();
-  }, (error) => {
-    console.error("Firestore ideas sync error:", error);
-    state.ideas = [...DEFAULT_IDEAS];
-    updateModalDropdowns();
-    refreshViews();
-  });
 
   // Sync team members from Firestore in real-time
   onSnapshot(collection(db, "team"), (querySnapshot) => {
@@ -3042,200 +2986,6 @@ function setupEventListeners() {
   const postForm = document.getElementById('post-form');
   if (postForm) {
     postForm.addEventListener('submit', handleFormSubmit);
-  }
-
-  // Ideas Drawer toggle listeners
-  const toggleIdeasBtn = document.getElementById('toggle-ideas-btn');
-  const closeIdeasBtn = document.getElementById('close-ideas-btn');
-  const ideasDrawer = document.getElementById('ideas-drawer');
-
-  if (toggleIdeasBtn && ideasDrawer) {
-    toggleIdeasBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      ideasDrawer.classList.toggle('open');
-      if (ideasDrawer.classList.contains('open')) {
-        renderUnscheduledIdeas();
-      }
-    });
-  }
-
-  if (closeIdeasBtn && ideasDrawer) {
-    closeIdeasBtn.addEventListener('click', () => {
-      ideasDrawer.classList.remove('open');
-    });
-  }
-
-  document.addEventListener('click', (e) => {
-    if (ideasDrawer && ideasDrawer.classList.contains('open')) {
-      if (!ideasDrawer.contains(e.target) && !toggleIdeasBtn.contains(e.target)) {
-        ideasDrawer.classList.remove('open');
-      }
-    }
-  });
-
-  // CSV Export/Import listeners
-  const exportBtn = document.getElementById('csv-export-btn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', exportTasksToCSV);
-  }
-
-  const importBtn = document.getElementById('csv-import-btn');
-  const importInput = document.getElementById('csv-import-input');
-  if (importBtn && importInput) {
-    importBtn.addEventListener('click', () => {
-      importInput.click();
-    });
-    importInput.addEventListener('change', handleCSVImport);
-  }
-
-  // Drag and drop events setup for Kanban columns
-  const areas = document.querySelectorAll('.column-cards-area');
-  areas.forEach(area => {
-    area.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      area.classList.add('dragover');
-    });
-
-    area.addEventListener('dragleave', () => {
-      area.classList.remove('dragover');
-    });
-
-    area.addEventListener('drop', async (e) => {
-      e.preventDefault();
-      area.classList.remove('dragover');
-      const itemId = e.dataTransfer.getData('text/plain');
-      const newStatus = area.getAttribute('data-status');
-      
-      if (itemId.startsWith('{')) {
-        try {
-          const data = JSON.parse(itemId);
-          if (data.type === 'idea') {
-            await convertIdeaToPost(data.ideaId, newStatus);
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      } else if (itemId.startsWith('idea-')) {
-        await convertIdeaToPost(itemId, newStatus);
-      } else if (itemId.startsWith('T-')) {
-        updateTaskStatus(itemId, newStatus);
-      } else {
-        updatePostStatus(itemId, newStatus);
-      }
-    });
-  });
-
-  // Calendar navigation
-  document.getElementById('cal-prev').addEventListener('click', () => {
-    state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
-    renderCalendar();
-  });
-
-  document.getElementById('cal-next').addEventListener('click', () => {
-    state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
-    renderCalendar();
-  });
-
-  // --- TASK EVENTS ---
-  const taskSearch = document.getElementById('task-search-input');
-  if (taskSearch) {
-    taskSearch.addEventListener('input', (e) => {
-      state.taskSearchFilter = e.target.value;
-      renderTasks();
-    });
-  }
-
-  const taskDesigner = document.getElementById('task-designer-filter');
-  if (taskDesigner) {
-    taskDesigner.addEventListener('change', (e) => {
-      state.taskDesignerFilter = e.target.value;
-      renderTasks();
-    });
-  }
-
-  const taskAssigner = document.getElementById('task-assigner-filter');
-  if (taskAssigner) {
-    taskAssigner.addEventListener('change', (e) => {
-      state.taskAssignerFilter = e.target.value;
-      renderTasks();
-    });
-  }
-
-  const taskStatus = document.getElementById('task-status-filter');
-  if (taskStatus) {
-    taskStatus.addEventListener('change', (e) => {
-      state.taskStatusFilter = e.target.value;
-      renderTasks();
-    });
-  }
-
-  const createTaskBtn = document.getElementById('create-task-btn');
-  if (createTaskBtn) {
-    createTaskBtn.addEventListener('click', () => {
-      openTaskModal();
-    });
-  }
-
-  const taskForm = document.getElementById('task-form');
-  if (taskForm) {
-    taskForm.addEventListener('submit', handleTaskFormSubmit);
-  }
-
-  const jobTypeSelect = document.getElementById('task-form-job-type');
-  if (jobTypeSelect) {
-    jobTypeSelect.addEventListener('change', (e) => {
-      const linkGroup = document.getElementById('task-form-link-post-group');
-      if (linkGroup) {
-        linkGroup.style.display = e.target.value === 'post' ? 'block' : 'none';
-      }
-    });
-  }
-
-  const deleteTaskBtn = document.getElementById('task-modal-delete-btn');
-  if (deleteTaskBtn) {
-    deleteTaskBtn.addEventListener('click', deleteTask);
-  }
-
-  // --- CONTENT PLANNER (IDEAS) EVENTS ---
-  const ideaSearch = document.getElementById('idea-search-input');
-  if (ideaSearch) {
-    ideaSearch.addEventListener('input', (e) => {
-      state.ideaSearchFilter = e.target.value;
-      renderIdeas();
-    });
-  }
-
-  const ideaDesigner = document.getElementById('idea-designer-filter');
-  if (ideaDesigner) {
-    ideaDesigner.addEventListener('change', (e) => {
-      state.ideaDesignerFilter = e.target.value;
-      renderIdeas();
-    });
-  }
-
-  const ideaStatus = document.getElementById('idea-status-filter');
-  if (ideaStatus) {
-    ideaStatus.addEventListener('change', (e) => {
-      state.ideaStatusFilter = e.target.value;
-      renderIdeas();
-    });
-  }
-
-  const createIdeaBtn = document.getElementById('open-create-idea-btn') || document.getElementById('create-idea-btn');
-  if (createIdeaBtn) {
-    createIdeaBtn.addEventListener('click', () => {
-      openIdeaModal();
-    });
-  }
-
-  const ideaForm = document.getElementById('idea-form');
-  if (ideaForm) {
-    ideaForm.addEventListener('submit', handleIdeaFormSubmit);
-  }
-
-  const deleteIdeaBtn = document.getElementById('idea-modal-delete-btn');
-  if (deleteIdeaBtn) {
-    deleteIdeaBtn.addEventListener('click', deleteIdea);
   }
 
   // --- TEAM EVENTS ---
@@ -5205,26 +4955,13 @@ function updateModalDropdowns() {
     }
   }
 
-  const ideaDesignerFilter = document.getElementById('idea-designer-filter');
-  if (ideaDesignerFilter) {
-    const currentVal = state.ideaDesignerFilter;
-    ideaDesignerFilter.innerHTML = '<option value="all">All Creatives</option>' + 
-      designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    if (designers.some(p => p.name === currentVal) || currentVal === 'all') {
-      ideaDesignerFilter.value = currentVal;
-    } else {
-      ideaDesignerFilter.value = 'all';
-      state.ideaDesignerFilter = 'all';
-    }
-  }
-
   // Populate task assigner filters dynamically from all work assigners + existing task assigners
   const taskAssignerFilter = document.getElementById('task-assigner-filter');
   if (taskAssignerFilter) {
     const currentVal = state.taskAssignerFilter;
     const assignersSet = new Set();
     const activeTeamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
-    activeTeamList.filter(p => p.isWorkAssigner).forEach(p => assignersSet.add(p.name));
+    activeTeamList.filter(p => p.isAssigner).forEach(p => assignersSet.add(p.name));
     
     state.tasks.forEach(t => {
       if (t.assignedBy) {
@@ -5259,7 +4996,7 @@ function updateModalDropdowns() {
     }
   }
 
-  // Populate link task dropdowns inside post and idea forms
+  // Populate link task dropdowns inside post form
   const postTaskSelect = document.getElementById('post-link-task');
   if (postTaskSelect) {
     const currentVal = postTaskSelect.value;
@@ -5271,17 +5008,6 @@ function updateModalDropdowns() {
     postTaskSelect.value = currentVal || (state.editingPost && state.editingPost.associatedTaskId) || '';
   }
 
-  const ideaTaskSelect = document.getElementById('idea-form-link-task');
-  if (ideaTaskSelect) {
-    const currentVal = ideaTaskSelect.value;
-    ideaTaskSelect.innerHTML = '<option value="">-- None --</option>';
-    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
-    sortedTasks.forEach(t => {
-      ideaTaskSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
-    });
-    ideaTaskSelect.value = currentVal || (state.editingIdea && state.editingIdea.linkedTaskId) || '';
-  }
-
   // Populate link post dropdown inside task form
   const taskPostSelect = document.getElementById('task-form-link-post');
   if (taskPostSelect) {
@@ -5290,18 +5016,13 @@ function updateModalDropdowns() {
     state.posts.forEach(p => {
       taskPostSelect.innerHTML += `<option value="${p.id}">${p.title} [${p.id}]</option>`;
     });
-    // Add ideas too!
-    state.ideas.forEach(i => {
-      taskPostSelect.innerHTML += `<option value="${i.id}">Idea: ${i.topic} [${i.id}]</option>`;
-    });
     taskPostSelect.value = currentVal || (state.editingTask && state.editingTask.associatedPostId) || '';
   }
 
   // Populate dynamic people-based dropdowns from active team list
   const activeTeam = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
-  const assigners = activeTeam.filter(p => p.isWorkAssigner);
-  const initiators = activeTeam.filter(p => p.isIdeaInitiator);
-  const loginUsers = activeTeam.filter(p => p.password);
+  const assigners = activeTeam.filter(p => p.isAssigner);
+  const loginUsers = activeTeam.filter(p => p.canLogin);
 
   // Populate designers in Post Form Assignee select box
   const postAssignee = document.getElementById('post-assignee');
@@ -5325,22 +5046,6 @@ function updateModalDropdowns() {
     const curVal = taskFormAssigner.value;
     taskFormAssigner.innerHTML = assigners.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
     if (curVal && assigners.some(p => p.name === curVal)) taskFormAssigner.value = curVal;
-  }
-
-  // Populate designers in Idea Form Designer select box
-  const ideaFormDesigner = document.getElementById('idea-form-designer');
-  if (ideaFormDesigner) {
-    const curVal = ideaFormDesigner.value;
-    ideaFormDesigner.innerHTML = '<option value="">-- Unassigned --</option>' + designers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    if (curVal) ideaFormDesigner.value = curVal;
-  }
-
-  // Populate initiators in Idea Form Initiator select box
-  const ideaFormInitiator = document.getElementById('idea-form-initiator');
-  if (ideaFormInitiator) {
-    const curVal = ideaFormInitiator.value;
-    ideaFormInitiator.innerHTML = '<option value="">-- None --</option>' + initiators.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    if (curVal) ideaFormInitiator.value = curVal;
   }
 
   // Populate users in Login Select box
@@ -5392,473 +5097,6 @@ function navigateToKanbanCard(itemId) {
 /* ==========================================================================
    CONTENT PLANNER (IDEAS) CORE LOGIC & CONTROLLERS
    ========================================================================== */
-
-function renderIdeas() {
-  const tableBody = document.getElementById('ideas-list-body');
-  if (!tableBody) return;
-  tableBody.innerHTML = '';
-
-  // Filter ideas
-  let filteredIdeas = state.ideas;
-
-  // Search by topic name
-  if (state.ideaSearchFilter) {
-    const q = state.ideaSearchFilter.toLowerCase();
-    filteredIdeas = filteredIdeas.filter(i => i.topic.toLowerCase().includes(q) || i.id.toLowerCase().includes(q));
-  }
-
-  // Filter by designer
-  if (state.ideaDesignerFilter !== 'all') {
-    if (state.ideaDesignerFilter === 'Unassigned') {
-      filteredIdeas = filteredIdeas.filter(i => !i.designer);
-    } else {
-      filteredIdeas = filteredIdeas.filter(i => i.designer === state.ideaDesignerFilter);
-    }
-  }
-
-  // Filter by status
-  if (state.ideaStatusFilter !== 'all') {
-    filteredIdeas = filteredIdeas.filter(i => i.status === state.ideaStatusFilter);
-  }
-
-  // Dynamic column sorting
-  const ideaCol = state.ideaSortCol || 'date';
-  const ideaDir = state.ideaSortDir === 'asc' ? 1 : -1;
-
-  filteredIdeas.sort((a, b) => {
-    let valA = a[ideaCol] || '';
-    let valB = b[ideaCol] || '';
-
-    if (ideaCol === 'id') {
-      const numA = parseInt((valA || '').replace('idea-', '')) || 0;
-      const numB = parseInt((valB || '').replace('idea-', '')) || 0;
-      return (numA - numB) * ideaDir;
-    }
-
-    if (typeof valA === 'string') valA = valA.toLowerCase();
-    if (typeof valB === 'string') valB = valB.toLowerCase();
-
-    if (valA < valB) return -1 * ideaDir;
-    if (valA > valB) return 1 * ideaDir;
-    return 0;
-  });
-
-  // Update Idea Bank header sort UI indicators
-  document.querySelectorAll('#ideas-view th.sortable-th').forEach(th => {
-    const sCol = th.getAttribute('data-sort');
-    const icon = th.querySelector('.sort-icon');
-    if (sCol === state.ideaSortCol) {
-      th.classList.add('active-sort');
-      if (icon) icon.textContent = state.ideaSortDir === 'asc' ? '▲' : '▼';
-    } else {
-      th.classList.remove('active-sort');
-      if (icon) icon.textContent = '↕';
-    }
-  });
-
-  // Calculate statistics
-  const totalCount = state.ideas.length;
-  const productionCount = state.ideas.filter(i => i.status === 'In Production').length;
-  const draftCount = state.ideas.filter(i => i.status === 'Draft Idea').length;
-  const unassignedCount = state.ideas.filter(i => !i.designer).length;
-
-  document.getElementById('idea-stat-total').textContent = totalCount;
-  document.getElementById('idea-stat-production').textContent = productionCount;
-  document.getElementById('idea-stat-draft').textContent = draftCount;
-  document.getElementById('idea-stat-unassigned').textContent = unassignedCount;
-
-  // Render rows
-  filteredIdeas.forEach(idea => {
-    const statusClass = idea.status.toLowerCase().replace(' ', '-');
-    const insLinkHtml = idea.inspiration 
-      ? `<a href="${idea.inspiration}" target="_blank" class="task-link-btn" title="Open Inspiration Link">
-          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
-         </a>`
-      : '';
-
-    let linkedTaskHtml = '';
-    if (idea.linkedTaskId) {
-      linkedTaskHtml = `
-        <div class="card-task-link-badge" data-task-id="${idea.linkedTaskId}" style="margin-top: 0">
-          <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-          <span>Task ${idea.linkedTaskId}</span>
-        </div>
-      `;
-    }
-
-    const notesText = idea.notes ? `<div class="task-comments-text">${idea.notes}</div>` : '';
-    const dateFormatted = formatCardDate(idea.date);
-    
-    const ideaDesignerPerson = findTeamMember(idea.designer);
-    const designerName = ideaDesignerPerson ? ideaDesignerPerson.name : (idea.designer || '<span style="color: #94a3b8; font-style: italic;">Unassigned</span>');
-    const designerAvatar = ideaDesignerPerson && ideaDesignerPerson.photo 
-      ? `<img src="${ideaDesignerPerson.photo}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="${designerName}" title="${designerName}">`
-      : (idea.designer
-          ? `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(idea.designer)}</div>`
-          : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: #64748b">?</div>`);
-
-    const initiatorPerson = findTeamMember(idea.initiator);
-    const initiatorName = initiatorPerson ? initiatorPerson.name : (idea.initiator || 'N/A');
-    const initiatorPhoto = initiatorPerson && initiatorPerson.photo
-      ? `<img src="${initiatorPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${initiatorName}" title="${initiatorName}">`
-      : '';
-
-    const row = document.createElement('tr');
-    row.id = `idea-row-${idea.id}`;
-    row.innerHTML = `
-      <td>
-        <div style="font-weight: 600; color: #fff">${idea.topic}</div>
-        ${notesText}
-      </td>
-      <td>${dateFormatted}</td>
-      <td>${idea.urgency || 'N/A'}</td>
-      <td>
-        <span class="task-status-badge ${statusClass}">${idea.status}</span>
-      </td>
-      <td>
-        <div style="display: flex; align-items: center; gap: 8px">
-          ${designerAvatar}
-          <span>${designerName}</span>
-        </div>
-      </td>
-      <td>
-        <div style="display: flex; align-items: center; gap: 8px">
-          ${initiatorPhoto}
-          <span>${initiatorName}</span>
-        </div>
-      </td>
-      <td>
-        ${linkedTaskHtml}
-      </td>
-      <td>
-        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px">
-          ${insLinkHtml}
-          ${idea.dateLogged ? `<span style="font-size: 0.75rem; color: #64748b">Logged: ${formatCardDate(idea.dateLogged)}</span>` : ''}
-        </div>
-      </td>
-      <td>
-        <button class="btn-icon idea-edit-btn" data-id="${idea.id}" style="width: 32px; height: 32px" title="Edit Idea">
-          <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </button>
-      </td>
-    `;
-
-    // Hook edit button click
-    row.querySelector('.idea-edit-btn').addEventListener('click', () => {
-      openIdeaModal(idea);
-    });
-
-    // Hook linked task click
-    const linkedTaskBadge = row.querySelector('.card-task-link-badge');
-    if (linkedTaskBadge) {
-      linkedTaskBadge.addEventListener('click', (e) => {
-        e.stopPropagation();
-        navigateToTask(idea.linkedTaskId);
-      });
-    }
-
-    tableBody.appendChild(row);
-  });
-}
-
-function openIdeaModal(idea = null) {
-  const currentUser = localStorage.getItem('hc_logged_in_user');
-
-  // Accessibility: Guests cannot create new ideas
-  if (!idea && !currentUser) {
-    showToast('Access Denied: Please sign in to create planner ideas', 'error');
-    showLoginOverlay();
-    return;
-  }
-
-  state.editingIdea = idea;
-  const overlay = document.getElementById('idea-modal');
-  const modalTitle = document.getElementById('idea-modal-title');
-  const deleteBtn = document.getElementById('idea-modal-delete-btn');
-  const form = document.getElementById('idea-form');
-  
-  if (!overlay || !form) return;
-
-  form.reset();
-  form.querySelectorAll('.form-control').forEach(el => el.removeAttribute('disabled'));
-  const submitBtn = form.querySelector('button[type="submit"]');
-  if (submitBtn) submitBtn.style.display = 'block';
-
-  const existingBanner = document.getElementById('idea-view-only-banner');
-  if (existingBanner) existingBanner.remove();
-
-  // Populate link task dropdown
-  const linkTaskSelect = document.getElementById('idea-form-link-task');
-  if (linkTaskSelect) {
-    linkTaskSelect.innerHTML = '<option value="">-- None --</option>';
-    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
-    sortedTasks.forEach(t => {
-      linkTaskSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
-    });
-    linkTaskSelect.value = (idea && idea.linkedTaskId) ? idea.linkedTaskId : '';
-  }
-
-  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
-  const account = findTeamMember(currentUser);
-  const isLimited = account && account.access === 'limited';
-
-  if (idea) {
-    // Edit mode
-    modalTitle.textContent = `Edit Idea`;
-    if (deleteBtn) {
-      deleteBtn.style.display = (!currentUser || isLimited) ? 'none' : 'block';
-    }
-
-    document.getElementById('idea-form-topic').value = idea.topic;
-    document.getElementById('idea-form-date').value = idea.date;
-    document.getElementById('idea-form-urgency').value = idea.urgency || '';
-    document.getElementById('idea-form-designer').value = idea.designer || '';
-    document.getElementById('idea-form-initiator').value = idea.initiator || '';
-    document.getElementById('idea-form-status').value = idea.status;
-    document.getElementById('idea-form-inspiration').value = idea.inspiration || '';
-    document.getElementById('idea-form-notes').value = idea.notes || '';
-
-    // Access control: Guest gets Read-Only
-    if (!currentUser) {
-      form.querySelectorAll('.form-control').forEach(el => el.setAttribute('disabled', 'true'));
-      if (submitBtn) submitBtn.style.display = 'none';
-      
-      const formBody = form.querySelector('.modal-body') || form;
-      formBody.insertAdjacentHTML('afterbegin', `
-        <div id="idea-view-only-banner" class="view-only-banner">
-          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
-          <span>Guest Mode: Sign in to edit planner ideas.</span>
-        </div>
-      `);
-    }
-  } else {
-    // Add mode
-    modalTitle.textContent = 'Create New Content Idea';
-    if (deleteBtn) deleteBtn.style.display = 'none';
-
-    // Autofill defaults
-    document.getElementById('idea-form-date').value = '2026-07-05';
-    document.getElementById('idea-form-status').value = 'Draft Idea';
-    document.getElementById('idea-form-initiator').value = currentUser ? currentUser.split(' ')[0] : '';
-  }
-
-  overlay.classList.add('active');
-}
-
-function closeIdeaModal() {
-  const overlay = document.getElementById('idea-modal');
-  if (overlay) overlay.classList.remove('active');
-  state.editingIdea = null;
-  
-  const form = document.getElementById('idea-form');
-  if (form) {
-    form.querySelectorAll('.form-control').forEach(el => el.removeAttribute('disabled'));
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) submitBtn.style.display = 'block';
-  }
-  const existingBanner = document.getElementById('idea-view-only-banner');
-  if (existingBanner) existingBanner.remove();
-}
-
-async function handleIdeaFormSubmit(e) {
-  e.preventDefault();
-
-  const topic = document.getElementById('idea-form-topic').value.trim();
-  const date = document.getElementById('idea-form-date').value || '2026-08-09';
-  const urgency = document.getElementById('idea-form-urgency').value.trim();
-  const designer = document.getElementById('idea-form-designer').value;
-  const initiator = document.getElementById('idea-form-initiator').value.trim();
-  const status = document.getElementById('idea-form-status').value;
-  const inspiration = document.getElementById('idea-form-inspiration').value.trim();
-  const notes = document.getElementById('idea-form-notes').value.trim();
-  const linkedTaskId = document.getElementById('idea-form-link-task') ? document.getElementById('idea-form-link-task').value : '';
-
-  if (!topic) {
-    showToast('Please enter a topic name', 'error');
-    return;
-  }
-
-  if (state.editingIdea) {
-    const idea = state.ideas.find(i => i.id === state.editingIdea.id);
-    if (idea) {
-      const oldTaskId = idea.linkedTaskId;
-      idea.topic = topic;
-      idea.date = date;
-      idea.urgency = urgency;
-      idea.designer = designer;
-      idea.initiator = initiator;
-      idea.status = status;
-      idea.inspiration = inspiration;
-      idea.notes = notes;
-      idea.linkedTaskId = linkedTaskId;
-
-      showToast('Idea updated successfully', 'success');
-      logActivity(`updated content idea "${idea.topic}"`, db);
-      refreshViews();
-
-      try {
-        await setDoc(doc(db, "ideas", idea.id), idea);
-
-        if (oldTaskId && oldTaskId !== linkedTaskId) {
-          const oldTask = state.tasks.find(t => t.id === oldTaskId);
-          if (oldTask) {
-            oldTask.associatedPostId = '';
-            try { await setDoc(doc(db, "tasks", oldTaskId), oldTask); } catch(e){}
-          }
-        }
-        if (linkedTaskId) {
-          const newTask = state.tasks.find(t => t.id === linkedTaskId);
-          if (newTask && newTask.associatedPostId !== idea.id) {
-            newTask.associatedPostId = idea.id;
-            try { await setDoc(doc(db, "tasks", linkedTaskId), newTask); } catch(e){}
-          }
-        }
-      } catch (err) {
-        console.warn("Firestore idea update warning (saved locally):", err);
-      }
-    }
-  } else {
-    const newId = 'idea-' + Date.now();
-    const newIdea = {
-      id: newId,
-      topic,
-      date,
-      urgency,
-      status,
-      designer,
-      initiator: initiator || (localStorage.getItem('hc_logged_in_user') || 'Admin'),
-      linkedTaskId,
-      inspiration,
-      notes,
-      dateLogged: new Date().toISOString().split('T')[0]
-    };
-
-    state.ideas.push(newIdea);
-    showToast('New idea saved successfully', 'success');
-    logActivity(`created content idea "${newIdea.topic}"`, db);
-    refreshViews();
-
-    try {
-      await setDoc(doc(db, "ideas", newId), newIdea);
-
-      if (linkedTaskId) {
-        const task = state.tasks.find(t => t.id === linkedTaskId);
-        if (task) {
-          task.associatedPostId = newId;
-          try { await setDoc(doc(db, "tasks", linkedTaskId), task); } catch(e){}
-        }
-      }
-    } catch (err) {
-      console.warn("Firestore idea save warning (saved locally):", err);
-    }
-  }
-
-  closeIdeaModal();
-}
-
-async function deleteIdea() {
-  if (!state.editingIdea) return;
-  
-  if (confirm('Are you sure you want to delete this content idea?')) {
-    const ideaId = state.editingIdea.id;
-    const linkedTaskId = state.editingIdea.linkedTaskId;
-    try {
-      await deleteDoc(doc(db, "ideas", ideaId));
-
-      if (linkedTaskId) {
-        const task = state.tasks.find(t => t.id === linkedTaskId);
-        if (task) {
-          task.associatedPostId = '';
-          await setDoc(doc(db, "tasks", linkedTaskId), task);
-        }
-      }
-
-      showToast('Idea removed successfully', 'info');
-      await logActivity(`deleted content idea "${state.editingIdea.topic}"`, db);
-    } catch (err) {
-      console.error(err);
-      showToast('Failed to delete idea from cloud', 'error');
-    }
-    closeIdeaModal();
-  }
-}
-
-function navigateToIdea(ideaId) {
-  switchView('ideas');
-  setTimeout(() => {
-    const row = document.getElementById(`idea-row-${ideaId}`);
-    if (row) {
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.classList.add('highlighted-idea');
-      setTimeout(() => {
-        row.classList.remove('highlighted-idea');
-      }, 6000);
-    }
-  }, 300);
-}
-
-async function updateTaskStatus(taskId, kanbanStatus) {
-  const task = state.tasks.find(t => t.id === taskId);
-  if (!task) return;
-
-  let currentUser = localStorage.getItem('hc_logged_in_user');
-  if (!currentUser) {
-    currentUser = 'Rifat Newaj Razin';
-    localStorage.setItem('hc_logged_in_user', currentUser);
-  }
-
-  // Map kanban column to task status
-  let newTaskStatus = 'Not Started';
-  if (kanbanStatus === 'ideation') newTaskStatus = 'Not Started';
-  else if (kanbanStatus === 'development') newTaskStatus = 'On Progress';
-  else if (kanbanStatus === 'ready') newTaskStatus = 'Delayed';
-  else if (kanbanStatus === 'published') newTaskStatus = 'Finished';
-  else return; // Ignore scheduled for tasks
-
-  if (task.status === newTaskStatus) return;
-  task.status = newTaskStatus;
-
-  // Instantly refresh UI for smooth card movement
-  refreshViews();
-  showToast(`Task ${taskId} status updated to ${newTaskStatus}`, 'success');
-
-  try {
-    await setDoc(doc(db, "tasks", taskId), task);
-    await syncTaskToPost(task, db);
-  } catch (err) {
-    console.error("Firestore task status update error:", err);
-  }
-}
-
-async function updateIdeaStatus(ideaId, kanbanStatus) {
-  const idea = state.ideas.find(i => i.id === ideaId);
-  if (!idea) return;
-
-  let currentUser = localStorage.getItem('hc_logged_in_user');
-  if (!currentUser) {
-    currentUser = 'Rifat Newaj Razin';
-    localStorage.setItem('hc_logged_in_user', currentUser);
-  }
-
-  // Map kanban column to idea status
-  let newIdeaStatus = 'Draft Idea';
-  if (kanbanStatus === 'ideation') newIdeaStatus = 'Draft Idea';
-  else if (kanbanStatus === 'development' || kanbanStatus === 'ready' || kanbanStatus === 'scheduled') newIdeaStatus = 'In Production';
-  else if (kanbanStatus === 'published') newIdeaStatus = 'Completed';
-
-  if (idea.status === newIdeaStatus) return;
-  idea.status = newIdeaStatus;
-
-  // Instantly refresh UI for smooth card movement
-  refreshViews();
-  showToast(`Idea status updated to ${newIdeaStatus}`, 'success');
-
-  try {
-    await setDoc(doc(db, "ideas", ideaId), idea);
-  } catch (err) {
-    console.error("Firestore idea status update error:", err);
-  }
-}
 
 function renderTeam() {
   const tbody = document.getElementById('team-list-body');
@@ -5923,13 +5161,11 @@ function renderTeam() {
   // Calculate statistics
   const total = state.team.length;
   const designersCount = state.team.filter(p => p.isDesigner).length;
-  const assignersCount = state.team.filter(p => p.isWorkAssigner).length;
-  const initiatorsCount = state.team.filter(p => p.isIdeaInitiator).length;
+  const assignersCount = state.team.filter(p => p.isAssigner).length;
 
   document.getElementById('team-stat-total').textContent = total;
   document.getElementById('team-stat-designers').textContent = designersCount;
   document.getElementById('team-stat-assigners').textContent = assignersCount;
-  document.getElementById('team-stat-initiators').textContent = initiatorsCount;
 
   tbody.innerHTML = '';
   if (filteredTeam.length === 0) {
@@ -5948,8 +5184,7 @@ function renderTeam() {
     // Roles tags
     let roleTagsHtml = '';
     if (p.isDesigner) roleTagsHtml += `<span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.15); margin-right: 4px;">Creative</span>`;
-    if (p.isWorkAssigner) roleTagsHtml += `<span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.15); margin-right: 4px;">Work Assigner</span>`;
-    if (p.isIdeaInitiator) roleTagsHtml += `<span class="badge" style="background: rgba(6, 182, 212, 0.1); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.15); margin-right: 4px;">Idea Initiator</span>`;
+    if (p.isAssigner) roleTagsHtml += `<span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.15); margin-right: 4px;">Assigner</span>`;
     if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
 
     // Access tags
@@ -6034,8 +5269,7 @@ function openPersonModal(personId = null) {
       document.getElementById('person-form-photo').value = person.photo || '';
       
       document.getElementById('person-role-designer').checked = !!person.isDesigner;
-      document.getElementById('person-role-assigner').checked = !!person.isWorkAssigner;
-      document.getElementById('person-role-initiator').checked = !!person.isIdeaInitiator;
+      document.getElementById('person-role-assigner').checked = !!person.isAssigner;
     }
   } else {
     modalTitle.textContent = 'Add New Person';
@@ -6062,8 +5296,7 @@ async function handlePersonFormSubmit(e) {
   const photo = document.getElementById('person-form-photo').value.trim();
   
   const isDesigner = document.getElementById('person-role-designer').checked;
-  const isWorkAssigner = document.getElementById('person-role-assigner').checked;
-  const isIdeaInitiator = document.getElementById('person-role-initiator').checked;
+  const isAssigner = document.getElementById('person-role-assigner').checked;
 
   if (!name || !role || !password) {
     showToast('Please fill out all required fields', 'error');
@@ -6082,8 +5315,7 @@ async function handlePersonFormSubmit(e) {
     access,
     photo: photo || null,
     isDesigner,
-    isWorkAssigner,
-    isIdeaInitiator
+    isAssigner
   };
 
   try {

@@ -9,18 +9,18 @@ source_md_path = os.path.join(vault_dir, "Honeycomb Content Planner Source Code.
 files_to_backup = ["index.html", "style.css", "app.js", "package.json", "parse_and_update_tasks.py"]
 
 markdown_content = f"""---
-title: Honeycomb Content Planner Source Code (V3.8.3)
+title: Honeycomb Content Planner Source Code (V3.9.0)
 date: {datetime.date.today().isoformat()}
-tags: [project, code, honeycomb, planner, v3.8.3]
+tags: [project, code, honeycomb, planner, v3.9.0]
 ---
 
-# Honeycomb Content Planner Source Code (V3.8.3)
+# Honeycomb Content Planner Source Code (V3.9.0)
 
-This is the complete source code backup for **Honeycomb Content Planner V3.8.3**.
+This is the complete source code backup for **Honeycomb Content Planner V3.9.0**.
 
-- **Version**: 3.8.3
+- **Version**: 3.9.0
 - **Release Date**: August 11, 2026
-- **Main Release Note**: [[Honeycomb Content Planner V3.8.3]]
+- **Main Release Note**: [[Honeycomb Content Planner V3.9.0]]
 - **Local Application Path**: `file://{scratch_dir}/index.html`
 - **Local Server**: [http://localhost:8000/](http://localhost:8000/)
 
@@ -41,7 +41,7 @@ for filename in files_to_backup:
 with open(source_md_path, "w", encoding="utf-8") as f:
     f.write(markdown_content)
 
-print("Updated Honeycomb Content Planner Source Code.md (V3.8.3)")
+print("Updated Honeycomb Content Planner Source Code.md (V3.9.0)")
 
 # 2. Write Honeycomb Content Planner V3.8.3.md
 v3_md_path = os.path.join(vault_dir, "Honeycomb Content Planner V3.8.3.md")
