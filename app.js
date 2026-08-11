@@ -1944,10 +1944,10 @@ function runAppInit() {
   initData();
   setupEventListeners();
   renderUserProfile();
-  const lastView = localStorage.getItem('hc_last_view') || 'dashboard';
+  let lastView = localStorage.getItem('hc_last_view') || 'dashboard';
+  if (lastView === 'kanban') lastView = 'dashboard';
   switchView(lastView);
   renderDashboard();
-  renderKanban();
   renderCalendar();
   renderAnalytics();
   initFilterDropdowns();
@@ -3254,18 +3254,8 @@ function setupEventListeners() {
 }
 
 function switchView(viewName) {
-  // Access control for Publishing Queue (Kanban)
   if (viewName === 'kanban') {
-    const currentUser = localStorage.getItem('hc_logged_in_user');
-    const person = findTeamMember(currentUser);
-    const canAccessQueue = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
-    if (!canAccessQueue) {
-      showToast('Access Denied: Publishing Queue is restricted to Admins and Social Media Manager', 'error');
-      if (state.currentView !== 'dashboard') {
-        switchView('dashboard');
-      }
-      return;
-    }
+    viewName = 'dashboard';
   }
 
   state.currentView = viewName;
