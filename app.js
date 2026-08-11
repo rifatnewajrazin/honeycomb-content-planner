@@ -6321,17 +6321,27 @@ function renderPublishingQueue() {
 
   list.innerHTML = pendingPublishing.map(task => {
     const post = task.associatedPostId ? state.posts.find(p => p.id === task.associatedPostId) : null;
-    const postInfo = post ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Platform: ${post.platforms.join(', ')} | Brand: ${post.brandId}</div>` : '';
+    const postInfo = post ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Platform: ${(post.platforms || []).join(', ')} | Brand: ${post.brandId}</div>` : '';
     
     return `
       <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
         <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">${task.name}</div>
         <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 8px;">Delivery Link: <a href="${task.deliveryLink || '#'}" target="_blank" style="color: var(--honey-gold); text-decoration: none;">${task.deliveryLink ? 'Open Asset' : 'None'}</a></div>
         ${postInfo}
-        <button onclick="markTaskPosted('${task.id}')" style="margin-top: 10px; width: 100%; background: var(--honey-gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer;">Mark as Posted</button>
+        <button class="mark-posted-btn" data-task-id="${task.id}" style="margin-top: 10px; width: 100%; background: var(--honey-gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer;">Mark as Posted</button>
       </div>
     `;
   }).join('');
+
+  list.querySelectorAll('.mark-posted-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const taskId = e.currentTarget.getAttribute('data-task-id');
+      if (taskId) {
+        window.markTaskPosted(taskId);
+      }
+    });
+  });
 }
 
 window.markTaskPosted = async function(taskId) {
@@ -6339,12 +6349,25 @@ window.markTaskPosted = async function(taskId) {
   if (!task) return;
   
   task.isPosted = true;
-  await setDoc(doc(db, "tasks", taskId), task);
+
+  if (task.associatedPostId) {
+    const post = state.posts.find(p => p.id === task.associatedPostId);
+    if (post) {
+      post.status = 'published';
+      try { setDoc(doc(db, "posts", post.id), post); } catch(e){}
+    }
+  }
   
   logActivity(`Marked task "${task.name}" as posted`, db);
-  showToast('Task marked as posted', 'success');
+  showToast(`Marked "${task.name}" as posted`, 'success');
   
   renderPublishingQueue();
   updatePublishingQueueBadge();
   refreshViews();
+
+  try {
+    await setDoc(doc(db, "tasks", taskId), task);
+  } catch(err) {
+    console.warn("Firestore task update error (saved locally):", err);
+  }
 };
