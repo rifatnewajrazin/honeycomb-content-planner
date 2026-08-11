@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoneyComb Inc. Content Tracker & Planner</title>
   <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
-  <link rel="stylesheet" href="style.css?v=3.7.7">
+  <link rel="stylesheet" href="style.css?v=3.7.8">
 </head>
 <body class="minimal-theme">
 
@@ -110,11 +110,7 @@
             <span id="activity-badge" style="display: none; position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 1px solid #000;"></span>
           </button>
 
-          <!-- Publishing Queue Button -->
-          <button id="toggle-publishing-btn" class="btn-icon" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; color: #a3a3c2; cursor: pointer; transition: all 0.2s;" title="Social Media Publishing Queue">
-            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-            <span id="publishing-queue-badge" style="display: none; position: absolute; top: -3px; right: -3px; background: #f59e0b; color: #000; font-size: 0.65rem; font-weight: 800; min-width: 16px; height: 16px; border-radius: 50%; border: 1px solid #000; display: flex; align-items: center; justify-content: center;">0</span>
-          </button>
+
           
           <!-- Page Filter -->
           <select id="global-brand-filter" class="filter-select">
@@ -1105,22 +1101,7 @@
     </div>
   </div>
 
-  <!-- Social Media Publishing Queue Drawer -->
-  <div id="publishing-queue-drawer" class="activity-drawer" style="background: rgba(10, 15, 26, 0.98); border-left: 1px solid rgba(245, 158, 11, 0.15);">
-    <div class="activity-drawer-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 16px;">
-      <h3 style="display: flex; align-items: center; gap: 10px; color: var(--honey-gold);">
-        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-        Publishing Queue
-      </h3>
-      <button id="close-publishing-btn" class="close-btn" style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
-    </div>
-    <div style="padding: 12px 20px; font-size: 0.8rem; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.04);">
-      Pending social media uploads from finished design tasks.
-    </div>
-    <div class="activity-drawer-body" id="publishing-queue-list" style="gap: 16px; padding: 20px; max-height: calc(100vh - 150px); overflow-y: auto;">
-      <!-- Dynamically Rendered Queue Items -->
-    </div>
-  </div>
+
 
   <!-- Unscheduled Ideas Drawer -->
   <div id="ideas-drawer" class="activity-drawer" style="background: rgba(12, 18, 33, 0.95); border-left: 1px solid rgba(255,255,255,0.08);">

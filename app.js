@@ -2821,34 +2821,7 @@ function setupEventListeners() {
     }
   });
 
-  // Publishing Queue Drawer Listeners
-  const pubToggleBtn = document.getElementById('toggle-publishing-btn');
-  const pubCloseBtn = document.getElementById('close-publishing-btn');
-  const pubDrawer = document.getElementById('publishing-queue-drawer');
 
-  if (pubToggleBtn && pubDrawer) {
-    pubToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      pubDrawer.classList.toggle('open');
-      if (pubDrawer.classList.contains('open')) {
-        renderPublishingQueue();
-      }
-    });
-  }
-
-  if (pubCloseBtn && pubDrawer) {
-    pubCloseBtn.addEventListener('click', () => {
-      pubDrawer.classList.remove('open');
-    });
-  }
-
-  document.addEventListener('click', (e) => {
-    if (pubDrawer && pubDrawer.classList.contains('open')) {
-      if (!pubDrawer.contains(e.target) && !pubToggleBtn.contains(e.target)) {
-        pubDrawer.classList.remove('open');
-      }
-    }
-  });
 
   // Comments submit listeners
   const postAddCommentBtn = document.getElementById('post-add-comment-btn');
