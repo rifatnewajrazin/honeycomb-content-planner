@@ -6191,6 +6191,19 @@ async function syncPostToTask(post, db) {
   }
 }
 
+function detectBrandFromTask(task) {
+  if (!task) return 'tahams';
+  const text = ((task.name || '') + ' ' + (task.notes || '') + ' ' + (task.deliveryLink || '')).toLowerCase();
+  if (text.includes('evoka')) return 'evoka-experiences';
+  if (text.includes('lovelife')) return 'lovelife';
+  if (text.includes('samtech') || text.includes('sammtech')) return 'sammtech';
+  if (text.includes('merchtile')) return 'merchtile';
+  if (text.includes('perfume')) return 'perfume-tahams';
+  if (text.includes('lumina')) return 'lumina-tahams';
+  if (text.includes('star') || text.includes('spiderman') || text.includes('kids')) return 'star-tahams';
+  return 'tahams';
+}
+
 async function syncTaskToPost(task, db) {
   if (!task) return;
   
@@ -6204,6 +6217,7 @@ async function syncTaskToPost(task, db) {
   }
   
   const postStatus = mapTaskStatusToPostStatus(task.status);
+  const brandId = detectBrandFromTask(task);
   
   if (post) {
     // Update existing post
@@ -6213,53 +6227,49 @@ async function syncTaskToPost(task, db) {
     if (post.date !== task.date) { post.date = task.date; changed = true; }
     if (post.time !== task.time) { post.time = task.time; changed = true; }
     if (post.status !== postStatus) { post.status = postStatus; changed = true; }
+    if (!post.brandId || post.brandId === 'tahams') { post.brandId = brandId; changed = true; }
     if (post.associatedTaskId !== task.id) { post.associatedTaskId = task.id; changed = true; }
     
     if (changed) {
-      await setDoc(doc(db, "posts", post.id), post);
+      try { await setDoc(doc(db, "posts", post.id), post); } catch(e){}
     }
     if (task.associatedPostId !== post.id) {
       task.associatedPostId = post.id;
-      await setDoc(doc(db, "tasks", task.id), task);
+      try { await setDoc(doc(db, "tasks", task.id), task); } catch(e){}
     }
   } else {
     // Create new post
-    const newPostId = 'post-' + Date.now();
+    const newPostId = 'post-' + (task.id || Date.now());
     const newPost = {
       id: newPostId,
       title: task.name,
-      brandId: 'tahams', // default brand
+      brandId: brandId,
       platforms: ['facebook', 'instagram'],
       status: postStatus,
       type: 'image',
       assignee: task.designer,
-      date: task.date,
+      date: task.date || '2026-08-09',
       time: task.time || '12:00',
       caption: '',
       associatedTaskId: task.id
     };
     
-    await setDoc(doc(db, "posts", newPostId), newPost);
+    state.posts.push(newPost);
+    try { await setDoc(doc(db, "posts", newPostId), newPost); } catch(e){}
     
     task.associatedPostId = newPostId;
-    await setDoc(doc(db, "tasks", task.id), task);
+    try { await setDoc(doc(db, "tasks", task.id), task); } catch(e){}
   }
 }
 
-let isInitialSyncDone = false;
 async function healPostTaskSync() {
-  if (isInitialSyncDone) return;
-  if (!state.posts || state.posts.length === 0) return;
-  if (!state.tasks || state.tasks.length === 0) return;
-  
-  isInitialSyncDone = true;
-  console.log("Healing Post-Task database synchronization...");
+  if (!state.posts || !state.tasks) return;
   
   // For each task, make sure it has taskType set
   for (const task of state.tasks) {
     if (!task.taskType) {
       task.taskType = task.associatedPostId ? 'post' : 'general';
-      await setDoc(doc(db, "tasks", task.id), task);
+      try { await setDoc(doc(db, "tasks", task.id), task); } catch(e){}
     }
   }
 
@@ -6278,7 +6288,7 @@ async function healPostTaskSync() {
 
   // For each task of type post, make sure it has an associated post
   for (const task of state.tasks) {
-    if (task.taskType === 'post') {
+    if (task.taskType === 'post' || task.associatedPostId) {
       let post = null;
       if (task.associatedPostId) {
         post = state.posts.find(p => p.id === task.associatedPostId);
@@ -6287,6 +6297,14 @@ async function healPostTaskSync() {
       }
       if (!post) {
         await syncTaskToPost(task, db);
+      } else {
+        const postStatus = mapTaskStatusToPostStatus(task.status);
+        if (post.status !== postStatus || post.title !== task.name || post.assignee !== task.designer) {
+          post.status = postStatus;
+          post.title = task.name;
+          post.assignee = task.designer;
+          try { await setDoc(doc(db, "posts", post.id), post); } catch(e){}
+        }
       }
     }
   }
