@@ -1,5 +1,9 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+let db = null;
+let collection = () => ({});
+let doc = () => ({});
+let setDoc = async () => {};
+let deleteDoc = async () => {};
+let onSnapshot = () => {};
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFhMBHmaUzJm14MPgY6oQscuFblPJZ-rE",
@@ -11,9 +15,22 @@ const firebaseConfig = {
   measurementId: "G-SLZMBC7307"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Resilient Firebase initialization with offline fallback
+async function initFirebase() {
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
+    const fbFS = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const app = initializeApp(firebaseConfig);
+    db = fbFS.getFirestore(app);
+    collection = fbFS.collection;
+    doc = fbFS.doc;
+    setDoc = fbFS.setDoc;
+    deleteDoc = fbFS.deleteDoc;
+    onSnapshot = fbFS.onSnapshot;
+  } catch (err) {
+    console.warn("Firebase CDN unreachable or blocked, running in offline fallback mode:", err);
+  }
+}
 
 // Default brands config
 const DEFAULT_BRANDS = [
@@ -1918,7 +1935,8 @@ function showLoginOverlay() {
   }
 }
 
-function runAppInit() {
+async function runAppInit() {
+  await initFirebase();
   initData();
   setupEventListeners();
   renderUserProfile();
@@ -2071,152 +2089,169 @@ function initData() {
   state.posts = [...DEFAULT_POSTS];
   state.team = [...DEFAULT_TEAM];
 
+  if (!db) return;
+
   // Sync posts from Firestore in real-time
-  onSnapshot(collection(db, "posts"), (querySnapshot) => {
-    if (querySnapshot.empty) {
-      DEFAULT_POSTS.forEach(async (p) => {
-        try { await setDoc(doc(db, "posts", p.id), p); } catch(e){}
-      });
+  try {
+    onSnapshot(collection(db, "posts"), (querySnapshot) => {
+      if (querySnapshot.empty) {
+        DEFAULT_POSTS.forEach(async (p) => {
+          try { await setDoc(doc(db, "posts", p.id), p); } catch(e){}
+        });
+        state.posts = [...DEFAULT_POSTS];
+      } else {
+        const loadedPosts = [];
+        querySnapshot.forEach((doc) => {
+          loadedPosts.push(doc.data());
+        });
+
+        DEFAULT_POSTS.forEach(def => {
+          if (!loadedPosts.some(p => p.id === def.id)) {
+            loadedPosts.push(def);
+          }
+        });
+
+        state.posts = loadedPosts;
+      }
+      updateModalDropdowns();
+      refreshViews();
+      healPostTaskSync();
+    }, (error) => {
+      console.error("Firestore sync error:", error);
       state.posts = [...DEFAULT_POSTS];
-    } else {
-      const loadedPosts = [];
-      querySnapshot.forEach((doc) => {
-        loadedPosts.push(doc.data());
-      });
-
-      DEFAULT_POSTS.forEach(def => {
-        if (!loadedPosts.some(p => p.id === def.id)) {
-          loadedPosts.push(def);
-        }
-      });
-
-      state.posts = loadedPosts;
-    }
-    updateModalDropdowns();
-    refreshViews();
-    healPostTaskSync();
-  }, (error) => {
-    console.error("Firestore sync error:", error);
-    state.posts = [...DEFAULT_POSTS];
-    updateModalDropdowns();
-    refreshViews();
-  });
+      updateModalDropdowns();
+      refreshViews();
+    });
+  } catch(err) {
+    console.warn("Firestore posts listener skipped:", err);
+  }
 
   // Sync tasks from Firestore in real-time
-  onSnapshot(collection(db, "tasks"), (querySnapshot) => {
-    if (querySnapshot.empty) {
-      DEFAULT_TASKS.forEach(async (t) => {
-        try { await setDoc(doc(db, "tasks", t.id), t); } catch(e){}
-      });
-      state.tasks = [...DEFAULT_TASKS];
-    } else {
-      const loadedTasks = [];
-      querySnapshot.forEach((docSnap) => {
-        const t = docSnap.data();
-        if (!t.taskType) {
-          t.taskType = t.associatedPostId ? 'post' : 'general';
-          try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
-        }
-
-        const designerPerson = findTeamMember(t.designer);
-        if (designerPerson) t.designer = designerPerson.name;
-
-        const assignerPerson = findTeamMember(t.assignedBy);
-        if (assignerPerson) t.assignedBy = assignerPerson.name;
-
-        loadedTasks.push(t);
-      });
-
-      // Guarantee all DEFAULT_TASKS are present and updated with master dataset values
-      DEFAULT_TASKS.forEach(def => {
-        const idx = loadedTasks.findIndex(t => t.id === def.id);
-        if (idx === -1) {
-          loadedTasks.push({ ...def });
-          try { setDoc(doc(db, "tasks", def.id), def); } catch(e){}
-        } else {
-          // Update default task fields to match latest CSV values
-          const updated = { ...loadedTasks[idx], ...def };
-          if (JSON.stringify(loadedTasks[idx]) !== JSON.stringify(updated)) {
-            loadedTasks[idx] = updated;
-            try { setDoc(doc(db, "tasks", def.id), updated); } catch(e){}
+  try {
+    onSnapshot(collection(db, "tasks"), (querySnapshot) => {
+      if (querySnapshot.empty) {
+        DEFAULT_TASKS.forEach(async (t) => {
+          try { await setDoc(doc(db, "tasks", t.id), t); } catch(e){}
+        });
+        state.tasks = [...DEFAULT_TASKS];
+      } else {
+        const loadedTasks = [];
+        querySnapshot.forEach((docSnap) => {
+          const t = docSnap.data();
+          if (!t.taskType) {
+            t.taskType = t.associatedPostId ? 'post' : 'general';
+            try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
           }
-        }
-      });
 
-      state.tasks = loadedTasks.sort((a, b) => a.id.localeCompare(b.id));
-    }
-    updateModalDropdowns();
-    refreshViews();
-    healPostTaskSync();
-    updatePublishingQueueBadge();
-  }, (error) => {
-    console.error("Firestore tasks sync error:", error);
-    state.tasks = [...DEFAULT_TASKS];
-    updateModalDropdowns();
-    refreshViews();
-  });
+          const designerPerson = findTeamMember(t.designer);
+          if (designerPerson) t.designer = designerPerson.name;
 
+          const assignerPerson = findTeamMember(t.assignedBy);
+          if (assignerPerson) t.assignedBy = assignerPerson.name;
+
+          loadedTasks.push(t);
+        });
+
+        // Guarantee all DEFAULT_TASKS are present and updated with master dataset values
+        DEFAULT_TASKS.forEach(def => {
+          const idx = loadedTasks.findIndex(t => t.id === def.id);
+          if (idx === -1) {
+            loadedTasks.push({ ...def });
+            try { setDoc(doc(db, "tasks", def.id), def); } catch(e){}
+          } else {
+            // Update default task fields to match latest CSV values
+            const updated = { ...loadedTasks[idx], ...def };
+            if (JSON.stringify(loadedTasks[idx]) !== JSON.stringify(updated)) {
+              loadedTasks[idx] = updated;
+              try { setDoc(doc(db, "tasks", def.id), updated); } catch(e){}
+            }
+          }
+        });
+
+        state.tasks = loadedTasks.sort((a, b) => a.id.localeCompare(b.id));
+      }
+      updateModalDropdowns();
+      refreshViews();
+      healPostTaskSync();
+      updatePublishingQueueBadge();
+    }, (error) => {
+      console.error("Firestore tasks sync error:", error);
+      state.tasks = [...DEFAULT_TASKS];
+      updateModalDropdowns();
+      refreshViews();
+    });
+  } catch(err) {
+    console.warn("Firestore tasks listener skipped:", err);
+  }
 
   // Sync team members from Firestore in real-time
-  onSnapshot(collection(db, "team"), (querySnapshot) => {
-    if (querySnapshot.empty) {
-      DEFAULT_TEAM.forEach(async (t) => {
-        try { await setDoc(doc(db, "team", t.id), t); } catch(e){}
-      });
+  try {
+    onSnapshot(collection(db, "team"), (querySnapshot) => {
+      if (querySnapshot.empty) {
+        DEFAULT_TEAM.forEach(async (t) => {
+          try { await setDoc(doc(db, "team", t.id), t); } catch(e){}
+        });
+        state.team = [...DEFAULT_TEAM];
+      } else {
+        const loadedTeam = [];
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const dataName = data.name || '';
+          const defaultMatch = DEFAULT_TEAM.find(t => t.name === dataName || (t.aliases && t.aliases.includes(dataName)));
+          if (defaultMatch && defaultMatch.photo) {
+            data.photo = defaultMatch.photo;
+          }
+          loadedTeam.push(data);
+        });
+
+        DEFAULT_TEAM.forEach(def => {
+          const exists = loadedTeam.some(t => t.name === def.name || t.id === def.id || (t.aliases && t.aliases.includes(def.name)));
+          if (!exists) {
+            loadedTeam.push(def);
+          }
+        });
+
+        state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      }
+      updateModalDropdowns();
+      renderUserProfile();
+      refreshViews();
+    }, (error) => {
+      console.error("Firestore team sync error:", error);
       state.team = [...DEFAULT_TEAM];
-    } else {
-      const loadedTeam = [];
+      updateModalDropdowns();
+      renderUserProfile();
+      refreshViews();
+    });
+  } catch(err) {
+    console.warn("Firestore team listener skipped:", err);
+  }
+
+  // Sync activity logs from Firestore in real-time
+  try {
+    onSnapshot(collection(db, "activity_log"), (querySnapshot) => {
+      const loadedLogs = [];
       querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const dataName = data.name || '';
-        const defaultMatch = DEFAULT_TEAM.find(t => t.name === dataName || (t.aliases && t.aliases.includes(dataName)));
-        if (defaultMatch && defaultMatch.photo) {
-          data.photo = defaultMatch.photo;
-        }
-        loadedTeam.push(data);
+        loadedLogs.push(docSnap.data());
       });
-
-      DEFAULT_TEAM.forEach(def => {
-        const exists = loadedTeam.some(t => t.name === def.name || t.id === def.id || (t.aliases && t.aliases.includes(def.name)));
-        if (!exists) {
-          loadedTeam.push(def);
-        }
-      });
-
-      state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    }
-    updateModalDropdowns();
-    renderUserProfile();
-    refreshViews();
-  }, (error) => {
-    console.error("Firestore team sync error:", error);
-    state.team = [...DEFAULT_TEAM];
-    updateModalDropdowns();
-    renderUserProfile();
-    refreshViews();
-  });
+      state.activityLog = loadedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      if (state.activityLog.length > 100) {
+        state.activityLog = state.activityLog.slice(0, 100);
+      }
+      renderActivityLog();
+      updateActivityBadge();
+    }, (error) => {
+      console.error("Firestore activity_log sync error:", error);
+    });
+  } catch(err) {
+    console.warn("Firestore activity_log listener skipped:", err);
+  }
 }
 
 function saveToStorage() {
   localStorage.setItem('hc_brands', JSON.stringify(state.brands));
   localStorage.setItem('hc_team', JSON.stringify(state.team));
 }
-
-// Sync activity logs from Firestore in real-time
-onSnapshot(collection(db, "activity_log"), (querySnapshot) => {
-  const loadedLogs = [];
-  querySnapshot.forEach((docSnap) => {
-    loadedLogs.push(docSnap.data());
-  });
-  state.activityLog = loadedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-  if (state.activityLog.length > 100) {
-    state.activityLog = state.activityLog.slice(0, 100);
-  }
-  renderActivityLog();
-  updateActivityBadge();
-}, (error) => {
-  console.error("Firestore activity_log sync error:", error);
-});
 
 async function logActivity(actionText, dbInstance) {
   const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
@@ -2752,7 +2787,9 @@ function setupEventListeners() {
         renderTaskComments(task);
       }, 300);
     });
-    // Task Tracker Filters & Search
+  }
+
+  // Task Tracker Filters & Search
   const taskSearchInput = document.getElementById('task-search-input');
   if (taskSearchInput) {
     taskSearchInput.addEventListener('input', (e) => {
@@ -3108,15 +3145,15 @@ function initFilterDropdowns() {
 }
 
 function refreshViews() {
-  renderDashboard();
-  renderKanban();
-  renderCalendar();
-  renderAnalytics();
-  renderTasks();
-  renderTeam();
-  renderLogs();
-  renderContentLinks();
-  updatePublishingQueueBadge();
+  try { renderDashboard(); } catch(e) { console.error("renderDashboard error:", e); }
+  try { renderKanban(); } catch(e) { console.error("renderKanban error:", e); }
+  try { renderCalendar(); } catch(e) { console.error("renderCalendar error:", e); }
+  try { renderAnalytics(); } catch(e) { console.error("renderAnalytics error:", e); }
+  try { renderTasks(); } catch(e) { console.error("renderTasks error:", e); }
+  try { renderTeam(); } catch(e) { console.error("renderTeam error:", e); }
+  try { renderLogs(); } catch(e) { console.error("renderLogs error:", e); }
+  try { renderContentLinks(); } catch(e) { console.error("renderContentLinks error:", e); }
+  try { updatePublishingQueueBadge(); } catch(e) { console.error("updatePublishingQueueBadge error:", e); }
 }
 
 function renderLogs() {
@@ -3520,7 +3557,8 @@ function renderKanban() {
     }
 
     // Update count indicator
-    const countBadge = colArea.closest('.kanban-column').querySelector('.column-count');
+    const kanbanCol = (colArea && colArea.closest) ? colArea.closest('.kanban-column') : null;
+    const countBadge = kanbanCol ? kanbanCol.querySelector('.column-count') : null;
     if (countBadge) {
       countBadge.textContent = colPosts.length + colTasks.length;
     }
@@ -3664,59 +3702,6 @@ function renderKanban() {
 
       colArea.appendChild(card);
     });
-
-    // Render Ideas
-    colIdeas.forEach(idea => {
-      const card = document.createElement('div');
-      card.className = 'post-card idea-card';
-      card.setAttribute('draggable', 'true');
-      card.setAttribute('data-id', idea.id);
-      card.style.borderLeft = '4px solid #06b6d4';
-      
-      const ideaDesignerPerson = findTeamMember(idea.designer);
-      const ideaDesignerName = ideaDesignerPerson ? ideaDesignerPerson.name : (idea.designer || '');
-      const designerAvatar = ideaDesignerPerson && ideaDesignerPerson.photo 
-        ? `<img src="${ideaDesignerPerson.photo}" class="card-assignee-avatar-img" title="${ideaDesignerName}">`
-        : (idea.designer
-            ? `<div class="card-assignee-avatar" style="background: #06b6d4; color: #fff">${getAssigneeInitials(idea.designer)}</div>`
-            : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`);
-
-      card.innerHTML = `
-        <div class="card-top">
-          <span class="card-brand-tag" style="background: rgba(6, 182, 212, 0.1); color: #22d3ee">
-            <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.5; margin-right:4px;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"/></svg>
-            <span>Planner Idea</span>
-          </span>
-        </div>
-        <div class="card-title">${idea.topic}</div>
-        <div class="card-meta">
-          <div class="card-assignee">
-            ${designerAvatar}
-            <span>${(ideaDesignerName || '').split(' ')[0]}</span>
-          </div>
-          <div class="card-due-date">
-            <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
-            <span>${formatCardDate(idea.date)}</span>
-          </div>
-        </div>
-      `;
-
-      card.addEventListener('click', (e) => {
-        openIdeaModal(idea);
-      });
-
-      card.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', idea.id);
-        card.style.opacity = '0.5';
-      });
-
-      card.addEventListener('dragend', () => {
-        card.style.opacity = '1';
-      });
-
-      colArea.appendChild(card);
-    });
-
   });
 }
 
@@ -5075,7 +5060,7 @@ function renderTeam() {
   if (desigSelect) {
     const currentVal = state.teamDesignationFilter || 'all';
     const designations = Array.from(new Set(state.team.map(p => p.role).filter(Boolean))).sort();
-    const existingOptions = Array.from(desigSelect.options).map(o => o.value).slice(1).join(',');
+    const existingOptions = (desigSelect.options ? Array.from(desigSelect.options) : []).map(o => o.value).slice(1).join(',');
     const newOptions = designations.join(',');
     if (existingOptions !== newOptions) {
       desigSelect.innerHTML = `<option value="all">All Designations</option>` +
@@ -5127,9 +5112,12 @@ function renderTeam() {
   const designersCount = state.team.filter(p => p.isDesigner).length;
   const assignersCount = state.team.filter(p => p.isAssigner).length;
 
-  document.getElementById('team-stat-total').textContent = total;
-  document.getElementById('team-stat-designers').textContent = designersCount;
-  document.getElementById('team-stat-assigners').textContent = assignersCount;
+  const totalStat = document.getElementById('team-stat-total');
+  const desigStat = document.getElementById('team-stat-designers');
+  const assignStat = document.getElementById('team-stat-assigners');
+  if (totalStat) totalStat.textContent = total;
+  if (desigStat) desigStat.textContent = designersCount;
+  if (assignStat) assignStat.textContent = assignersCount;
 
   tbody.innerHTML = '';
   if (filteredTeam.length === 0) {
