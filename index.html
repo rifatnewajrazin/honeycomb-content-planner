@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoneyComb Inc. Content Tracker & Planner</title>
   <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
-  <link rel="stylesheet" href="style.css?v=3.7.9">
+  <link rel="stylesheet" href="style.css?v=3.8.0">
 </head>
 <body class="minimal-theme">
 
@@ -44,12 +44,7 @@
             </svg>
             Calendar
           </a>
-          <a href="#" class="nav-item" data-view="analytics">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 20V10M12 20V4M6 20v-6"/>
-            </svg>
-            Analytics
-          </a>
+
           <a href="#" class="nav-item" data-view="tasks">
             <svg viewBox="0 0 24 24">
               <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
@@ -161,78 +156,7 @@
         </div>
       </section>
 
-      <!-- View 4: Analytics View -->
-      <section id="analytics-view" class="view-panel">
-        <div class="analytics-summary">
-          <div class="stat-box">
-            <div class="stat-icon-wrap">
-              <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            </div>
-            <div class="stat-details">
-              <h4>Total Scheduled</h4>
-              <p id="stat-total-posts">0</p>
-            </div>
-          </div>
 
-          <div class="stat-box">
-            <div class="stat-icon-wrap" style="background-color: var(--status-healthy-glow); color: var(--status-healthy)">
-              <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
-            </div>
-            <div class="stat-details">
-              <h4>Published</h4>
-              <p id="stat-published-posts">0</p>
-            </div>
-          </div>
-
-          <div class="stat-box">
-            <div class="stat-icon-wrap" style="background-color: rgba(59, 130, 246, 0.15); color: #3b82f6">
-              <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 118 2.83M22 12A10 10 0 0012 2v10z"/></svg>
-            </div>
-            <div class="stat-details">
-              <h4>Completion Rate</h4>
-              <p id="stat-completion-rate">0%</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-grid">
-          <div class="chart-panel">
-            <h3>Content Upload Volume</h3>
-            <div class="chart-container" id="analytics-chart">
-              <!-- Dynamically populated chart bars -->
-            </div>
-          </div>
-
-          <div class="chart-panel">
-            <h3>Active Pages Status</h3>
-            <div class="legend-list" id="analytics-legend">
-              <!-- Dynamically populated legend stats -->
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-grid" style="margin-top: 24px;">
-          <div class="chart-panel">
-            <h3>Creative Workload Balance</h3>
-            <div class="workload-chart-container" id="creative-workload-chart" style="display: flex; gap: 20px; align-items: flex-end; justify-content: space-around; height: 200px; padding-top: 20px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-              <!-- Dynamically populated Creative workload stacks -->
-            </div>
-            <div style="display: flex; justify-content: center; gap: 16px; margin-top: 14px; font-size: 0.8rem; color: #94a3b8;">
-              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #64748b;"></span>Not Started</span>
-              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #f59e0b;"></span>On Progress</span>
-              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #10b981;"></span>Finished</span>
-              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 2px; background: #ef4444;"></span>Delayed</span>
-            </div>
-          </div>
-
-          <div class="chart-panel">
-            <h3>Platform Scheduling Volume</h3>
-            <div class="legend-list" id="platform-breakdown-list">
-              <!-- Dynamically populated platform breakdown -->
-            </div>
-          </div>
-        </div>
-      </section>
 
         <!-- View 5: Task Tracker View -->
         <section id="tasks-view" class="view-panel">

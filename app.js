@@ -1945,11 +1945,10 @@ function runAppInit() {
   setupEventListeners();
   renderUserProfile();
   let lastView = localStorage.getItem('hc_last_view') || 'dashboard';
-  if (lastView === 'kanban') lastView = 'dashboard';
+  if (lastView === 'kanban' || lastView === 'analytics') lastView = 'dashboard';
   switchView(lastView);
   renderDashboard();
   renderCalendar();
-  renderAnalytics();
   initFilterDropdowns();
 }
 
@@ -3254,7 +3253,7 @@ function setupEventListeners() {
 }
 
 function switchView(viewName) {
-  if (viewName === 'kanban') {
+  if (viewName === 'kanban' || viewName === 'analytics') {
     viewName = 'dashboard';
   }
 
