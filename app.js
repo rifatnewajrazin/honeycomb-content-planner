@@ -1865,9 +1865,13 @@ let state = {
 };
 
 // Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initAuth();
+  });
+} else {
   initAuth();
-});
+}
 
 function initAuth() {
   const loginOverlay = document.getElementById('login-overlay');
