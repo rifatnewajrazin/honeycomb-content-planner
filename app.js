@@ -2644,97 +2644,11 @@ function handleCSVImport(e) {
 function renderUnscheduledIdeas() {
   const container = document.getElementById('unscheduled-ideas-list');
   if (!container) return;
-  
-  const unscheduled = state.ideas.filter(i => !i.linkedTaskId);
-  
-  if (unscheduled.length === 0) {
-    container.innerHTML = '<div style="color: #64748b; font-style: italic; text-align: center; margin-top: 40px;">No unscheduled ideas. Add some in the Idea Bank view!</div>';
-    return;
-  }
-
-  container.innerHTML = '';
-  unscheduled.forEach(idea => {
-    const card = document.createElement('div');
-    card.className = 'draggable-idea-card';
-    card.draggable = true;
-    card.innerHTML = `
-      <div style="font-weight: 600; color: #fff; font-size: 0.85rem; margin-bottom: 4px;">${idea.topic}</div>
-      <div style="font-size: 0.75rem; color: #94a3b8;">Designer: ${idea.designer || 'Unassigned'}</div>
-      <div style="font-size: 0.75rem; color: #94a3b8; display: flex; justify-content: space-between; margin-top: 6px;">
-        <span>Urgency: <strong style="color: #fbbf24;">${idea.urgency}</strong></span>
-        <span style="opacity: 0.6;">Drag to schedule</span>
-      </div>
-    `;
-    
-    card.addEventListener('dragstart', (e) => {
-      e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'idea', ideaId: idea.id }));
-    });
-    
-    container.appendChild(card);
-  });
+  container.innerHTML = '<div style="color: #a89297; font-style: italic; text-align: center; margin-top: 40px;">No unscheduled items.</div>';
 }
 
 async function convertIdeaToPost(ideaId, kanbanStatus) {
-  const idea = state.ideas.find(i => i.id === ideaId);
-  if (!idea) return;
-
-  if (idea.linkedTaskId) {
-    await updateIdeaStatus(ideaId, kanbanStatus);
-    return;
-  }
-
-  let maxId = 0;
-  state.tasks.forEach(t => {
-    const num = parseInt(t.id.replace('T-', ''));
-    if (!isNaN(num) && num > maxId) maxId = num;
-  });
-  const newTaskId = `T-${String(maxId + 1).padStart(2, '0')}`;
-  const newPostId = 'post-' + Date.now();
-  const todayStr = new Date().toISOString().slice(0, 10);
-
-  const newTask = {
-    id: newTaskId,
-    name: idea.topic,
-    designer: idea.designer || 'Unassigned',
-    assignedBy: idea.initiator || 'System',
-    date: todayStr,
-    time: '12:00',
-    urgency: idea.urgency || 'ASAP',
-    status: mapPostStatusToTaskStatus(kanbanStatus),
-    deliveryLink: '',
-    comments: idea.notes || '',
-    taskType: 'post',
-    associatedPostId: newPostId
-  };
-
-  const newPost = {
-    id: newPostId,
-    title: idea.topic,
-    brandId: state.brands[0] ? state.brands[0].id : 'all',
-    platforms: ['facebook'],
-    status: kanbanStatus,
-    type: 'post',
-    assignee: idea.designer || 'Unassigned',
-    date: todayStr,
-    time: '12:00',
-    caption: idea.notes || '',
-    associatedTaskId: newTaskId
-  };
-
-  idea.linkedTaskId = newTaskId;
-  idea.status = 'In Production';
-
-  try {
-    await setDoc(doc(db, "tasks", newTaskId), newTask);
-    await setDoc(doc(db, "posts", newPostId), newPost);
-    await setDoc(doc(db, "ideas", ideaId), idea);
-    
-    showToast(`Successfully scheduled Idea as Task ${newTaskId}!`, 'success');
-    await logActivity(`scheduled content idea "${idea.topic}" as task ${newTaskId}`, db);
-  } catch (err) {
-    console.error(err);
-    showToast('Failed to schedule idea', 'error');
-  }
+  return;
 }
 
 // Navigation & Event Listeners
@@ -2834,6 +2748,74 @@ function setupEventListeners() {
         renderTaskComments(task);
       }, 300);
     });
+    // Task Tracker Filters & Search
+  const taskSearchInput = document.getElementById('task-search-input');
+  if (taskSearchInput) {
+    taskSearchInput.addEventListener('input', (e) => {
+      state.taskSearchFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  const taskDesignerFilter = document.getElementById('task-designer-filter');
+  if (taskDesignerFilter) {
+    taskDesignerFilter.addEventListener('change', (e) => {
+      state.taskDesignerFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  const taskAssignerFilter = document.getElementById('task-assigner-filter');
+  if (taskAssignerFilter) {
+    taskAssignerFilter.addEventListener('change', (e) => {
+      state.taskAssignerFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  const taskStatusFilter = document.getElementById('task-status-filter');
+  if (taskStatusFilter) {
+    taskStatusFilter.addEventListener('change', (e) => {
+      state.taskStatusFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
+  // Create Task button
+  const createTaskBtn = document.getElementById('create-task-btn');
+  if (createTaskBtn) {
+    createTaskBtn.addEventListener('click', () => {
+      openTaskModal();
+    });
+  }
+
+  // Task Modal Form & Delete
+  const taskForm = document.getElementById('task-form');
+  if (taskForm) {
+    taskForm.addEventListener('submit', handleTaskFormSubmit);
+  }
+
+  const deleteTaskBtn = document.getElementById('task-modal-delete-btn');
+  if (deleteTaskBtn) {
+    deleteTaskBtn.addEventListener('click', deleteTask);
+  }
+
+  const taskCloseBtn = document.getElementById('task-modal-close-btn');
+  const taskCancelBtn = document.getElementById('task-modal-cancel-btn');
+  if (taskCloseBtn) taskCloseBtn.addEventListener('click', closeTaskModal);
+  if (taskCancelBtn) taskCancelBtn.addEventListener('click', closeTaskModal);
+
+  // CSV Import / Export
+  const csvExportBtn = document.getElementById('csv-export-btn');
+  if (csvExportBtn) {
+    csvExportBtn.addEventListener('click', exportTasksToCSV);
+  }
+
+  const csvImportBtn = document.getElementById('csv-import-btn');
+  const csvImportInput = document.getElementById('csv-import-input');
+  if (csvImportBtn && csvImportInput) {
+    csvImportBtn.addEventListener('click', () => csvImportInput.click());
+    csvImportInput.addEventListener('change', handleCSVImport);
   }
 
   // Sidebar Nav clicks
@@ -2933,8 +2915,6 @@ function setupEventListeners() {
     });
   }
 
-
-
   // People & Roles table column header click to sort
   document.querySelectorAll('#people-view th.sortable-th').forEach(th => {
     th.addEventListener('click', () => {
@@ -2958,12 +2938,12 @@ function setupEventListeners() {
     });
   }
 
-  // Close modal clicks (post, task, idea, and person modals)
+  // Close modal clicks (post, task, brand, and person modals)
   document.querySelectorAll('.close-btn, .modal-cancel').forEach(btn => {
     btn.addEventListener('click', () => {
       closePostModal();
       closeTaskModal();
-      closeIdeaModal();
+      closeBrandModal();
       closePersonModal();
     });
   });
@@ -3524,14 +3504,6 @@ function renderKanban() {
       return colStatus === col && t.taskType !== 'post' && !isItemArchived(t); // Hide duplicate social media post tasks from kanban to avoid redundancy
     });
 
-    let colIdeas = state.ideas.filter(i => {
-      let colStatus = '';
-      if (i.status === 'Draft Idea') colStatus = 'ideation';
-      else if (i.status === 'In Production') colStatus = 'development';
-      else if (i.status === 'Completed') colStatus = 'published';
-      return colStatus === col && !isItemArchived(i);
-    });
-
     if (state.selectedBrandFilter !== 'all') {
       const selectedBrand = state.brands.find(b => b.id === state.selectedBrandFilter);
       if (selectedBrand) {
@@ -3540,17 +3512,13 @@ function renderKanban() {
           t.name.toLowerCase().includes(brandNameLower) || 
           (t.comments || '').toLowerCase().includes(brandNameLower)
         );
-        colIdeas = colIdeas.filter(i => 
-          i.topic.toLowerCase().includes(brandNameLower) || 
-          (i.notes || '').toLowerCase().includes(brandNameLower)
-        );
       }
     }
 
     // Update count indicator
     const countBadge = colArea.closest('.kanban-column').querySelector('.column-count');
     if (countBadge) {
-      countBadge.textContent = colPosts.length + colTasks.length + colIdeas.length;
+      countBadge.textContent = colPosts.length + colTasks.length;
     }
 
     // Render Posts
@@ -4572,26 +4540,14 @@ function renderTasks() {
 
     let linkedPostHtml = '';
     if (task.associatedPostId) {
-      if (task.associatedPostId.startsWith('idea-')) {
-        const linkedIdea = state.ideas.find(i => i.id === task.associatedPostId);
-        if (linkedIdea) {
-          linkedPostHtml = `
-            <div class="linked-post-badge" style="background-color: rgba(168, 85, 247, 0.1); color: #a855f7; border-color: rgba(168, 85, 247, 0.15);" title="Linked to planner idea: ${linkedIdea.topic}">
-              <svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.465V19a2 2 0 01-2 2h0a2 2 0 01-2-2v-.535c0-.918-.382-1.8-1.039-2.43l-.547-.547z"/></svg>
-              <span>Idea: ${linkedIdea.topic.substring(0, 18)}...</span>
-            </div>
-          `;
-        }
-      } else {
-        const linkedPost = state.posts.find(p => p.id === task.associatedPostId);
-        if (linkedPost) {
-          linkedPostHtml = `
-            <div class="linked-post-badge" title="Linked to content post: ${linkedPost.title}">
-              <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7zm10 3a3 3 0 100-6 3 3 0 000 6z"/></svg>
-              <span>Post: ${linkedPost.title.substring(0, 18)}...</span>
-            </div>
-          `;
-        }
+      const linkedPost = state.posts.find(p => p.id === task.associatedPostId);
+      if (linkedPost) {
+        linkedPostHtml = `
+          <div class="linked-post-badge" title="Linked to content post: ${linkedPost.title}">
+            <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7zm10 3a3 3 0 100-6 3 3 0 000 6z"/></svg>
+            <span>Post: ${linkedPost.title.substring(0, 18)}...</span>
+          </div>
+        `;
       }
     }
 
@@ -4669,15 +4625,12 @@ function renderTasks() {
     if (linkedPostBadge) {
       linkedPostBadge.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (task.associatedPostId.startsWith('idea-')) {
-          navigateToIdea(task.associatedPostId);
+        const post = state.posts.find(p => p.id === task.associatedPostId);
+        if (post) {
+          openPostModal(post);
         } else {
-          const post = state.posts.find(p => p.id === task.associatedPostId);
-          if (post) {
-            navigateToKanbanCard(post.id);
-          } else {
-            navigateToKanbanCard(task.id);
-          }
+          const linkedTask = state.tasks.find(t => t.id === task.associatedPostId);
+          if (linkedTask) openTaskModal(linkedTask);
         }
       });
     }
