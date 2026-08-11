@@ -2407,26 +2407,67 @@ function renderActivityLog() {
   const container = document.getElementById('activity-log-list');
   if (!container) return;
 
-  if (!state.activityLog || state.activityLog.length === 0) {
-    container.innerHTML = '<div style="color: #64748b; font-style: italic; text-align: center; margin-top: 40px;">No recent activity</div>';
-    return;
-  }
+  const pendingPublishing = (state.tasks || []).filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
 
-  container.innerHTML = state.activityLog.map(log => {
-    const date = new Date(log.timestamp);
-    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    
-    return `
-      <div class="activity-log-item">
-        <div>
-          <span class="activity-log-user">${log.user}</span>
-          <span class="activity-log-text">${log.actionText}</span>
+  let publishingHtml = '';
+  if (pendingPublishing.length > 0) {
+    publishingHtml = `
+      <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 16px;">
+        <div style="font-weight: 700; color: var(--honey-gold); margin-bottom: 12px; font-size: 0.9rem;">
+          🚀 Pending Posts to Publish (${pendingPublishing.length})
         </div>
-        <div class="activity-log-time">${dateStr} at ${timeStr}</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          ${pendingPublishing.map(task => {
+            const post = task.associatedPostId ? state.posts.find(p => p.id === task.associatedPostId) : null;
+            const postInfo = post ? `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Platform: ${(post.platforms || []).join(', ')} | Page: ${post.brandId}</div>` : '';
+            return `
+              <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 12px;">
+                <div style="font-weight: 600; color: #f8fafc; font-size: 0.88rem;">${task.name}</div>
+                <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 4px;">Delivery Link: <a href="${task.deliveryLink || '#'}" target="_blank" style="color: var(--honey-gold); text-decoration: underline;">${task.deliveryLink ? 'Open Asset' : 'None'}</a></div>
+                ${postInfo}
+                <button class="mark-posted-btn" data-task-id="${task.id}" style="margin-top: 10px; width: 100%; background: var(--honey-gold); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">Mark as Posted</button>
+              </div>
+            `;
+          }).join('')}
+        </div>
       </div>
     `;
-  }).join('');
+  }
+
+  let activityHtml = '';
+  if (!state.activityLog || state.activityLog.length === 0) {
+    activityHtml = '<div style="color: #64748b; font-style: italic; text-align: center; margin-top: 20px;">No recent activity</div>';
+  } else {
+    activityHtml = `
+      <div style="font-weight: 700; color: #cbd5e1; margin-bottom: 10px; font-size: 0.85rem;">System Activity History</div>
+      ` + state.activityLog.map(log => {
+      const date = new Date(log.timestamp);
+      const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      
+      return `
+        <div class="activity-log-item">
+          <div>
+            <span class="activity-log-user">${log.user}</span>
+            <span class="activity-log-text">${log.actionText}</span>
+          </div>
+          <div class="activity-log-time">${dateStr} at ${timeStr}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  container.innerHTML = publishingHtml + activityHtml;
+
+  container.querySelectorAll('.mark-posted-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const taskId = e.currentTarget.getAttribute('data-task-id');
+      if (taskId) {
+        window.markTaskPosted(taskId);
+      }
+    });
+  });
 }
 
 let lastViewedLogTime = localStorage.getItem('hc_last_viewed_log_time') || new Date(0).toISOString();
@@ -2435,10 +2476,36 @@ function updateActivityBadge() {
   const badge = document.getElementById('activity-badge');
   if (!badge) return;
   
+  const pendingPublishing = (state.tasks || []).filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
+  const pendingCount = pendingPublishing.length;
+  
+  if (pendingCount > 0) {
+    badge.textContent = pendingCount;
+    badge.style.display = 'flex';
+    badge.style.alignItems = 'center';
+    badge.style.justifyContent = 'center';
+    badge.style.fontSize = '0.65rem';
+    badge.style.fontWeight = '800';
+    badge.style.color = '#000';
+    badge.style.background = '#f59e0b';
+    badge.style.borderRadius = '50%';
+    badge.style.minWidth = '16px';
+    badge.style.height = '16px';
+    badge.style.top = '-3px';
+    badge.style.right = '-3px';
+    return;
+  }
+  
   if (state.activityLog && state.activityLog.length > 0) {
     const newestLog = state.activityLog[0];
     if (newestLog.timestamp > lastViewedLogTime) {
+      badge.textContent = '';
       badge.style.display = 'block';
+      badge.style.background = '#ef4444';
+      badge.style.width = '8px';
+      badge.style.height = '8px';
+      badge.style.top = '10px';
+      badge.style.right = '10px';
       return;
     }
   }
@@ -6347,8 +6414,8 @@ window.markTaskPosted = async function(taskId) {
   logActivity(`Marked task "${task.name}" as posted`, db);
   showToast(`Marked "${task.name}" as posted`, 'success');
   
-  renderPublishingQueue();
-  updatePublishingQueueBadge();
+  renderActivityLog();
+  updateActivityBadge();
   refreshViews();
 
   try {
