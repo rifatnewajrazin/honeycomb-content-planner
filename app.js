@@ -1918,12 +1918,12 @@ function runAppInit() {
   initData();
   setupEventListeners();
   renderUserProfile();
-  let lastView = localStorage.getItem('hc_last_view') || 'dashboard';
-  if (lastView === 'kanban' || lastView === 'analytics') lastView = 'dashboard';
-  switchView(lastView);
-  renderDashboard();
-  renderCalendar();
   initFilterDropdowns();
+  updateModalDropdowns();
+  refreshViews();
+  let lastView = localStorage.getItem('hc_last_view') || 'dashboard';
+  if (lastView === 'kanban' || lastView === 'analytics' || lastView === 'ideas') lastView = 'dashboard';
+  switchView(lastView);
 }
 
 function renderUserProfile() {
@@ -2916,20 +2916,7 @@ function setupEventListeners() {
     });
   });
 
-  // Idea Bank / Content Planner table column header click to sort
-  document.querySelectorAll('#ideas-view th.sortable-th').forEach(th => {
-    th.addEventListener('click', () => {
-      const sortCol = th.getAttribute('data-sort');
-      if (!sortCol) return;
-      if (state.ideaSortCol === sortCol) {
-        state.ideaSortDir = state.ideaSortDir === 'asc' ? 'desc' : 'asc';
-      } else {
-        state.ideaSortCol = sortCol;
-        state.ideaSortDir = (sortCol === 'date' || sortCol === 'id') ? 'desc' : 'asc';
-      }
-      renderIdeas();
-    });
-  });
+
 
   // People & Roles table column header click to sort
   document.querySelectorAll('#people-view th.sortable-th').forEach(th => {
@@ -3042,7 +3029,7 @@ function setupEventListeners() {
 }
 
 function switchView(viewName) {
-  if (viewName === 'kanban' || viewName === 'analytics') {
+  if (viewName === 'kanban' || viewName === 'analytics' || viewName === 'ideas') {
     viewName = 'dashboard';
   }
 
@@ -3079,6 +3066,14 @@ function switchView(viewName) {
   if (toggleIdeasBtn) {
     toggleIdeasBtn.style.display = viewName === 'kanban' ? 'flex' : 'none';
   }
+
+  // Trigger view renderers
+  if (viewName === 'tasks') renderTasks();
+  else if (viewName === 'team') renderTeam();
+  else if (viewName === 'content-links') renderContentLinks();
+  else if (viewName === 'dashboard') renderDashboard();
+  else if (viewName === 'calendar') renderCalendar();
+  else if (viewName === 'logs') renderLogs();
 
   // Scroll main back to top
   document.querySelector('.main-content').scrollTop = 0;
@@ -3117,7 +3112,6 @@ function refreshViews() {
   renderCalendar();
   renderAnalytics();
   renderTasks();
-  renderIdeas();
   renderTeam();
   renderLogs();
   renderContentLinks();
