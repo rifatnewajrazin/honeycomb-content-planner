@@ -10,10 +10,20 @@
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3.9.8">
+  <link rel="stylesheet" href="style.css?v=3.9.9">
 </head>
 <body class="minimal-theme">
   <div class="grain-overlay"></div>
+
+  <!-- Shown until the first Firestore data (tasks) arrives, then removed by app.js -->
+  <div id="app-loading-overlay" class="app-loading-overlay">
+    <div class="loading-boxes">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <p>Loading HoneyComb Content Hub…</p>
+  </div>
 
   <div class="app-container">
     
@@ -762,6 +772,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.9.6"></script>
+  <script type="module" src="app.js?v=3.9.9"></script>
 </body>
 </html>

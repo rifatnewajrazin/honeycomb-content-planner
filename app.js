@@ -1881,6 +1881,39 @@ async function runAppInit() {
   let lastView = localStorage.getItem('hc_last_view') || 'dashboard';
   if (lastView === 'kanban' || lastView === 'analytics' || lastView === 'ideas') lastView = 'dashboard';
   switchView(lastView);
+
+  // Safety net: don't let the loading overlay get stuck forever if the
+  // Firestore listener errors out silently for some reason.
+  setTimeout(hideAppLoadingOverlay, 6000);
+}
+
+// Hides the initial-load overlay once real data is in. Guarded so it only
+// ever runs once (repeated onSnapshot events shouldn't re-trigger it).
+let appLoadingOverlayHidden = false;
+function hideAppLoadingOverlay() {
+  if (appLoadingOverlayHidden) return;
+  appLoadingOverlayHidden = true;
+  const overlay = document.getElementById('app-loading-overlay');
+  if (overlay) overlay.classList.add('is-hidden');
+}
+
+// Swaps a button's contents for the small "loading boxes" animation and
+// disables it, for actions with a real perceivable delay (CSV import,
+// sign-in) where nothing else on screen changes until the work finishes.
+// Call setButtonLoading(btn, false) in a finally block to restore it.
+function setButtonLoading(btn, isLoading, loadingLabel = 'Working…') {
+  if (!btn) return;
+  if (isLoading) {
+    if (!btn.dataset.originalHtml) btn.dataset.originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="loading-boxes loading-boxes-sm"><span></span><span></span><span></span></span> ${loadingLabel}`;
+  } else {
+    btn.disabled = false;
+    if (btn.dataset.originalHtml) {
+      btn.innerHTML = btn.dataset.originalHtml;
+      delete btn.dataset.originalHtml;
+    }
+  }
 }
 
 function renderUserProfile() {
@@ -2094,14 +2127,17 @@ function initData() {
       updateModalDropdowns();
       refreshViews();
       updatePublishingQueueBadge();
+      hideAppLoadingOverlay();
     }, (error) => {
       console.error("Firestore tasks sync error:", error);
       state.tasks = [...DEFAULT_TASKS];
       updateModalDropdowns();
       refreshViews();
+      hideAppLoadingOverlay();
     });
   } catch(err) {
     console.warn("Firestore tasks listener skipped:", err);
+    hideAppLoadingOverlay();
   }
 
   // Sync team members from Firestore in real-time
@@ -2519,6 +2555,8 @@ function exportTasksToCSV() {
 function handleCSVImport(e) {
   const file = e.target.files[0];
   if (!file) return;
+  const importBtn = document.getElementById('csv-import-btn');
+  setButtonLoading(importBtn, true, 'Importing…');
   const reader = new FileReader();
   reader.onload = async function(evt) {
     try {
@@ -2591,6 +2629,8 @@ function handleCSVImport(e) {
     } catch (err) {
       console.error(err);
       showToast('Failed to parse CSV file', 'error');
+    } finally {
+      setButtonLoading(importBtn, false);
     }
   };
   reader.readAsText(file);
