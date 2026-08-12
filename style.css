@@ -1666,18 +1666,6 @@ textarea.form-control {
   background-color: rgba(255, 255, 255, 0.02);
 }
 
-.tasks-table tr.highlighted-task {
-  background-color: rgba(251, 191, 36, 0.08) !important;
-  border-left: 4px solid var(--honey-gold);
-  animation: pulse-highlight 2s ease-in-out 3;
-}
-
-@keyframes pulse-highlight {
-  0% { background-color: rgba(251, 191, 36, 0.04); }
-  50% { background-color: rgba(251, 191, 36, 0.15); }
-  100% { background-color: rgba(251, 191, 36, 0.04); }
-}
-
 .post-card.flash-outline-kanban {
   animation: flash-kanban-card 0.7s ease-in-out infinite alternate !important;
   z-index: 100;
@@ -1768,65 +1756,6 @@ textarea.form-control {
   font-size: 0.8rem;
   color: #94a3b8;
   margin-top: 4px;
-}
-
-.linked-post-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-.linked-post-badge:hover {
-  background-color: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-}
-
-.linked-post-badge svg {
-  width: 12px;
-  height: 12px;
-  stroke: currentColor;
-  stroke-width: 2;
-  fill: none;
-}
-
-.card-task-link-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 8px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  background-color: var(--honey-glow);
-  color: var(--honey-gold);
-  border: 1px solid rgba(251, 191, 36, 0.15);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: fit-content;
-}
-
-.card-task-link-badge:hover {
-  background-color: var(--honey-gold);
-  color: #000;
-}
-
-.card-task-link-badge svg {
-  width: 12px;
-  height: 12px;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  fill: none;
 }
 
 /* Content Planner specific styles */

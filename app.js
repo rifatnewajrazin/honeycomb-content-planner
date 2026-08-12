@@ -210,8 +210,7 @@ const DEFAULT_TASKS = [
     "status": "Delayed",
     "deliveryLink": "Evoka Visiting Card Design",
     "notes": "Will start and finish on 4th.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-02",
@@ -224,8 +223,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams DC2 Visiting Card",
     "notes": "Monday Delivery.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-03",
@@ -238,8 +236,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "10 Years of Tahams",
     "notes": "Will finish on 30th.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-04",
@@ -252,8 +249,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Brand Identity Tahams",
     "notes": "Font done, working on the color section.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-05",
@@ -266,8 +262,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams Investment Post AR",
     "notes": "On correction.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-06",
@@ -280,8 +275,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Perfume Box Redesign",
     "notes": "Handed over to Saddam Bhai",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-07",
@@ -294,8 +288,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Cameo Troubleshoot",
     "notes": "Talked and Fixed.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-08",
@@ -308,8 +301,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "https://rifatnewajrazin.github.io/tahams-font-guidelines/",
     "notes": "Finished finally.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-09",
@@ -322,8 +314,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams Investment Post AR",
     "notes": "Confirmed.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-10",
@@ -336,8 +327,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Cuban Collar Hawai Shirt",
     "notes": "4 color diye diyechi",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-11",
@@ -350,8 +340,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Evoka Experiences Logo and Cover",
     "notes": "Done and dusted.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-12",
@@ -364,8 +353,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams Investment Post New",
     "notes": "Updated",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-13",
@@ -378,8 +366,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "New Billboard Design",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-14",
@@ -392,8 +379,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams DC4 Post and Cover",
     "notes": "Notepad for Details",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-17",
@@ -406,8 +392,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Strow Water Bottle design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-18",
@@ -420,8 +405,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Big Boss New Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-20",
@@ -434,8 +418,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Fantasy Inner Beauty PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-21",
@@ -448,8 +431,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Vampire Blood Dark Elegance PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-22",
@@ -462,8 +444,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Together in Comfort PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-23",
@@ -476,8 +457,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Committee'r Lok Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-24",
@@ -490,8 +470,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Fifa Content Design",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-25",
@@ -504,8 +483,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Mafia Messi",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-26",
@@ -518,8 +496,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Evoka Carousel",
     "notes": "Sunday",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-27",
@@ -532,8 +509,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Metro Drop Shoulder Post design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-28",
@@ -546,8 +522,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Outdor Kids Tshirt With Pant Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-29",
@@ -560,8 +535,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "MT-ServicesPost Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-30",
@@ -574,8 +548,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Our Services Post Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-31",
@@ -588,8 +561,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "https://www.facebook.com/share/p/19RE2WbxLh/",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-32",
@@ -602,8 +574,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Spider Man Tshirt Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-33",
@@ -616,8 +587,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "https://www.facebook.com/share/p/19EGr3jGMM/",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-35",
@@ -630,8 +600,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Trio Best Perfume for Men & Women Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-36",
@@ -644,8 +613,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Kids Spider Man Cut & Sew Tshirt Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-38",
@@ -658,8 +626,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Lokman Measurements",
     "notes": "Sunday",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-39",
@@ -672,8 +639,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Fotua Post Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-40",
@@ -686,8 +652,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "BANGLAdesh-Niaz",
     "notes": "Posted",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-41",
@@ -700,8 +665,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "750 Ml Water Bottle",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-42",
@@ -714,8 +678,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "https://www.facebook.com/share/p/19AhyB1TLh/",
     "notes": "Yet to handover",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-43",
@@ -728,8 +691,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Co-ord Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-44",
@@ -742,8 +704,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Trademark Post",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-45",
@@ -756,8 +717,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Ultra Male",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-46",
@@ -770,8 +730,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Evoka Documents",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-47",
@@ -784,8 +743,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "DC4 Printables",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-48",
@@ -798,8 +756,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "DC4 Printables",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-49",
@@ -812,8 +769,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "DC1 Printables",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-50",
@@ -826,8 +782,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "DC1 Printables",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-51",
@@ -840,8 +795,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Kids Tshirt Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-52",
@@ -854,8 +808,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Freshness That Defines You Cool Water PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-54",
@@ -868,8 +821,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "DC1 Layout",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-55",
@@ -882,8 +834,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams Own The City PNG",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-56",
@@ -896,8 +847,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Evoka Documents",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-57",
@@ -910,8 +860,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Evoka Documents",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-58",
@@ -924,8 +873,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Evoka Documents",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-59",
@@ -938,8 +886,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "https://www.facebook.com/share/p/1HndvJUULq/",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-60",
@@ -952,8 +899,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Friendship Day Post Design 26",
     "notes": "Post it on 30th July",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-61",
@@ -966,8 +912,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Friendship Day Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-62",
@@ -980,8 +925,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Kids Stripe tshirt Design PNG",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-63",
@@ -994,8 +938,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "https://www.facebook.com/share/p/1EkpV5RsgL/",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-64",
@@ -1008,8 +951,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Uncommn Looks Begin Here PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-65",
@@ -1022,8 +964,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Neck Printed Tshirt Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-66",
@@ -1036,8 +977,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Spain Niaz",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-67",
@@ -1050,8 +990,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Friendship Day post design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-68",
@@ -1064,8 +1003,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Start Prepared Water Bottle post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-69",
@@ -1078,8 +1016,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "3mm Board PVC Prints",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-70",
@@ -1092,8 +1029,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Printing Charge \u098f\u09b0 \u09a4\u09be\u09b2\u09bf\u0995\u09be =PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-71",
@@ -1106,8 +1042,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "3mm Board PVC Prints",
     "notes": "Handed over to Lokman.",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-72",
@@ -1120,8 +1055,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "The Solid Series Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-73",
@@ -1134,8 +1068,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Funny Tshirt Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-74",
@@ -1148,8 +1081,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Cuban Collar & Denim Pants Combo Offer Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-75",
@@ -1162,8 +1094,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams DC1 Reallocation Post PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-76",
@@ -1176,8 +1107,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Evoka First Post Carousel",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-77",
@@ -1190,8 +1120,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Start Prepared Water Bottle post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-78",
@@ -1204,8 +1133,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "DC4 Signboard",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-79",
@@ -1218,8 +1146,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "\u0995\u09cd\u09af\u09be\u09ae\u09cd\u09aa\u09be\u09b8\u09c7\u09b0 \u09b8\u09cd\u09ae\u09c3\u09a4\u09bf Tahams \u098f\u09b0 \u09b8\u09be\u09a5\u09c7",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-80",
@@ -1232,8 +1159,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Make Memories with Tahams PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-81",
@@ -1246,8 +1172,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-82",
@@ -1260,8 +1185,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Executive Polo Female Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-83",
@@ -1274,8 +1198,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Naim Bhai LLM ID Card for Banking",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-84",
@@ -1288,8 +1211,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Mirpur Edition Tshirt Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-108",
@@ -1302,8 +1224,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tank Top Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-86",
@@ -1316,8 +1237,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams Sister day post Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-87",
@@ -1330,8 +1250,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "DC4 Grand Opening Poster Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-88",
@@ -1344,8 +1263,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Discover your perfect scent Post Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-94",
@@ -1358,8 +1276,7 @@ const DEFAULT_TASKS = [
     "status": "Not Started",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-97",
@@ -1372,8 +1289,7 @@ const DEFAULT_TASKS = [
     "status": "Not Started",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-102",
@@ -1386,8 +1302,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams- Ware your Lifestyle",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-103",
@@ -1400,8 +1315,7 @@ const DEFAULT_TASKS = [
     "status": "Not Started",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-104",
@@ -1414,8 +1328,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Basic Tshirt & Pants Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-105",
@@ -1428,8 +1341,7 @@ const DEFAULT_TASKS = [
     "status": "Not Started",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-106",
@@ -1442,8 +1354,7 @@ const DEFAULT_TASKS = [
     "status": "Not Started",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-16",
@@ -1456,8 +1367,7 @@ const DEFAULT_TASKS = [
     "status": "On Progress",
     "deliveryLink": "Merchandiser Formalities",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-15",
@@ -1470,8 +1380,7 @@ const DEFAULT_TASKS = [
     "status": "On Progress",
     "deliveryLink": "Social Media Refinement",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-19",
@@ -1484,8 +1393,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Tahams DC4 Post and Cover",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-85",
@@ -1498,8 +1406,7 @@ const DEFAULT_TASKS = [
     "status": "Delayed",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-115",
@@ -1512,8 +1419,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Investment Post AR",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-116",
@@ -1526,8 +1432,7 @@ const DEFAULT_TASKS = [
     "status": "On Progress",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-117",
@@ -1540,8 +1445,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "5th august Notice PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-118",
@@ -1554,8 +1458,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "GOT_NIAZ",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-119",
@@ -1568,8 +1471,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Snoopy Design File",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-120",
@@ -1582,8 +1484,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "general",
-    "associatedPostId": ""
+    "taskType": "general"
   },
   {
     "id": "T-121",
@@ -1596,8 +1497,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "SMM Hiring Post Design PNG.png",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-122",
@@ -1610,8 +1510,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "KOROBI",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-123",
@@ -1624,8 +1523,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "ORCHID",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-124",
@@ -1638,8 +1536,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "ROJONI",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-125",
@@ -1652,8 +1549,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Niaz Snoopy Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-126",
@@ -1666,8 +1562,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Investment Post",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-127",
@@ -1680,8 +1575,7 @@ const DEFAULT_TASKS = [
     "status": "Finished",
     "deliveryLink": "Ai Invest Post Design",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   },
   {
     "id": "T-128",
@@ -1694,8 +1588,7 @@ const DEFAULT_TASKS = [
     "status": "On Progress",
     "deliveryLink": "",
     "notes": ".",
-    "taskType": "post",
-    "associatedPostId": ""
+    "taskType": "post"
   }
 ];
 
@@ -2483,7 +2376,7 @@ function updateActivityBadge() {
   const badge = document.getElementById('activity-badge');
   if (!badge) return;
   
-  const pendingPublishing = (state.tasks || []).filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
+  const pendingPublishing = (state.tasks || []).filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
   const pendingCount = pendingPublishing.length;
   
   if (pendingCount > 0) {
@@ -2686,8 +2579,7 @@ function handleCSVImport(e) {
           status,
           deliveryLink,
           comments,
-          taskType: jobType,
-          associatedPostId: ''
+          taskType: jobType
         };
         
         await setDoc(doc(db, "tasks", newId), newTask);
@@ -4672,14 +4564,6 @@ async function markTasksPostedBulk(taskIds) {
 
     task.isPosted = true;
 
-    if (task.associatedPostId) {
-      const post = state.posts.find(p => p.id === task.associatedPostId);
-      if (post) {
-        post.status = 'published';
-        try { await setDoc(doc(db, "posts", post.id), post); } catch (e) {}
-      }
-    }
-
     try {
       await setDoc(doc(db, "tasks", taskId), task);
       successCount++;
@@ -5012,20 +4896,6 @@ function updateModalDropdowns() {
   }
 }
 
-function navigateToTask(taskId) {
-  switchView('tasks');
-  setTimeout(() => {
-    const row = document.getElementById(`task-row-${taskId}`);
-    if (row) {
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.classList.add('highlighted-task');
-      setTimeout(() => {
-        row.classList.remove('highlighted-task');
-      }, 6000);
-    }
-  }, 300);
-}
-
 function navigateToKanbanCard(itemId) {
   const currentUser = localStorage.getItem('hc_logged_in_user');
   const person = findTeamMember(currentUser);
@@ -5306,44 +5176,6 @@ async function deletePerson() {
     showToast('Failed to delete person', 'error');
   }
 }
-
-function mapPostStatusToTaskStatus(postStatus) {
-  if (postStatus === 'ideation') return 'Not Started';
-  if (postStatus === 'development') return 'On Progress';
-  if (postStatus === 'ready') return 'Delayed';
-  if (postStatus === 'scheduled') return 'On Progress';
-  if (postStatus === 'published') return 'Finished';
-  if (postStatus === 'correction') return 'Correction';
-  return 'Not Started';
-}
-
-function mapTaskStatusToPostStatus(taskStatus) {
-  if (taskStatus === 'Not Started') return 'ideation';
-  if (taskStatus === 'On Progress') return 'development';
-  if (taskStatus === 'Delayed') return 'ready';
-  if (taskStatus === 'Finished') return 'published';
-  if (taskStatus === 'Correction') return 'correction';
-  return 'ideation';
-}
-
-function detectBrandFromTask(task) {
-  if (!task) return 'tahams';
-  const text = ((task.name || '') + ' ' + (task.notes || '') + ' ' + (task.deliveryLink || '')).toLowerCase();
-  if (text.includes('evoka')) return 'evoka-experiences';
-  if (text.includes('lovelife')) return 'lovelife';
-  if (text.includes('samtech') || text.includes('sammtech')) return 'sammtech';
-  if (text.includes('merchtile')) return 'merchtile';
-  if (text.includes('perfume')) return 'perfume-tahams';
-  if (text.includes('lumina')) return 'lumina-tahams';
-  if (text.includes('star') || text.includes('spiderman') || text.includes('kids')) return 'star-tahams';
-  return 'tahams';
-}
-
-// Note: this app used to have automatic Task <-> Post linking/syncing
-// (syncTaskToPost, syncPostToTask, healPostTaskSync). It was removed because
-// it silently created phantom duplicate posts and caused saved task edits to
-// get reverted by cross-sync logic running moments later. Tasks and Posts
-// are now fully independent records.
 
 // --- Publishing Queue Logic ---
 function updatePublishingQueueBadge() {
