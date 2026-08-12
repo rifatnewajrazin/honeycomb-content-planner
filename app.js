@@ -1798,6 +1798,30 @@ if (document.readyState === 'loading') {
   initAuth();
 }
 
+// Vibrates the login card and highlights the password field red when the
+// entered password doesn't match. Re-triggerable on repeated wrong attempts
+// (removing the class and forcing a reflow before re-adding it, since
+// re-adding the same class name to an element that already has it won't
+// restart a CSS animation on its own).
+function shakeWrongPassword() {
+  const card = document.querySelector('.login-card');
+  const passwordEl = document.getElementById('login-password');
+  if (!card) return;
+
+  card.classList.remove('shake-wrong-password');
+  void card.offsetWidth; // force reflow so the animation can restart
+  card.classList.add('shake-wrong-password');
+
+  if (passwordEl) {
+    passwordEl.value = '';
+    passwordEl.focus();
+  }
+
+  card.addEventListener('animationend', () => {
+    card.classList.remove('shake-wrong-password');
+  }, { once: true });
+}
+
 function initAuth() {
   const loginOverlay = document.getElementById('login-overlay');
   const loginForm = document.getElementById('login-form');
@@ -1832,6 +1856,7 @@ function initAuth() {
         }
         if (String(account.password || '') !== passwordInput) {
           showToast('Invalid password. Please try again.', 'error');
+          shakeWrongPassword();
           return;
         }
 
