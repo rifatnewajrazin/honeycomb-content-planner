@@ -5572,29 +5572,14 @@ async function syncTaskToPost(task, db) {
       task.associatedPostId = post.id;
       try { await setDoc(doc(db, "tasks", task.id), task); } catch(e){}
     }
-  } else {
-    // Create new post
-    const newPostId = 'post-' + (task.id || Date.now());
-    const newPost = {
-      id: newPostId,
-      title: task.name,
-      brandId: brandId,
-      platforms: ['facebook', 'instagram'],
-      status: postStatus,
-      type: 'image',
-      assignee: task.designer,
-      date: task.date || '2026-08-09',
-      time: task.time || '12:00',
-      caption: '',
-      associatedTaskId: task.id
-    };
-    
-    state.posts.push(newPost);
-    try { await setDoc(doc(db, "posts", newPostId), newPost); } catch(e){}
-    
-    task.associatedPostId = newPostId;
-    try { await setDoc(doc(db, "tasks", task.id), task); } catch(e){}
   }
+  // Note: previously this had an `else` branch that silently auto-created a
+  // brand-new content post any time a "post"-type task was saved without an
+  // explicit Link to Content Post selected. That's why saving T-128 spawned
+  // a phantom "post-T-128" nobody asked for, which showed up as a stray
+  // linked-post badge inconsistent with every other row. Linking a task to a
+  // content post should only happen when someone explicitly picks one from
+  // the "Link to Content Post" dropdown — never as a side effect of saving.
 }
 
 async function healPostTaskSync() {
