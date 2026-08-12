@@ -2120,12 +2120,10 @@ function initData() {
           loadedPosts.push(doc.data());
         });
 
-        DEFAULT_POSTS.forEach(def => {
-          if (!loadedPosts.some(p => p.id === def.id)) {
-            loadedPosts.push(def);
-          }
-        });
-
+        // Note: DEFAULT_POSTS are only seeded once, when the collection is first
+        // empty (see the `if (querySnapshot.empty)` branch above). Re-adding
+        // missing defaults here would resurrect posts a user had deleted, the
+        // same bug fixed for DEFAULT_TASKS above.
         state.posts = loadedPosts;
       }
       updateModalDropdowns();
@@ -2167,22 +2165,11 @@ function initData() {
           loadedTasks.push(t);
         });
 
-        // Guarantee all DEFAULT_TASKS are present and updated with master dataset values
-        DEFAULT_TASKS.forEach(def => {
-          const idx = loadedTasks.findIndex(t => t.id === def.id);
-          if (idx === -1) {
-            loadedTasks.push({ ...def });
-            try { setDoc(doc(db, "tasks", def.id), def); } catch(e){}
-          } else {
-            // Update default task fields to match latest CSV values
-            const updated = { ...loadedTasks[idx], ...def };
-            if (JSON.stringify(loadedTasks[idx]) !== JSON.stringify(updated)) {
-              loadedTasks[idx] = updated;
-              try { setDoc(doc(db, "tasks", def.id), updated); } catch(e){}
-            }
-          }
-        });
-
+        // Note: DEFAULT_TASKS are only seeded once, when the collection is first
+        // empty (see the `if (querySnapshot.empty)` branch above). We deliberately
+        // do NOT re-add missing defaults here — doing so on every snapshot caused
+        // deleted default tasks (e.g. T-85) to be silently resurrected the moment
+        // this listener re-fired after a delete.
         state.tasks = loadedTasks.sort((a, b) => a.id.localeCompare(b.id));
       }
       updateModalDropdowns();
@@ -4792,7 +4779,7 @@ function openTaskModal(task = null) {
   if (linkPostSelect) {
     linkPostSelect.innerHTML = '<option value="">-- None --</option>';
     state.posts.forEach(p => {
-      linkPostSelect.innerHTML += `<option value="${p.id}">${p.title} [${p.id}]</option>`;
+      linkPostSelect.innerHTML += `<option value="${p.id}">${p.title}</option>`;
     });
     linkPostSelect.value = (task && task.associatedPostId) ? task.associatedPostId : '';
   }
@@ -5093,7 +5080,7 @@ function updateModalDropdowns() {
     const currentVal = taskPostSelect.value;
     taskPostSelect.innerHTML = '<option value="">-- None --</option>';
     state.posts.forEach(p => {
-      taskPostSelect.innerHTML += `<option value="${p.id}">${p.title} [${p.id}]</option>`;
+      taskPostSelect.innerHTML += `<option value="${p.id}">${p.title}</option>`;
     });
     taskPostSelect.value = currentVal || (state.editingTask && state.editingTask.associatedPostId) || '';
   }
