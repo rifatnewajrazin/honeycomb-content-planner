@@ -1639,10 +1639,14 @@ textarea.form-control {
   overflow-x: auto;
   box-shadow: var(--shadow-md);
   margin-bottom: 30px;
-  /* small gutter so the vertical scrollbar (when this container also scrolls
-     y, e.g. Content Links / Task Tracker) floats clear of the rounded corner
-     instead of sitting flush against it */
-  padding-right: 4px;
+  /* M3 desktop/expanded container padding (space300 = 24dp) so section
+     headers and tables get real breathing room from the card edges instead
+     of sitting flush against the border on every side. */
+  padding: var(--md-sys-spacing-space300);
+  /* small extra gutter so the vertical scrollbar (when this container also
+     scrolls y, e.g. Content Links / Task Tracker) floats clear of the
+     rounded corner instead of sitting flush against it */
+  padding-right: calc(var(--md-sys-spacing-space300) + 4px);
 }
 
 /* Section headers (e.g. "Social Media Posts" / "General Design Tasks" above
