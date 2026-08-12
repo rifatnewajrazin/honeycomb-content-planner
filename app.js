@@ -2155,7 +2155,6 @@ function initData() {
       }
       updateModalDropdowns();
       refreshViews();
-      healPostTaskSync();
     }, (error) => {
       console.error("Firestore sync error:", error);
       state.posts = [...DEFAULT_POSTS];
@@ -2179,7 +2178,7 @@ function initData() {
         querySnapshot.forEach((docSnap) => {
           const t = docSnap.data();
           if (!t.taskType) {
-            t.taskType = t.associatedPostId ? 'post' : 'general';
+            t.taskType = 'general';
             try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
           }
 
@@ -2201,7 +2200,6 @@ function initData() {
       }
       updateModalDropdowns();
       refreshViews();
-      healPostTaskSync();
       updatePublishingQueueBadge();
     }, (error) => {
       console.error("Firestore tasks sync error:", error);
@@ -2383,7 +2381,6 @@ async function addCommentToPost(postId, text, dbInstance) {
   try {
     const targetDb = dbInstance || db;
     await setDoc(doc(targetDb, "posts", post.id), post);
-    await syncPostToTask(post, targetDb);
     await logActivity(`commented on post "${post.title}": "${text}"`, targetDb);
   } catch (err) {
     console.error("Failed to add comment:", err);
@@ -2408,7 +2405,6 @@ async function addCommentToTask(taskId, text, dbInstance) {
   try {
     const targetDb = dbInstance || db;
     await setDoc(doc(targetDb, "tasks", task.id), task);
-    await syncTaskToPost(task, targetDb);
     await logActivity(`commented on task "${task.name}": "${text}"`, targetDb);
   } catch (err) {
     console.error("Failed to add task comment:", err);
@@ -2419,7 +2415,7 @@ function renderActivityLog() {
   const container = document.getElementById('activity-log-list');
   if (!container) return;
 
-  const pendingPublishing = (state.tasks || []).filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
+  const pendingPublishing = (state.tasks || []).filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
 
   let publishingHtml = '';
   if (pendingPublishing.length > 0) {
@@ -2430,8 +2426,7 @@ function renderActivityLog() {
         </div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
           ${pendingPublishing.map(task => {
-            const post = task.associatedPostId ? state.posts.find(p => p.id === task.associatedPostId) : null;
-            const postInfo = post ? `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Platform: ${(post.platforms || []).join(', ')} | Page: ${post.brandId}</div>` : '';
+            const postInfo = '';
             return `
               <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 12px;">
                 <div style="font-weight: 600; color: #f8fafc; font-size: 0.88rem;">${task.name}</div>
@@ -3618,16 +3613,6 @@ function renderKanban() {
       const dateClass = isOverdue ? 'card-due-date overdue' : 'card-due-date';
       const assigneeInitials = getAssigneeInitials(post.assignee);
 
-      let taskLinkBadgeHtml = '';
-      if (post.associatedTaskId) {
-        taskLinkBadgeHtml = `
-          <div class="card-task-link-badge" data-task-id="${post.associatedTaskId}">
-            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-            <span>Task ${post.associatedTaskId}</span>
-          </div>
-        `;
-      }
-
       card.innerHTML = `
         <div class="card-top">
           <span class="card-brand-tag">
@@ -3651,22 +3636,12 @@ function renderKanban() {
             <span>${formatCardDate(post.date)}</span>
           </div>
         </div>
-        ${taskLinkBadgeHtml}
       `;
 
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.card-assignee-avatar') || e.target.closest('.card-task-link-badge')) return;
+        if (e.target.closest('.card-assignee-avatar')) return;
         openPostModal(post);
       });
-
-      const taskBadge = card.querySelector('.card-task-link-badge');
-      if (taskBadge) {
-        taskBadge.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const taskId = taskBadge.getAttribute('data-task-id');
-          navigateToTask(taskId);
-        });
-      }
 
       card.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', post.id);
@@ -3827,9 +3802,8 @@ function renderCalendar() {
       eventItem.style.setProperty('--brand-glow', brand.glow || 'rgba(255,69,58,0.2)');
       eventItem.style.setProperty('--brand-color', brand.color || '#ff453a');
       
-      const taskIndicator = post.associatedTaskId ? ` [Task ${post.associatedTaskId}]` : '';
-      eventItem.textContent = `[${brand.name.substring(0,3)}] ${post.title}${taskIndicator}`;
-      eventItem.title = `${brand.name}: ${post.title} (${(post.platforms || []).join(', ').toUpperCase()})${post.associatedTaskId ? ' (Linked to Task ' + post.associatedTaskId + ')' : ''}`;
+      eventItem.textContent = `[${brand.name.substring(0,3)}] ${post.title}`;
+      eventItem.title = `${brand.name}: ${post.title} (${(post.platforms || []).join(', ').toUpperCase()})`;
       
       eventItem.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -4042,7 +4016,6 @@ async function updatePostStatus(postId, newStatus) {
   // Sync to Firestore in background
   try {
     await setDoc(doc(db, "posts", post.id), post);
-    await syncPostToTask(post, db);
     await logActivity(`moved post "${post.title}" to ${newStatus.toUpperCase()}`, db);
   } catch (err) {
     console.error("Firestore post status update error:", err);
@@ -4098,18 +4071,7 @@ function openPostModal(post = null, targetDate = null) {
   const modalTitle = document.getElementById('modal-title');
   const deleteBtn = document.getElementById('modal-delete-btn');
   const form = document.getElementById('post-form');
-  
-  // Populate Associated Design Task dropdown
-  const taskLinkSelect = document.getElementById('post-link-task');
-  if (taskLinkSelect) {
-    taskLinkSelect.innerHTML = '<option value="">-- None --</option>';
-    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
-    sortedTasks.forEach(t => {
-      taskLinkSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
-    });
-    taskLinkSelect.value = (post && post.associatedTaskId) ? post.associatedTaskId : '';
-  }
-  
+
   if (!overlay || !form) return;
 
   // Reset Form Checkboxes and accessibility states
@@ -4251,7 +4213,6 @@ async function handleFormSubmit(e) {
   const date = document.getElementById('post-date').value;
   const time = document.getElementById('post-time').value;
   const caption = document.getElementById('post-caption').value.trim();
-  const associatedTaskId = document.getElementById('post-link-task') ? document.getElementById('post-link-task').value : '';
 
   if (!title) {
     showToast('Please enter a content title', 'error');
@@ -4268,7 +4229,6 @@ async function handleFormSubmit(e) {
     const post = state.posts.find(p => p.id === state.editingPost.id);
     if (post) {
       const oldStatus = post.status;
-      const oldTaskId = post.associatedTaskId;
       post.title = title;
       post.brandId = brandId;
       post.platforms = checkedPlatforms;
@@ -4278,7 +4238,6 @@ async function handleFormSubmit(e) {
       post.date = date;
       post.time = time;
       post.caption = caption;
-      post.associatedTaskId = associatedTaskId;
 
       // Update brand last active date if just published
       if (status === 'published' && oldStatus !== 'published') {
@@ -4287,11 +4246,10 @@ async function handleFormSubmit(e) {
           brand.lastPostDate = date;
         }
       }
-      
+
       // Save changes to Firestore
       try {
         await setDoc(doc(db, "posts", post.id), post);
-        await syncPostToTask(post, db);
         showToast('Post updated successfully', 'success');
         await logActivity(`updated content post "${post.title}"`, db);
       } catch (err) {
@@ -4312,14 +4270,12 @@ async function handleFormSubmit(e) {
       assignee,
       date,
       time,
-      caption,
-      associatedTaskId
+      caption
     };
-    
+
     // Save to Firestore
     try {
       await setDoc(doc(db, "posts", newId), newPost);
-      await syncPostToTask(newPost, db);
       showToast('New post scheduled successfully', 'success');
       await logActivity(`created content post "${newPost.title}"`, db);
     } catch (err) {
@@ -4339,12 +4295,8 @@ async function deletePost() {
   
   if (confirm('Are you sure you want to delete this content item?')) {
     const postId = state.editingPost.id;
-    const associatedTaskId = state.editingPost.associatedTaskId;
     try {
       await deleteDoc(doc(db, "posts", postId));
-      if (associatedTaskId) {
-        await deleteDoc(doc(db, "tasks", associatedTaskId));
-      }
       showToast('Content item removed', 'info');
       await logActivity(`deleted content post "${state.editingPost.title}"`, db);
     } catch (err) {
@@ -4536,8 +4488,8 @@ function renderTasks() {
   }
 
   // Split filtered tasks into Social Media Posts and General Design Tasks
-  const socialTasks = filteredTasks.filter(t => t.associatedPostId || t.taskType === 'post');
-  const generalTasks = filteredTasks.filter(t => !t.associatedPostId && t.taskType !== 'post');
+  const socialTasks = filteredTasks.filter(t => t.taskType === 'post');
+  const generalTasks = filteredTasks.filter(t => t.taskType !== 'post');
 
   document.getElementById('social-tasks-count').textContent = socialTasks.length;
   document.getElementById('general-tasks-count').textContent = generalTasks.length;
@@ -4555,19 +4507,6 @@ function renderTasks() {
           <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
          </a>`
       : '';
-
-    let linkedPostHtml = '';
-    if (task.associatedPostId) {
-      const linkedPost = state.posts.find(p => p.id === task.associatedPostId);
-      if (linkedPost) {
-        linkedPostHtml = `
-          <div class="linked-post-badge" title="Linked to content post: ${linkedPost.title}">
-            <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7zm10 3a3 3 0 100-6 3 3 0 000 6z"/></svg>
-            <span>Post: ${linkedPost.title.substring(0, 18)}...</span>
-          </div>
-        `;
-      }
-    }
 
     const commentsText = task.comments ? `<div class="task-comments-text">${task.comments}</div>` : '';
     const dateFormatted = formatCardDate(task.date);
@@ -4615,7 +4554,6 @@ function renderTasks() {
       <td>
         <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px">
           ${driveLinkHtml}
-          ${linkedPostHtml}
         </div>
       </td>
       ${isSocialRow ? `<td class="posted-cell" style="text-align: center;">${postedCellHtml}</td>` : ''}
@@ -4636,21 +4574,6 @@ function renderTasks() {
     if (taskLinkBtn) {
       taskLinkBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-      });
-    }
-
-    // Hook linked item click
-    const linkedPostBadge = row.querySelector('.linked-post-badge');
-    if (linkedPostBadge) {
-      linkedPostBadge.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const post = state.posts.find(p => p.id === task.associatedPostId);
-        if (post) {
-          openPostModal(post);
-        } else {
-          const linkedTask = state.tasks.find(t => t.id === task.associatedPostId);
-          if (linkedTask) openTaskModal(linkedTask);
-        }
       });
     }
 
@@ -4801,16 +4724,6 @@ function openTaskModal(task = null) {
   const existingBanner = document.getElementById('task-view-only-banner');
   if (existingBanner) existingBanner.remove();
 
-  // Populate link post dropdown
-  const linkPostSelect = document.getElementById('task-form-link-post');
-  if (linkPostSelect) {
-    linkPostSelect.innerHTML = '<option value="">-- None --</option>';
-    state.posts.forEach(p => {
-      linkPostSelect.innerHTML += `<option value="${p.id}">${p.title}</option>`;
-    });
-    linkPostSelect.value = (task && task.associatedPostId) ? task.associatedPostId : '';
-  }
-
   const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
   const account = teamList.find(p => p.name === currentUser);
   const isLimited = account && account.access === 'limited';
@@ -4875,12 +4788,8 @@ function openTaskModal(task = null) {
 
   // Populate job type select
   const jobTypeSelect = document.getElementById('task-form-job-type');
-  const linkGroup = document.getElementById('task-form-link-post-group');
   if (jobTypeSelect) {
-    jobTypeSelect.value = (task && task.associatedPostId) ? 'post' : (task && task.taskType ? task.taskType : 'general');
-    if (linkGroup) {
-      linkGroup.style.display = jobTypeSelect.value === 'post' ? 'block' : 'none';
-    }
+    jobTypeSelect.value = (task && task.taskType) ? task.taskType : 'general';
   }
 
   overlay.classList.add('active');
@@ -4913,7 +4822,6 @@ async function handleTaskFormSubmit(e) {
   const status = document.getElementById('task-form-status').value;
   const deliveryLink = document.getElementById('task-form-delivery').value.trim();
   const comments = document.getElementById('task-form-comments').value.trim();
-  const associatedPostId = document.getElementById('task-form-link-post') ? document.getElementById('task-form-link-post').value : '';
   const jobType = document.getElementById('task-form-job-type').value;
 
   if (!name) {
@@ -4924,7 +4832,6 @@ async function handleTaskFormSubmit(e) {
   if (state.editingTask) {
     const task = state.tasks.find(t => t.id === state.editingTask.id);
     if (task) {
-      const oldPostId = task.associatedPostId;
       task.name = name;
       task.designer = designer;
       task.assignedBy = assignedBy;
@@ -4936,23 +4843,12 @@ async function handleTaskFormSubmit(e) {
       task.comments = comments;
       task.taskType = jobType;
 
-      if (jobType === 'general') {
-        task.associatedPostId = '';
-      } else {
-        task.associatedPostId = associatedPostId;
-      }
-
       showToast('Task updated successfully', 'success');
       logActivity(`updated Task ${task.id}: "${task.name}"`, db);
       refreshViews();
 
       try {
         await setDoc(doc(db, "tasks", task.id), task);
-        if (jobType === 'general' && oldPostId) {
-          try { await deleteDoc(doc(db, "posts", oldPostId)); } catch(e){}
-        } else if (jobType === 'post') {
-          await syncTaskToPost(task, db);
-        }
       } catch (err) {
         console.warn("Firestore task update warning (saved locally):", err);
       }
@@ -4978,8 +4874,7 @@ async function handleTaskFormSubmit(e) {
       status,
       deliveryLink,
       comments,
-      taskType: jobType,
-      associatedPostId: jobType === 'post' ? associatedPostId : ''
+      taskType: jobType
     };
 
     state.tasks.push(newTask);
@@ -4989,9 +4884,6 @@ async function handleTaskFormSubmit(e) {
 
     try {
       await setDoc(doc(db, "tasks", newId), newTask);
-      if (jobType === 'post') {
-        await syncTaskToPost(newTask, db);
-      }
     } catch (err) {
       console.warn("Firestore new task save warning (saved locally):", err);
     }
@@ -5005,14 +4897,10 @@ async function deleteTask() {
   
   if (confirm(`Are you sure you want to delete Task ${state.editingTask.id}?`)) {
     const taskId = state.editingTask.id;
-    const associatedPostId = state.editingTask.associatedPostId;
     const taskName = state.editingTask.name;
 
     // Remove locally
     state.tasks = state.tasks.filter(t => t.id !== taskId);
-    if (associatedPostId) {
-      state.posts = state.posts.filter(p => p.id !== associatedPostId);
-    }
 
     showToast(`Task ${taskId} removed`, 'info');
     logActivity(`deleted task ${taskId}: "${taskName}"`, db);
@@ -5021,9 +4909,6 @@ async function deleteTask() {
 
     try {
       await deleteDoc(doc(db, "tasks", taskId));
-      if (associatedPostId) {
-        try { await deleteDoc(doc(db, "posts", associatedPostId)); } catch(e){}
-      }
     } catch (err) {
       console.warn("Firestore delete warning (removed locally):", err);
     }
@@ -5087,29 +4972,6 @@ function updateModalDropdowns() {
     } else {
       contentLinksCreativeFilter.value = 'all';
     }
-  }
-
-  // Populate link task dropdowns inside post form
-  const postTaskSelect = document.getElementById('post-link-task');
-  if (postTaskSelect) {
-    const currentVal = postTaskSelect.value;
-    postTaskSelect.innerHTML = '<option value="">-- None --</option>';
-    const sortedTasks = [...state.tasks].sort((a, b) => a.id.localeCompare(b.id));
-    sortedTasks.forEach(t => {
-      postTaskSelect.innerHTML += `<option value="${t.id}">${t.id}: ${t.name} [${t.designer}]</option>`;
-    });
-    postTaskSelect.value = currentVal || (state.editingPost && state.editingPost.associatedTaskId) || '';
-  }
-
-  // Populate link post dropdown inside task form
-  const taskPostSelect = document.getElementById('task-form-link-post');
-  if (taskPostSelect) {
-    const currentVal = taskPostSelect.value;
-    taskPostSelect.innerHTML = '<option value="">-- None --</option>';
-    state.posts.forEach(p => {
-      taskPostSelect.innerHTML += `<option value="${p.id}">${p.title}</option>`;
-    });
-    taskPostSelect.value = currentVal || (state.editingTask && state.editingTask.associatedPostId) || '';
   }
 
   // Populate dynamic people-based dropdowns from active team list
@@ -5464,68 +5326,6 @@ function mapTaskStatusToPostStatus(taskStatus) {
   return 'ideation';
 }
 
-async function syncPostToTask(post, db) {
-  if (!post) return;
-  
-  // Find if a task is already associated
-  let task = null;
-  if (post.associatedTaskId) {
-    task = state.tasks.find(t => t.id === post.associatedTaskId);
-  } else {
-    // Try to find a task that has this associatedPostId
-    task = state.tasks.find(t => t.associatedPostId === post.id);
-  }
-  
-  const taskStatus = mapPostStatusToTaskStatus(post.status);
-  
-  if (task) {
-    // Update existing task
-    let changed = false;
-    if (task.name !== post.title) { task.name = post.title; changed = true; }
-    if (task.designer !== post.assignee) { task.designer = post.assignee; changed = true; }
-    if (task.date !== post.date) { task.date = post.date; changed = true; }
-    if (task.time !== post.time) { task.time = post.time; changed = true; }
-    if (task.status !== taskStatus) { task.status = taskStatus; changed = true; }
-    if (task.associatedPostId !== post.id) { task.associatedPostId = post.id; changed = true; }
-    
-    if (changed) {
-      await setDoc(doc(db, "tasks", task.id), task);
-    }
-    if (post.associatedTaskId !== task.id) {
-      post.associatedTaskId = task.id;
-      await setDoc(doc(db, "posts", post.id), post);
-    }
-  } else {
-    // Create new task
-    let maxId = 0;
-    state.tasks.forEach(t => {
-      const num = parseInt(t.id.replace('T-', ''));
-      if (!isNaN(num) && num > maxId) maxId = num;
-    });
-    const newNum = maxId + 1;
-    const newTaskId = `T-${String(newNum).padStart(2, '0')}`;
-    
-    const newTask = {
-      id: newTaskId,
-      name: post.title,
-      designer: post.assignee,
-      assignedBy: localStorage.getItem('hc_logged_in_user') || 'Razin',
-      date: post.date,
-      time: post.time || '12:00',
-      urgency: 'Medium',
-      status: taskStatus,
-      deliveryLink: '',
-      comments: '',
-      associatedPostId: post.id
-    };
-    
-    await setDoc(doc(db, "tasks", newTaskId), newTask);
-    
-    post.associatedTaskId = newTaskId;
-    await setDoc(doc(db, "posts", post.id), post);
-  }
-}
-
 function detectBrandFromTask(task) {
   if (!task) return 'tahams';
   const text = ((task.name || '') + ' ' + (task.notes || '') + ' ' + (task.deliveryLink || '')).toLowerCase();
@@ -5539,103 +5339,18 @@ function detectBrandFromTask(task) {
   return 'tahams';
 }
 
-async function syncTaskToPost(task, db) {
-  if (!task) return;
-  
-  // Find if a post is already associated
-  let post = null;
-  if (task.associatedPostId) {
-    post = state.posts.find(p => p.id === task.associatedPostId);
-  } else {
-    // Try to find a post that has this associatedTaskId
-    post = state.posts.find(p => p.associatedTaskId === task.id);
-  }
-  
-  const postStatus = mapTaskStatusToPostStatus(task.status);
-  const brandId = detectBrandFromTask(task);
-  
-  if (post) {
-    // Update existing post
-    let changed = false;
-    if (post.title !== task.name) { post.title = task.name; changed = true; }
-    if (post.assignee !== task.designer) { post.assignee = task.designer; changed = true; }
-    if (post.date !== task.date) { post.date = task.date; changed = true; }
-    if (post.time !== task.time) { post.time = task.time; changed = true; }
-    if (post.status !== postStatus) { post.status = postStatus; changed = true; }
-    if (!post.brandId || post.brandId === 'tahams') { post.brandId = brandId; changed = true; }
-    if (post.associatedTaskId !== task.id) { post.associatedTaskId = task.id; changed = true; }
-    
-    if (changed) {
-      try { await setDoc(doc(db, "posts", post.id), post); } catch(e){}
-    }
-    if (task.associatedPostId !== post.id) {
-      task.associatedPostId = post.id;
-      try { await setDoc(doc(db, "tasks", task.id), task); } catch(e){}
-    }
-  }
-  // Note: previously this had an `else` branch that silently auto-created a
-  // brand-new content post any time a "post"-type task was saved without an
-  // explicit Link to Content Post selected. That's why saving T-128 spawned
-  // a phantom "post-T-128" nobody asked for, which showed up as a stray
-  // linked-post badge inconsistent with every other row. Linking a task to a
-  // content post should only happen when someone explicitly picks one from
-  // the "Link to Content Post" dropdown — never as a side effect of saving.
-}
-
-async function healPostTaskSync() {
-  if (!state.posts || !state.tasks) return;
-  
-  // For each task, make sure it has taskType set
-  for (const task of state.tasks) {
-    if (!task.taskType) {
-      task.taskType = task.associatedPostId ? 'post' : 'general';
-      try { await setDoc(doc(db, "tasks", task.id), task); } catch(e){}
-    }
-  }
-
-  // For each post, make sure it has an associated task
-  for (const post of state.posts) {
-    let task = null;
-    if (post.associatedTaskId) {
-      task = state.tasks.find(t => t.id === post.associatedTaskId);
-    } else {
-      task = state.tasks.find(t => t.associatedPostId === post.id);
-    }
-    if (!task) {
-      await syncPostToTask(post, db);
-    }
-  }
-
-  // For each task of type post, make sure it has an associated post
-  for (const task of state.tasks) {
-    if (task.taskType === 'post' || task.associatedPostId) {
-      let post = null;
-      if (task.associatedPostId) {
-        post = state.posts.find(p => p.id === task.associatedPostId);
-      } else {
-        post = state.posts.find(p => p.associatedTaskId === task.id);
-      }
-      if (!post) {
-        await syncTaskToPost(task, db);
-      } else {
-        const postStatus = mapTaskStatusToPostStatus(task.status);
-        if (post.status !== postStatus || post.title !== task.name || post.assignee !== task.designer) {
-          post.status = postStatus;
-          post.title = task.name;
-          post.assignee = task.designer;
-          try { await setDoc(doc(db, "posts", post.id), post); } catch(e){}
-        }
-      }
-    }
-  }
-}
+// Note: this app used to have automatic Task <-> Post linking/syncing
+// (syncTaskToPost, syncPostToTask, healPostTaskSync). It was removed because
+// it silently created phantom duplicate posts and caused saved task edits to
+// get reverted by cross-sync logic running moments later. Tasks and Posts
+// are now fully independent records.
 
 // --- Publishing Queue Logic ---
 function updatePublishingQueueBadge() {
   const badge = document.getElementById('publishing-queue-badge');
   if (!badge) return;
-  
-  const pendingPublishing = state.tasks.filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
+
+  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
   const count = pendingPublishing.length;
   
   if (count > 0) {
@@ -5650,17 +5365,16 @@ function renderPublishingQueue() {
   const list = document.getElementById('publishing-queue-list');
   if (!list) return;
 
-  const pendingPublishing = state.tasks.filter(t => (t.taskType === 'post' || t.associatedPostId) && t.status === 'Finished' && !t.isPosted);
-  
+  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
+
   if (pendingPublishing.length === 0) {
     list.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">No pending posts to publish.</div>`;
     return;
   }
 
   list.innerHTML = pendingPublishing.map(task => {
-    const post = task.associatedPostId ? state.posts.find(p => p.id === task.associatedPostId) : null;
-    const postInfo = post ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">Platform: ${(post.platforms || []).join(', ')} | Brand: ${post.brandId}</div>` : '';
-    
+    const postInfo = '';
+
     return `
       <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
         <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">${task.name}</div>
@@ -5688,14 +5402,6 @@ window.markTaskPosted = async function(taskId) {
   
   task.isPosted = true;
 
-  if (task.associatedPostId) {
-    const post = state.posts.find(p => p.id === task.associatedPostId);
-    if (post) {
-      post.status = 'published';
-      try { setDoc(doc(db, "posts", post.id), post); } catch(e){}
-    }
-  }
-  
   logActivity(`Marked task "${task.name}" as posted`, db);
   showToast(`Marked "${task.name}" as posted`, 'success');
   
