@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3.10.0">
+  <link rel="stylesheet" href="style.css?v=3.10.1">
 </head>
 <body class="minimal-theme">
   <div class="grain-overlay"></div>
@@ -328,11 +328,11 @@
             <div class="tasks-filters" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex: 1;">
               <input type="text" id="team-search-input" placeholder="Search by name or designation..." class="search-input" style="min-width: 240px; flex: 1;">
               
-              <select id="team-designation-filter" class="filter-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; padding: 8px 12px; font-size: 0.85rem; outline: none;">
+              <select id="team-designation-filter" class="filter-select">
                 <option value="all">All Designations</option>
               </select>
 
-              <select id="team-sort-select" class="filter-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; padding: 8px 12px; font-size: 0.85rem; outline: none;">
+              <select id="team-sort-select" class="filter-select">
                 <option value="name-asc">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
                 <option value="role-asc">Designation (A-Z)</option>
@@ -772,6 +772,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.10.0"></script>
+  <script type="module" src="app.js?v=3.10.1"></script>
 </body>
 </html>

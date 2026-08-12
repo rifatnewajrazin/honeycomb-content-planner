@@ -407,6 +407,12 @@ select,
   background-size: 14px 14px;
 }
 
+select option,
+.filter-select option {
+  background-color: #1a0c10;
+  color: #fff0f0;
+}
+
 select:focus,
 .filter-select:focus {
   border-color: var(--border-focus);
