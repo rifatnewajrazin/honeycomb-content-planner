@@ -3,7 +3,20 @@
 /* Global variables and color tokens */
 :root {
   --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  
+
+  /* Material Design 3 spacing tokens (8dp baseline grid) — see
+     Obsidian: "UI Material Design 3 Spacing System Guidelines" */
+  --md-sys-spacing-space025: 2px;
+  --md-sys-spacing-space050: 4px;
+  --md-sys-spacing-space075: 6px;
+  --md-sys-spacing-space100: 8px;
+  --md-sys-spacing-space150: 12px;
+  --md-sys-spacing-space200: 16px;
+  --md-sys-spacing-space300: 24px;
+  --md-sys-spacing-space400: 32px;
+  --md-sys-spacing-space500: 40px;
+  --md-sys-spacing-space600: 48px;
+
   /* Core Colors - Grainy Fiery Ember Palette */
   --bg-deep: #060407;
   --bg-surface: rgba(22, 10, 14, 0.75);
@@ -1630,6 +1643,33 @@ textarea.form-control {
      y, e.g. Content Links / Task Tracker) floats clear of the rounded corner
      instead of sitting flush against it */
   padding-right: 4px;
+}
+
+/* Section headers (e.g. "Social Media Posts" / "General Design Tasks" above
+   each task table). Uses M3 spacing tokens instead of off-grid hardcoded
+   px values so the header row's own box (icon + title + count + action
+   button) never grows taller than its allotted space and collides with the
+   border-bottom beneath it — see Obsidian: "UI Material Design 3 Spacing
+   System Guidelines". */
+.tasks-section-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--md-sys-spacing-space100); /* 8dp icon/title/badge rhythm */
+  margin-bottom: var(--md-sys-spacing-space200); /* 16dp clearance below the row */
+  padding-bottom: var(--md-sys-spacing-space150); /* 12dp above the border */
+}
+
+.tasks-section-header .mark-selected-posted-btn {
+  margin-left: auto;
+  /* 48dp minimum touch target per M3, regardless of the button's text/icon
+     content, so the glow/box-shadow never bleeds past the header row and
+     visually overlaps the border-bottom below it. */
+  min-height: var(--md-sys-spacing-space600);
+  padding-inline: var(--md-sys-spacing-space200);
+  padding-block: var(--md-sys-spacing-space100);
+  gap: var(--md-sys-spacing-space100);
+  font-size: 0.8rem;
 }
 
 .tasks-table {
