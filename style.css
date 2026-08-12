@@ -79,19 +79,35 @@ body {
   line-height: 1.5;
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--honey-gold) rgba(255, 255, 255, 0.04);
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-deep);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 10px;
 }
+::-webkit-scrollbar-thumb {
+  /* content-box + transparent border pulls the thumb in from the track edges,
+     so it reads as a floating pill instead of being glued to the container border */
+  background-color: var(--honey-gold);
+  background-image: linear-gradient(135deg, #ff3b30 0%, #ff8c42 100%);
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  box-shadow: 0 0 6px rgba(255, 69, 58, 0.45);
+  transition: box-shadow 0.2s ease;
+}
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 14px rgba(255, 107, 53, 0.75), 0 0 4px rgba(255, 140, 66, 0.6);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Layout Wrapper */
@@ -1610,6 +1626,10 @@ textarea.form-control {
   overflow-x: auto;
   box-shadow: var(--shadow-md);
   margin-bottom: 30px;
+  /* small gutter so the vertical scrollbar (when this container also scrolls
+     y, e.g. Content Links / Task Tracker) floats clear of the rounded corner
+     instead of sitting flush against it */
+  padding-right: 4px;
 }
 
 .tasks-table {

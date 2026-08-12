@@ -1912,20 +1912,47 @@ function initAuth() {
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const username = document.getElementById('login-user').value;
-      const passwordInput = document.getElementById('login-password').value;
-      
-      const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
-      const account = findTeamMember(username);
-      if (account && account.password === passwordInput) {
+      try {
+        const usernameEl = document.getElementById('login-user');
+        const passwordEl = document.getElementById('login-password');
+        const username = (usernameEl ? usernameEl.value : '').trim();
+        // Trim to guard against browsers/password managers that append
+        // trailing whitespace or newlines on autofill.
+        const passwordInput = (passwordEl ? passwordEl.value : '').trim();
+
+        if (!username) {
+          showToast('Please select your profile from the list.', 'error');
+          console.warn('Login blocked: no profile selected (login-user select had no value).');
+          return;
+        }
+
+        const account = findTeamMember(username);
+        if (!account) {
+          showToast('Profile not found. Please refresh the page and try again.', 'error');
+          console.error('Login failed: no team member matched username =', JSON.stringify(username), 'state.team length =', (state.team || []).length);
+          return;
+        }
+        if (!account.canLogin) {
+          showToast('This account is not enabled for login. Contact an admin.', 'error');
+          console.error('Login blocked: account.canLogin is falsy for', account.name, account);
+          return;
+        }
+        if (String(account.password || '') !== passwordInput) {
+          showToast('Invalid password. Please try again.', 'error');
+          return;
+        }
+
         localStorage.setItem('hc_logged_in_user', account.name);
         showToast(`Welcome back, ${account.name.split(' ')[0]}!`, 'success');
         if (loginOverlay) loginOverlay.style.display = 'none';
-        
+
         renderUserProfile();
         refreshViews();
-      } else {
-        showToast('Invalid password. Please try again.', 'error');
+      } catch (err) {
+        // Never let an unexpected error silently kill the Sign In button —
+        // surface it so it's diagnosable instead of looking like a dead click.
+        console.error('Unexpected error during login:', err);
+        showToast('Something went wrong signing in. Please refresh and try again.', 'error');
       }
     });
   }
