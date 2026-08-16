@@ -1787,7 +1787,7 @@ let state = {
   currentView: 'dashboard',
   selectedBrandFilter: 'all',
   currentDate: new Date('2026-07-05T12:00:00'), // Setting active app date based on user local time
-  calendarDate: new Date('2026-07-05T12:00:00'),
+  calendarDate: new Date(),
   editingPost: null,
   editingTask: null,
   taskSearchFilter: '',
