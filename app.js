@@ -3553,16 +3553,22 @@ function renderDashboard() {
       return taskEffectiveBrandId(t) === brand.id;
     }).length;
     const goal = brand.frequencyGoal;
-    const progressPct = goal > 0 ? Math.min(Math.round((publishedCount / goal) * 100), 100) : 100;
+    const progressPct = goal > 0 ? Math.min(Math.round((publishedCount / goal) * 100), 100) : 0;
 
     // Determine health status
     let healthStatus = 'Healthy';
     let healthClass = 'status-healthy-badge';
     
-    // Check overdue posts: Status scheduled/ready/development but date before 2026-07-05
-    const overduePosts = brandPosts.filter(p => {
-      const pDate = new Date(p.date + 'T00:00:00');
-      return p.status !== 'published' && pDate < weekStart;
+    // Check overdue posts: a Task Tracker "post" deliverable for this brand
+    // that's scheduled before this week and still hasn't been marked Posted.
+    // (Was reading the separate `posts` collection, which nothing writes to
+    // anymore now that Posted-tracking lives in Task Tracker — that left
+    // every brand permanently stuck Critical regardless of real activity.)
+    const overduePosts = (state.tasks || []).filter(t => {
+      if (t.taskType !== 'post' || t.isPosted || !t.date) return false;
+      const tDate = new Date(t.date + 'T00:00:00');
+      if (!(tDate < weekStart)) return false;
+      return taskEffectiveBrandId(t) === brand.id;
     });
 
     if (overduePosts.length > 0) {
@@ -3620,7 +3626,7 @@ function renderDashboard() {
       <div class="progress-section">
         <div class="progress-label-wrap">
           <span>Weekly Goal Progress</span>
-          <span class="progress-pct">${progressPct}%</span>
+          <span class="progress-pct">${goal > 0 ? `${progressPct}%` : 'No Goal Set'}</span>
         </div>
         <div class="progress-bar-bg">
           <div class="progress-bar-fill" style="width: ${progressPct}%; background: ${brand.grad}"></div>
@@ -4229,7 +4235,6 @@ function openPostModal(post = null, targetDate = null) {
     document.getElementById('post-title').value = post.title;
     document.getElementById('post-brand').value = post.brandId;
     document.getElementById('post-status').value = post.status;
-    document.getElementById('post-type').value = post.type;
     document.getElementById('post-assignee').value = post.assignee;
     document.getElementById('post-date').value = post.date;
     document.getElementById('post-time').value = post.time;
@@ -4331,7 +4336,6 @@ async function handleFormSubmit(e) {
   const title = document.getElementById('post-title').value.trim();
   const brandId = document.getElementById('post-brand').value;
   const status = document.getElementById('post-status').value;
-  const type = document.getElementById('post-type').value;
   const assignee = document.getElementById('post-assignee').value;
   const checkedPlatforms = Array.from(document.querySelectorAll('input[name="post-platforms"]:checked')).map(cb => cb.value);
   const date = document.getElementById('post-date').value;
@@ -4357,7 +4361,6 @@ async function handleFormSubmit(e) {
       post.brandId = brandId;
       post.platforms = checkedPlatforms;
       post.status = status;
-      post.type = type;
       post.assignee = assignee;
       post.date = date;
       post.time = time;
@@ -4390,7 +4393,6 @@ async function handleFormSubmit(e) {
       brandId,
       platforms: checkedPlatforms,
       status,
-      type,
       assignee,
       date,
       time,
