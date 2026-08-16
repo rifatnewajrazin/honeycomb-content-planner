@@ -3485,6 +3485,7 @@ function renderDashboard() {
     // Business week: Saturday through Friday (resets Friday 11:59 PM), not
     // the JS-default Sunday-Saturday calendar week. getDay(): 0=Sun..6=Sat.
     // Days since the most recent Saturday: Sat->0, Sun->1, ... Fri->6.
+    const today = new Date();
     const dayOfWeek = today.getDay();
     const daysSinceSaturday = (dayOfWeek + 1) % 7;
     const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysSinceSaturday, 0, 0, 0);
