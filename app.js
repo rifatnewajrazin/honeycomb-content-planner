@@ -3538,13 +3538,13 @@ function renderDashboard() {
             ? `<img src="${brand.logo}" class="brand-badge-img" alt="${brand.name} logo">`
             : `<div class="brand-badge-icon" style="background: ${brand.grad}">${brand.name.substring(0,2).toUpperCase()}</div>`}
           <div class="brand-title-wrap">
-            <h3 style="display: flex; align-items: center; gap: 8px;">
-              ${brand.name}
-              <button class="edit-brand-btn" data-id="${brand.id}" style="background: none; border: none; cursor: pointer; color: #a3a3c2; padding: 0; display: inline-flex; align-items: center;" title="Edit Page/Brand">
+            <h3 class="brand-name-row">
+              <span class="brand-name-text" title="${brand.name}">${brand.name}</span>
+              <button class="edit-brand-btn" data-id="${brand.id}" style="background: none; border: none; cursor: pointer; color: #a3a3c2; padding: 0; display: inline-flex; align-items: center; flex-shrink: 0;" title="Edit Page/Brand">
                 <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
               </button>
             </h3>
-            <div class="brand-subtitle">${brand.type}</div>
+            <div class="brand-subtitle" title="${brand.type}">${brand.type}</div>
             ${isTargetAchieved ? `<div class="target-achieved-badge" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px; margin-top: 4px; box-shadow: 0 0 10px rgba(251,191,36,0.3); display: inline-block; width: fit-content;">Goal Met! 🏆</div>` : ''}
           </div>
         </div>

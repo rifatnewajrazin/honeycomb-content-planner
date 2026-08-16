@@ -549,12 +549,15 @@ th.sortable-th.active-sort .sort-icon {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
 }
 
 .brand-info-wrap {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex: 1;
 }
 
 .brand-badge-icon {
@@ -580,16 +583,38 @@ th.sortable-th.active-sort .sort-icon {
   box-shadow: var(--shadow-sm);
 }
 
+.brand-title-wrap {
+  min-width: 0;
+  flex: 1;
+}
+
 .brand-title-wrap h3 {
   font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
 }
 
+.brand-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.brand-name-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
 .brand-subtitle {
   font-size: 0.75rem;
   color: #94a3b8;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-indicator {
@@ -599,6 +624,8 @@ th.sortable-th.active-sort .sort-icon {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .status-healthy-badge {
