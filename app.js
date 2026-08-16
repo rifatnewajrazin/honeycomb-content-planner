@@ -3468,6 +3468,29 @@ function renderContentLinks() {
 
 
 
+// Match a Task Tracker deliverable to a brand so its "Posted" checkbox can
+// count toward that brand's weekly Published metric on the Dashboard. Tasks
+// have no brandId field, so we infer it: first try a "[Tag]" prefix against
+// the brand's 3-letter short code (the same convention already used for
+// posts on the Calendar view, see brand.name.substring(0,3) below), then
+// fall back to matching the brand name inside the task name — picking the
+// longest/most specific brand match to avoid "Tahams" matching every
+// Tahams-family sub-brand task.
+function matchTaskToBrandId(taskName, brands) {
+  if (!taskName) return null;
+  const bracketMatch = taskName.match(/^\s*\[([A-Za-z]{2,5})\]/);
+  if (bracketMatch) {
+    const tag = bracketMatch[1].toLowerCase();
+    const byTag = brands.find(b => b.name.substring(0, 3).toLowerCase() === tag);
+    if (byTag) return byTag.id;
+  }
+  const lowerName = taskName.toLowerCase();
+  const candidates = brands
+    .filter(b => lowerName.includes(b.name.toLowerCase()))
+    .sort((a, b) => b.name.length - a.name.length);
+  return candidates.length ? candidates[0].id : null;
+}
+
 // Render Dashboard View
 function renderDashboard() {
   const grid = document.getElementById('dashboard-cards-grid');
@@ -3496,7 +3519,15 @@ function renderDashboard() {
       return pDate >= weekStart && pDate <= weekEnd;
     });
 
-    const publishedCount = weeklyPosts.filter(p => p.status === 'published').length;
+    // Published count comes from Task Tracker: a content deliverable only
+    // counts once its "Posted" checkbox has actually been checked, not just
+    // because it's scheduled/finished.
+    const publishedCount = (state.tasks || []).filter(t => {
+      if (t.taskType !== 'post' || !t.isPosted || !t.date) return false;
+      const tDate = new Date(t.date + 'T00:00:00');
+      if (!(tDate >= weekStart && tDate <= weekEnd)) return false;
+      return matchTaskToBrandId(t.name, state.brands) === brand.id;
+    }).length;
     const goal = brand.frequencyGoal;
     const progressPct = goal > 0 ? Math.min(Math.round((publishedCount / goal) * 100), 100) : 100;
 
