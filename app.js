@@ -4839,9 +4839,11 @@ function openTaskModal(task = null) {
     modalTitle.textContent = 'Create New Task';
     if (deleteBtn) deleteBtn.style.display = 'none';
 
-    // Autofill defaults
-    document.getElementById('task-form-date').value = '2026-07-05';
-    document.getElementById('task-form-time').value = '12:00';
+    // Autofill defaults to the current date/time
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('task-form-date').value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    document.getElementById('task-form-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     document.getElementById('task-form-status').value = 'Not Started';
     document.getElementById('task-form-assigner').value = currentUser || 'Razin';
     renderTaskComments(null);
@@ -5441,7 +5443,7 @@ function renderIdeaBoard() {
     return `
       <tr>
         <td>${escapeHtml(idea.id)}</td>
-        <td><strong>${escapeHtml(idea.name)}</strong></td>
+        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(idea.name)}"><strong>${escapeHtml(idea.name)}</strong></td>
         <td>${escapeHtml(idea.date)}</td>
         <td>${linksHtml}</td>
         <td style="max-width: 260px; white-space: normal; color: #cbd5e1; font-size: 0.85rem;">${escapeHtml(idea.notes || '')}</td>
