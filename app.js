@@ -5477,7 +5477,7 @@ function renderIdeaBoard() {
         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(idea.name)}"><strong>${escapeHtml(idea.name)}</strong></td>
         <td>${escapeHtml(idea.date)}</td>
         <td>${linksHtml}</td>
-        <td style="max-width: 260px; color: #cbd5e1; font-size: 0.85rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(idea.notes || '')}">${escapeHtml(idea.notes || '')}</td>
+        <td style="padding-top: 18px; padding-bottom: 18px;" title="${escapeHtml(idea.notes || '')}"><div style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(idea.notes || '')}</div></td>
         <td>
           <select class="idea-assign-select" data-id="${idea.id}" style="height: 34px; padding: 0 10px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.8rem; line-height: normal; outline: none; cursor: pointer; max-width: 180px;">
             ${assignedOptionsHtml}
