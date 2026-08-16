@@ -1956,7 +1956,7 @@ async function runAppInit() {
   refreshViews();
   let lastView = localStorage.getItem('hc_last_view') || 'dashboard';
   if (lastView === 'kanban' || lastView === 'analytics' || lastView === 'ideas') lastView = 'dashboard';
-  if (isCurrentUserBoardOnly()) lastView = 'priority-board';
+  if (isCurrentUserBoardOnly() && lastView !== 'team') lastView = 'priority-board';
   switchView(lastView);
 
   // Safety net: don't let the loading overlay get stuck forever if the
@@ -2054,18 +2054,22 @@ function renderUserProfile() {
     }
   }
 
-  // Board-only accounts (Orthee): restrict the whole sidebar (and any current
-  // view) to just the Priority Board — they don't get Task Tracker, Idea
-  // Board, Analytics, People & Roles, etc.
+  // Board-only accounts (Orthee): restrict the sidebar (and any current view)
+  // to just the Priority Board plus People & Roles — they don't get Task
+  // Tracker, Idea Board, Analytics, Calendar, Content Links, etc.
   const boardOnly = currentUser && isCurrentUserBoardOnly();
   // Items already gated individually above (logs/kanban) keep whatever those
-  // gates decided; only items without their own gate need restoring here.
+  // gates decided; People & Roles stays visible for board-only accounts too.
   const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link'];
   document.querySelectorAll('.nav-item').forEach(item => {
     if (individuallyGatedIds.includes(item.id)) return;
+    if (boardOnly && item.getAttribute('data-view') === 'team') {
+      item.style.display = 'flex';
+      return;
+    }
     item.style.display = boardOnly ? 'none' : 'flex';
   });
-  if (boardOnly && state.currentView !== 'priority-board') {
+  if (boardOnly && state.currentView !== 'priority-board' && state.currentView !== 'team') {
     switchView('priority-board');
   }
 
@@ -3385,8 +3389,9 @@ function switchView(viewName) {
   if (viewName === 'kanban' || viewName === 'analytics' || viewName === 'ideas') {
     viewName = 'dashboard';
   }
-  // Board-only accounts (Orthee) may only ever land on the Priority Board.
-  if (viewName !== 'priority-board' && isCurrentUserBoardOnly()) {
+  // Board-only accounts (Orthee) may only ever land on the Priority Board or
+  // People & Roles.
+  if (viewName !== 'priority-board' && viewName !== 'team' && isCurrentUserBoardOnly()) {
     viewName = 'priority-board';
   }
 
