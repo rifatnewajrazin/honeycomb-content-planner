@@ -143,6 +143,10 @@
   padding: 0;
 }
 
+html {
+  color-scheme: dark;
+}
+
 body {
   font-family: var(--font-main);
   background: #060407 !important;

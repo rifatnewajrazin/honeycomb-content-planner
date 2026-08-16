@@ -184,18 +184,6 @@ function isItemArchived(item) {
   return false;
 }
 
-function isAssignedToUser(item, user) {
-  if (!user) return false;
-  const namesToMatch = [user.name, ...(user.aliases || [])];
-  if (item.assignee) {
-    return namesToMatch.some(n => n.toLowerCase() === item.assignee.toLowerCase() || item.assignee.toLowerCase().includes(n.toLowerCase()));
-  }
-  if (item.designer) {
-    return namesToMatch.some(n => n.toLowerCase() === item.designer.toLowerCase() || item.designer.toLowerCase().includes(n.toLowerCase()));
-  }
-  return false;
-}
-
 
 // Default spreadsheet tasks (DESIGNER TASK TRACKER & WORKFLOW)
 const DEFAULT_TASKS = [
@@ -2185,13 +2173,11 @@ function initData() {
           loadedTeam.push(data);
         });
 
-        DEFAULT_TEAM.forEach(def => {
-          const exists = loadedTeam.some(t => t.name === def.name || t.id === def.id || (t.aliases && t.aliases.includes(def.name)));
-          if (!exists) {
-            loadedTeam.push(def);
-          }
-        });
-
+        // Note: DEFAULT_TEAM is only seeded once, when the collection is first
+        // empty (see the `if (querySnapshot.empty)` branch above). We deliberately
+        // do NOT re-add missing defaults here — doing so on every snapshot would
+        // silently resurrect a deleted team member the moment this listener
+        // re-fired, the same bug fixed for DEFAULT_TASKS/DEFAULT_POSTS above.
         state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       }
       updateModalDropdowns();
@@ -2659,16 +2645,6 @@ function handleCSVImport(e) {
     }
   };
   reader.readAsText(file);
-}
-
-function renderUnscheduledIdeas() {
-  const container = document.getElementById('unscheduled-ideas-list');
-  if (!container) return;
-  container.innerHTML = '<div style="color: #a89297; font-style: italic; text-align: center; margin-top: 40px;">No unscheduled items.</div>';
-}
-
-async function convertIdeaToPost(ideaId, kanbanStatus) {
-  return;
 }
 
 // Navigation & Event Listeners
@@ -3149,6 +3125,8 @@ function renderLogs() {
     tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ef4444; padding: 32px 16px; font-weight: 600;">Access Denied: Admin privileges required.</td></tr>`;
     return;
   }
+
+  populateLogsUserFilter();
 
   const logsSearch = (state.logsSearchQuery || '').toLowerCase();
   const logsUser = state.logsUserFilter || 'all';
@@ -4045,8 +4023,7 @@ function openPostModal(post = null, targetDate = null) {
     cb.closest('.platform-checkbox-label').classList.remove('checked');
   });
 
-  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
-  const account = teamList.find(p => p.name === currentUser);
+  const account = findTeamMember(currentUser);
   const isLimited = account && account.access === 'limited';
 
   if (post) {
@@ -4673,8 +4650,7 @@ function openTaskModal(task = null) {
   const existingBanner = document.getElementById('task-view-only-banner');
   if (existingBanner) existingBanner.remove();
 
-  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
-  const account = teamList.find(p => p.name === currentUser);
+  const account = findTeamMember(currentUser);
   const isLimited = account && account.access === 'limited';
 
   if (task) {
@@ -4961,29 +4937,6 @@ function updateModalDropdowns() {
   }
 }
 
-function navigateToKanbanCard(itemId) {
-  const currentUser = localStorage.getItem('hc_logged_in_user');
-  const person = findTeamMember(currentUser);
-  const canAccessQueue = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
-  
-  if (!canAccessQueue) {
-    showToast('Access Denied: Publishing Queue is restricted to Admins and Social Media Manager', 'error');
-    return;
-  }
-
-  switchView('kanban');
-  setTimeout(() => {
-    const cardEl = document.querySelector(`.post-card[data-id="${itemId}"]`);
-    if (cardEl) {
-      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      cardEl.classList.add('flash-outline-kanban');
-      setTimeout(() => {
-        cardEl.classList.remove('flash-outline-kanban');
-      }, 5000);
-    }
-  }, 350);
-}
-
 /* ==========================================================================
    CONTENT PLANNER (IDEAS) CORE LOGIC & CONTROLLERS
    ========================================================================== */
@@ -5256,41 +5209,6 @@ function updatePublishingQueueBadge() {
   } else {
     badge.style.display = 'none';
   }
-}
-
-function renderPublishingQueue() {
-  const list = document.getElementById('publishing-queue-list');
-  if (!list) return;
-
-  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
-
-  if (pendingPublishing.length === 0) {
-    list.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">No pending posts to publish.</div>`;
-    return;
-  }
-
-  list.innerHTML = pendingPublishing.map(task => {
-    const postInfo = '';
-
-    return `
-      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-        <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">${task.name}</div>
-        <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 8px;">Delivery Link: <a href="${task.deliveryLink || '#'}" target="_blank" style="color: var(--honey-gold); text-decoration: none;">${task.deliveryLink ? 'Open Asset' : 'None'}</a></div>
-        ${postInfo}
-        <button class="mark-posted-btn" data-task-id="${task.id}" style="margin-top: 10px; width: 100%; background: var(--honey-gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer;">Mark as Posted</button>
-      </div>
-    `;
-  }).join('');
-
-  list.querySelectorAll('.mark-posted-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const taskId = e.currentTarget.getAttribute('data-task-id');
-      if (taskId) {
-        window.markTaskPosted(taskId);
-      }
-    });
-  });
 }
 
 window.markTaskPosted = async function(taskId) {
