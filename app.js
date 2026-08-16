@@ -184,6 +184,18 @@ function isItemArchived(item) {
   return false;
 }
 
+function isAssignedToUser(item, user) {
+  if (!user) return false;
+  const namesToMatch = [user.name, ...(user.aliases || [])];
+  if (item.assignee) {
+    return namesToMatch.some(n => n.toLowerCase() === item.assignee.toLowerCase() || item.assignee.toLowerCase().includes(n.toLowerCase()));
+  }
+  if (item.designer) {
+    return namesToMatch.some(n => n.toLowerCase() === item.designer.toLowerCase() || item.designer.toLowerCase().includes(n.toLowerCase()));
+  }
+  return false;
+}
+
 
 // Default spreadsheet tasks (DESIGNER TASK TRACKER & WORKFLOW)
 const DEFAULT_TASKS = [
@@ -2173,11 +2185,13 @@ function initData() {
           loadedTeam.push(data);
         });
 
-        // Note: DEFAULT_TEAM is only seeded once, when the collection is first
-        // empty (see the `if (querySnapshot.empty)` branch above). We deliberately
-        // do NOT re-add missing defaults here — doing so on every snapshot would
-        // silently resurrect a deleted team member the moment this listener
-        // re-fired, the same bug fixed for DEFAULT_TASKS/DEFAULT_POSTS above.
+        DEFAULT_TEAM.forEach(def => {
+          const exists = loadedTeam.some(t => t.name === def.name || t.id === def.id || (t.aliases && t.aliases.includes(def.name)));
+          if (!exists) {
+            loadedTeam.push(def);
+          }
+        });
+
         state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       }
       updateModalDropdowns();
@@ -2207,6 +2221,12 @@ function initData() {
       }
       renderActivityLog();
       updateActivityBadge();
+      // Bug fix: the System Log Report table only rendered once, at the moment
+      // switchView('logs') ran. If that happened before this Firestore snapshot
+      // arrived (e.g. right after a page refresh), it showed "No logs found"
+      // forever until you navigated away and back. Re-render it here too so it
+      // updates live once real data comes in.
+      if (state.currentView === 'logs') renderLogs();
     }, (error) => {
       console.error("Firestore activity_log sync error:", error);
     });
@@ -2647,6 +2667,16 @@ function handleCSVImport(e) {
   reader.readAsText(file);
 }
 
+function renderUnscheduledIdeas() {
+  const container = document.getElementById('unscheduled-ideas-list');
+  if (!container) return;
+  container.innerHTML = '<div style="color: #a89297; font-style: italic; text-align: center; margin-top: 40px;">No unscheduled items.</div>';
+}
+
+async function convertIdeaToPost(ideaId, kanbanStatus) {
+  return;
+}
+
 // Navigation & Event Listeners
 function setupEventListeners() {
   // Brand modal event listeners
@@ -3030,7 +3060,26 @@ function switchView(viewName) {
 
   state.currentView = viewName;
   localStorage.setItem('hc_last_view', viewName);
-  
+
+  // Update sticky top header title/subtitle to match the active view
+  // (Bug fix: this used to be hardcoded to "Content Hub" on every view)
+  const VIEW_HEADERS = {
+    dashboard: ['Content Hub', 'HoneyComb Inc. Active Pages & Subsections'],
+    calendar: ['Calendar', 'Scheduled posts and delivery dates at a glance'],
+    tasks: ['Task Tracker', 'Social media posts and general design tasks'],
+    'content-links': ['Content Links', 'Directory of completed content deliverables and Google Drive links posted by creatives.'],
+    team: ['People & Roles', 'Team roster, roles, and login permissions'],
+    logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)']
+  };
+  const headerTitleEl = document.querySelector('.header-title');
+  if (headerTitleEl && VIEW_HEADERS[viewName]) {
+    const [title, subtitle] = VIEW_HEADERS[viewName];
+    const h2 = headerTitleEl.querySelector('h2');
+    const p = headerTitleEl.querySelector('p');
+    if (h2) h2.textContent = title;
+    if (p) p.textContent = subtitle;
+  }
+
   // Update sidebar active status
   document.querySelectorAll('.nav-item').forEach(item => {
     if (item.getAttribute('data-view') === viewName) {
@@ -3125,8 +3174,6 @@ function renderLogs() {
     tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #ef4444; padding: 32px 16px; font-weight: 600;">Access Denied: Admin privileges required.</td></tr>`;
     return;
   }
-
-  populateLogsUserFilter();
 
   const logsSearch = (state.logsSearchQuery || '').toLowerCase();
   const logsUser = state.logsUserFilter || 'all';
@@ -4023,7 +4070,8 @@ function openPostModal(post = null, targetDate = null) {
     cb.closest('.platform-checkbox-label').classList.remove('checked');
   });
 
-  const account = findTeamMember(currentUser);
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const account = teamList.find(p => p.name === currentUser);
   const isLimited = account && account.access === 'limited';
 
   if (post) {
@@ -4650,7 +4698,8 @@ function openTaskModal(task = null) {
   const existingBanner = document.getElementById('task-view-only-banner');
   if (existingBanner) existingBanner.remove();
 
-  const account = findTeamMember(currentUser);
+  const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const account = teamList.find(p => p.name === currentUser);
   const isLimited = account && account.access === 'limited';
 
   if (task) {
@@ -4757,25 +4806,30 @@ async function handleTaskFormSubmit(e) {
   if (state.editingTask) {
     const task = state.tasks.find(t => t.id === state.editingTask.id);
     if (task) {
-      task.name = name;
-      task.designer = designer;
-      task.assignedBy = assignedBy;
-      task.date = date;
-      task.time = time;
-      task.urgency = urgency;
-      task.status = status;
-      task.deliveryLink = deliveryLink;
-      task.comments = comments;
-      task.taskType = jobType;
+      const updatedTask = {
+        ...task,
+        name, designer, assignedBy, date, time, urgency, status,
+        deliveryLink, comments, taskType: jobType
+      };
 
-      showToast('Task updated successfully', 'success');
-      logActivity(`updated Task ${task.id}: "${task.name}"`, db);
-      refreshViews();
-
+      // Bug fix: this used to update local state and show "success" immediately,
+      // then attempt the Firestore write afterward with a silently-swallowed
+      // catch. If that write failed (network blip, etc.), the change only ever
+      // existed in this browser tab's memory — the very next Firestore snapshot
+      // from ANY task change (by anyone) would overwrite state.tasks from the
+      // server and silently erase it, with the user having been told it saved.
+      // Now the write is awaited and confirmed before we tell the user it worked.
       try {
-        await setDoc(doc(db, "tasks", task.id), task);
+        await setDoc(doc(db, "tasks", task.id), updatedTask);
+        Object.assign(task, updatedTask);
+        showToast('Task updated successfully', 'success');
+        logActivity(`updated Task ${task.id}: "${task.name}"`, db);
+        refreshViews();
+        closeTaskModal();
       } catch (err) {
-        console.warn("Firestore task update warning (saved locally):", err);
+        console.error("Firestore task update failed:", err);
+        showToast('Failed to save changes — check your connection and try again', 'error');
+        return; // keep the modal open so nothing typed is lost
       }
     }
   } else {
@@ -4802,19 +4856,21 @@ async function handleTaskFormSubmit(e) {
       taskType: jobType
     };
 
-    state.tasks.push(newTask);
-    showToast(`Task ${newId} created successfully`, 'success');
-    logActivity(`created task ${newId}: "${newTask.name}"`, db);
-    refreshViews();
-
+    // Same fix as above: confirm the Firestore write before claiming success,
+    // so a failed save is never silently lost / falsely reported as created.
     try {
       await setDoc(doc(db, "tasks", newId), newTask);
+      state.tasks.push(newTask);
+      showToast(`Task ${newId} created successfully`, 'success');
+      logActivity(`created task ${newId}: "${newTask.name}"`, db);
+      refreshViews();
+      closeTaskModal();
     } catch (err) {
-      console.warn("Firestore new task save warning (saved locally):", err);
+      console.error("Firestore new task save failed:", err);
+      showToast('Failed to create task — check your connection and try again', 'error');
+      return; // keep the modal open so nothing typed is lost
     }
   }
-
-  closeTaskModal();
 }
 
 async function deleteTask() {
@@ -4824,18 +4880,21 @@ async function deleteTask() {
     const taskId = state.editingTask.id;
     const taskName = state.editingTask.name;
 
-    // Remove locally
-    state.tasks = state.tasks.filter(t => t.id !== taskId);
-
-    showToast(`Task ${taskId} removed`, 'info');
-    logActivity(`deleted task ${taskId}: "${taskName}"`, db);
-    refreshViews();
-    closeTaskModal();
-
+    // Same fix as handleTaskFormSubmit: confirm the Firestore delete before
+    // updating local state / telling the user it worked. Previously this
+    // removed the task locally and said "removed" even if the server-side
+    // delete failed — the task would then silently reappear on the next
+    // Firestore sync with no explanation.
     try {
       await deleteDoc(doc(db, "tasks", taskId));
+      state.tasks = state.tasks.filter(t => t.id !== taskId);
+      showToast(`Task ${taskId} removed`, 'info');
+      logActivity(`deleted task ${taskId}: "${taskName}"`, db);
+      refreshViews();
+      closeTaskModal();
     } catch (err) {
-      console.warn("Firestore delete warning (removed locally):", err);
+      console.error("Firestore delete failed:", err);
+      showToast('Failed to delete task — check your connection and try again', 'error');
     }
   }
 }
@@ -4935,6 +4994,29 @@ function updateModalDropdowns() {
     loginUser.innerHTML = loginUsers.map(p => `<option value="${p.name}">${p.name} (${p.role})</option>`).join('');
     if (curVal && loginUsers.some(p => p.name === curVal)) loginUser.value = curVal;
   }
+}
+
+function navigateToKanbanCard(itemId) {
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  const person = findTeamMember(currentUser);
+  const canAccessQueue = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
+  
+  if (!canAccessQueue) {
+    showToast('Access Denied: Publishing Queue is restricted to Admins and Social Media Manager', 'error');
+    return;
+  }
+
+  switchView('kanban');
+  setTimeout(() => {
+    const cardEl = document.querySelector(`.post-card[data-id="${itemId}"]`);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      cardEl.classList.add('flash-outline-kanban');
+      setTimeout(() => {
+        cardEl.classList.remove('flash-outline-kanban');
+      }, 5000);
+    }
+  }, 350);
 }
 
 /* ==========================================================================
@@ -5165,7 +5247,15 @@ async function handlePersonFormSubmit(e) {
   };
 
   try {
-    await setDoc(doc(db, "team", personId), personData);
+    // Bug fix: this form has no field for canLogin, canMarkPosted, or aliases,
+    // but was using a plain setDoc() (full document replace) instead of merge.
+    // That meant editing ANY field on an existing person — even just their
+    // photo or password — silently wiped canLogin/canMarkPosted/aliases off
+    // their Firestore doc, since those keys were simply absent from personData.
+    // This is almost certainly why Md. Yasin Arafat dropped out of the login
+    // dropdown: a routine edit to his profile erased his canLogin flag.
+    // { merge: true } makes this only touch the fields the form actually owns.
+    await setDoc(doc(db, "team", personId), personData, { merge: true });
     showToast(state.editingPersonId ? 'Person updated successfully' : 'Person added successfully', 'success');
     await logActivity(state.editingPersonId ? `updated team member "${name}"` : `added team member "${name}"`, db);
     closePersonModal();
@@ -5209,6 +5299,41 @@ function updatePublishingQueueBadge() {
   } else {
     badge.style.display = 'none';
   }
+}
+
+function renderPublishingQueue() {
+  const list = document.getElementById('publishing-queue-list');
+  if (!list) return;
+
+  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
+
+  if (pendingPublishing.length === 0) {
+    list.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">No pending posts to publish.</div>`;
+    return;
+  }
+
+  list.innerHTML = pendingPublishing.map(task => {
+    const postInfo = '';
+
+    return `
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+        <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">${task.name}</div>
+        <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 8px;">Delivery Link: <a href="${task.deliveryLink || '#'}" target="_blank" style="color: var(--honey-gold); text-decoration: none;">${task.deliveryLink ? 'Open Asset' : 'None'}</a></div>
+        ${postInfo}
+        <button class="mark-posted-btn" data-task-id="${task.id}" style="margin-top: 10px; width: 100%; background: var(--honey-gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer;">Mark as Posted</button>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.mark-posted-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const taskId = e.currentTarget.getAttribute('data-task-id');
+      if (taskId) {
+        window.markTaskPosted(taskId);
+      }
+    });
+  });
 }
 
 window.markTaskPosted = async function(taskId) {

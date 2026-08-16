@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3.10.1">
+  <link rel="stylesheet" href="style.css?v=3.10.0">
 </head>
 <body class="minimal-theme">
   <div class="grain-overlay"></div>
@@ -328,11 +328,11 @@
             <div class="tasks-filters" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex: 1;">
               <input type="text" id="team-search-input" placeholder="Search by name or designation..." class="search-input" style="min-width: 240px; flex: 1;">
               
-              <select id="team-designation-filter" class="filter-select">
+              <select id="team-designation-filter" class="filter-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; padding: 8px 12px; font-size: 0.85rem; outline: none;">
                 <option value="all">All Designations</option>
               </select>
 
-              <select id="team-sort-select" class="filter-select">
+              <select id="team-sort-select" class="filter-select" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; padding: 8px 12px; font-size: 0.85rem; outline: none;">
                 <option value="name-asc">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
                 <option value="role-asc">Designation (A-Z)</option>
@@ -371,11 +371,7 @@
 
         <!-- View 8: System Log Report View -->
         <section id="logs-view" class="view-panel">
-          <div class="header-title" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <h2>System Log Report</h2>
-              <p>Audit trail of all actions and state updates (Admin Only)</p>
-            </div>
+          <div style="margin-bottom: 24px; display: flex; justify-content: flex-end; align-items: center;">
             <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 9999px; padding: 4px 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Read-Only Audit</span>
           </div>
 
@@ -406,16 +402,10 @@
 
         <!-- View 9: Content Links Directory View -->
         <section id="content-links-view" class="view-panel">
-          <div class="header-title" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-            <div>
-              <h2>Content Links</h2>
-              <p>Directory of completed content deliverables and Google Drive links posted by creatives.</p>
-            </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px; padding: 6px 16px; font-size: 0.8rem; font-weight: 600;">
-                Total Delivered Links: <strong id="content-links-total-count">0</strong>
-              </span>
-            </div>
+          <div style="margin-bottom: 24px; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 9999px; padding: 6px 16px; font-size: 0.8rem; font-weight: 600;">
+              Total Delivered Links: <strong id="content-links-total-count">0</strong>
+            </span>
           </div>
 
           <!-- Content Links Filters -->
@@ -772,6 +762,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.10.1"></script>
+  <script type="module" src="app.js?v=3.10.0"></script>
 </body>
 </html>
