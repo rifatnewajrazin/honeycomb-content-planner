@@ -1715,16 +1715,29 @@ textarea.form-control {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.tasks-actions-header > div:last-child {
+  flex-shrink: 0;
 }
 
 .tasks-filters {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.tasks-filters .filter-select {
+  padding: 8px 30px 8px 12px;
+  font-size: 0.78rem;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .search-input {
@@ -1737,6 +1750,12 @@ textarea.form-control {
   font-size: 0.85rem;
   width: 240px;
   transition: var(--transition-fast);
+}
+
+.tasks-filters .search-input {
+  width: 150px;
+  flex-shrink: 2;
+  min-width: 90px;
 }
 
 .search-input:focus {
