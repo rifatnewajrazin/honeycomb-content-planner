@@ -5153,12 +5153,15 @@ function updateModalDropdowns() {
     if (curVal && designers.some(p => p.name === curVal)) taskFormDesigner.value = curVal;
   }
 
-  // Populate work assigners in Task Form Assigner select box
+  // Populate Task Form Assigner select box with everyone in People & Roles
+  // (not just those flagged isAssigner) so it always stays in sync with
+  // whoever's actually listed there, rather than needing that flag set too.
   const taskFormAssigner = document.getElementById('task-form-assigner');
   if (taskFormAssigner) {
     const curVal = taskFormAssigner.value;
-    taskFormAssigner.innerHTML = assigners.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    if (curVal && assigners.some(p => p.name === curVal)) taskFormAssigner.value = curVal;
+    const allPeople = [...activeTeam].sort((a, b) => a.name.localeCompare(b.name));
+    taskFormAssigner.innerHTML = allPeople.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    if (curVal && allPeople.some(p => p.name === curVal)) taskFormAssigner.value = curVal;
   }
 
   // Populate users in Login Select box
