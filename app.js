@@ -3399,10 +3399,11 @@ function renderDashboard() {
     // Calculate progress for current week (let's define posts created/scheduled in current week)
     const brandPosts = state.posts.filter(p => p.brandId === brand.id);
     
-    // Let's filter posts for this week (using the week of 2026-07-05, Sunday to Saturday)
-    // 2026-07-05 is Sunday. So current week is 2026-07-05 to 2026-07-11
-    const weekStart = new Date('2026-07-05T00:00:00');
-    const weekEnd = new Date('2026-07-11T23:59:59');
+    // Filter posts for the current week (Sunday to Saturday), based on today's real date
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday
+    const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek, 0, 0, 0);
+    const weekEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + 6, 23, 59, 59);
     
     const weeklyPosts = brandPosts.filter(p => {
       const pDate = new Date(p.date + 'T00:00:00');
@@ -3420,7 +3421,7 @@ function renderDashboard() {
     // Check overdue posts: Status scheduled/ready/development but date before 2026-07-05
     const overduePosts = brandPosts.filter(p => {
       const pDate = new Date(p.date + 'T00:00:00');
-      return p.status !== 'published' && pDate < new Date('2026-07-05T00:00:00');
+      return p.status !== 'published' && pDate < weekStart;
     });
 
     if (overduePosts.length > 0) {
