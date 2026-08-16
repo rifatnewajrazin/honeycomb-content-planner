@@ -3538,11 +3538,18 @@ function renderDashboard() {
 
     // Published count comes from Task Tracker: a content deliverable only
     // counts once its "Posted" checkbox has actually been checked, not just
-    // because it's scheduled/finished.
+    // because it's scheduled/finished. It counts toward whichever week it
+    // was actually marked posted in (task.postedAt), not the task's
+    // originally scheduled date — a task drafted in week 1 but only marked
+    // posted in week 2 belongs to week 2. Tasks marked posted before
+    // postedAt existed have no timestamp to go on, so they fall back to
+    // their scheduled date.
     const publishedCount = (state.tasks || []).filter(t => {
-      if (t.taskType !== 'post' || !t.isPosted || !t.date) return false;
-      const tDate = new Date(t.date + 'T00:00:00');
-      if (!(tDate >= weekStart && tDate <= weekEnd)) return false;
+      if (t.taskType !== 'post' || !t.isPosted) return false;
+      const postedDateStr = t.postedAt ? t.postedAt.slice(0, 10) : t.date;
+      if (!postedDateStr) return false;
+      const postedDate = new Date(postedDateStr + 'T00:00:00');
+      if (!(postedDate >= weekStart && postedDate <= weekEnd)) return false;
       return taskEffectiveBrandId(t) === brand.id;
     }).length;
     const goal = brand.frequencyGoal;
@@ -4793,6 +4800,7 @@ async function markTasksPostedBulk(taskIds) {
     if (!task || task.isPosted) continue;
 
     task.isPosted = true;
+    task.postedAt = new Date().toISOString();
 
     try {
       await setDoc(doc(db, "tasks", taskId), task);
@@ -5795,7 +5803,7 @@ window.markTaskPosted = async function(taskId) {
   // posted mark back off with no indication anything went wrong. This is a
   // very likely explanation for previously-marked posts losing their
   // "Posted" status. Now the write is confirmed before claiming success.
-  const updatedTask = { ...task, isPosted: true };
+  const updatedTask = { ...task, isPosted: true, postedAt: new Date().toISOString() };
   try {
     await setDoc(doc(db, "tasks", taskId), updatedTask);
     Object.assign(task, updatedTask);
