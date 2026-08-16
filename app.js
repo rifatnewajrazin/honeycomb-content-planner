@@ -1793,6 +1793,7 @@ let state = {
   taskSearchFilter: '',
   taskDesignerFilter: 'all',
   taskAssignerFilter: 'all',
+  taskBrandFilter: 'all',
   taskStatusFilter: 'all',
   taskSortCol: 'id',
   taskSortDir: 'desc',
@@ -2834,6 +2835,14 @@ function setupEventListeners() {
     });
   }
 
+  const taskBrandFilter = document.getElementById('task-brand-filter');
+  if (taskBrandFilter) {
+    taskBrandFilter.addEventListener('change', (e) => {
+      state.taskBrandFilter = e.target.value;
+      renderTasks();
+    });
+  }
+
   const taskStatusFilter = document.getElementById('task-status-filter');
   if (taskStatusFilter) {
     taskStatusFilter.addEventListener('change', (e) => {
@@ -3491,6 +3500,14 @@ function matchTaskToBrandId(taskName, brands) {
   return candidates.length ? candidates[0].id : null;
 }
 
+// Prefer the task's explicit "For Brand" selection (task.brandId, set via the
+// New/Edit Task modal) and only fall back to the name-matching heuristic for
+// older tasks created before that field existed.
+function taskEffectiveBrandId(task) {
+  if (task.brandId) return task.brandId;
+  return matchTaskToBrandId(task.name, state.brands);
+}
+
 // Render Dashboard View
 function renderDashboard() {
   const grid = document.getElementById('dashboard-cards-grid');
@@ -3526,7 +3543,7 @@ function renderDashboard() {
       if (t.taskType !== 'post' || !t.isPosted || !t.date) return false;
       const tDate = new Date(t.date + 'T00:00:00');
       if (!(tDate >= weekStart && tDate <= weekEnd)) return false;
-      return matchTaskToBrandId(t.name, state.brands) === brand.id;
+      return taskEffectiveBrandId(t) === brand.id;
     }).length;
     const goal = brand.frequencyGoal;
     const progressPct = goal > 0 ? Math.min(Math.round((publishedCount / goal) * 100), 100) : 100;
@@ -4508,6 +4525,11 @@ function renderTasks() {
     });
   }
 
+  // Filter by brand
+  if (state.taskBrandFilter !== 'all') {
+    filteredTasks = filteredTasks.filter(t => taskEffectiveBrandId(t) === state.taskBrandFilter);
+  }
+
   // Filter by status
   if (state.taskStatusFilter !== 'all') {
     filteredTasks = filteredTasks.filter(t => t.status === state.taskStatusFilter);
@@ -4886,6 +4908,14 @@ function openTaskModal(task = null) {
     jobTypeSelect.value = (task && task.taskType) ? task.taskType : 'general';
   }
 
+  // Populate brand select
+  const brandSelect = document.getElementById('task-form-brand');
+  if (brandSelect) {
+    brandSelect.innerHTML = '<option value="">No Brand / Internal</option>' +
+      (state.brands || []).map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+    brandSelect.value = (task && task.brandId) ? task.brandId : '';
+  }
+
   overlay.classList.add('active');
 }
 
@@ -4917,6 +4947,7 @@ async function handleTaskFormSubmit(e) {
   const deliveryLink = document.getElementById('task-form-delivery').value.trim();
   const comments = document.getElementById('task-form-comments').value.trim();
   const jobType = document.getElementById('task-form-job-type').value;
+  const brandId = document.getElementById('task-form-brand').value;
 
   if (!name) {
     showToast('Please enter a task name', 'error');
@@ -4929,7 +4960,7 @@ async function handleTaskFormSubmit(e) {
       const updatedTask = {
         ...task,
         name, designer, assignedBy, date, time, urgency, status,
-        deliveryLink, comments, taskType: jobType
+        deliveryLink, comments, taskType: jobType, brandId
       };
 
       // Bug fix: this used to update local state and show "success" immediately,
@@ -4973,7 +5004,8 @@ async function handleTaskFormSubmit(e) {
       status,
       deliveryLink,
       comments,
-      taskType: jobType
+      taskType: jobType,
+      brandId
     };
 
     // Same fix as above: confirm the Firestore write before claiming success,
@@ -5062,6 +5094,20 @@ function updateModalDropdowns() {
     } else {
       taskAssignerFilter.value = 'all';
       state.taskAssignerFilter = 'all';
+    }
+  }
+
+  // Populate task brand filter
+  const taskBrandFilter = document.getElementById('task-brand-filter');
+  if (taskBrandFilter) {
+    const currentVal = state.taskBrandFilter;
+    taskBrandFilter.innerHTML = '<option value="all">All Brands</option>' +
+      (state.brands || []).map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+    if ((state.brands || []).some(b => b.id === currentVal) || currentVal === 'all') {
+      taskBrandFilter.value = currentVal;
+    } else {
+      taskBrandFilter.value = 'all';
+      state.taskBrandFilter = 'all';
     }
   }
 
