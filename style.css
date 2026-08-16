@@ -1830,6 +1830,7 @@ textarea.form-control {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   width: fit-content;
+  white-space: nowrap;
 }
 
 .task-status-badge.finished {

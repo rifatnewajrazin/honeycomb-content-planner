@@ -3482,11 +3482,13 @@ function renderDashboard() {
     // Calculate progress for current week (let's define posts created/scheduled in current week)
     const brandPosts = state.posts.filter(p => p.brandId === brand.id);
     
-    // Filter posts for the current week (Sunday to Saturday), based on today's real date
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday
-    const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek, 0, 0, 0);
-    const weekEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + 6, 23, 59, 59);
+    // Business week: Saturday through Friday (resets Friday 11:59 PM), not
+    // the JS-default Sunday-Saturday calendar week. getDay(): 0=Sun..6=Sat.
+    // Days since the most recent Saturday: Sat->0, Sun->1, ... Fri->6.
+    const dayOfWeek = today.getDay();
+    const daysSinceSaturday = (dayOfWeek + 1) % 7;
+    const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysSinceSaturday, 0, 0, 0);
+    const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6, 23, 59, 59);
     
     const weeklyPosts = brandPosts.filter(p => {
       const pDate = new Date(p.date + 'T00:00:00');
