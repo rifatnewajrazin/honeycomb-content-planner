@@ -2425,3 +2425,211 @@ body.minimal-theme .brand-badge-img {
 }
 
 
+
+/* ============================================================
+   Priority Board
+   ============================================================ */
+
+.nav-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--status-critical, #ff453a);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+}
+
+.priority-board-dashboard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 69, 58, 0.12);
+  border: 1px solid rgba(255, 69, 58, 0.3);
+  color: #ff8a80;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.priority-board-day {
+  margin-bottom: 28px;
+}
+
+.priority-board-day-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.priority-board-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.priority-board-slot-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.priority-slot-start-label { color: #34d399; }
+.priority-slot-end-label { color: #38bdf8; }
+
+.priority-board-slot-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.priority-slot-empty {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-style: italic;
+  padding: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.priority-note-card {
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease;
+}
+
+.priority-note-card:hover {
+  transform: translateY(-2px);
+}
+
+.priority-note-card.priority-slot-start {
+  background: linear-gradient(160deg, rgba(52, 211, 153, 0.16), rgba(52, 211, 153, 0.05));
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.priority-note-card.priority-slot-end {
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.16), rgba(56, 189, 248, 0.05));
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.priority-note-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.priority-note-jobtype {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.priority-note-warning-icon {
+  color: #f59e0b;
+}
+
+.priority-note-card-top .priority-note-edit-btn {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+}
+
+.priority-note-text {
+  color: #f1f5f9;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.priority-note-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  margin-bottom: 10px;
+}
+
+.priority-note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.priority-note-comments-btn {
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.priority-note-handle-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.priority-note-handle-toggle input {
+  accent-color: var(--honey-gold);
+  cursor: pointer;
+}
+
+.priority-note-undo-banner {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+}
+
+.priority-note-undo-btn {
+  background: none;
+  border: none;
+  color: var(--honey-gold);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.priority-note-card.priority-note-undoing {
+  opacity: 0.6;
+}
+
+/* Deadline-warning state: unhandled end-of-day note as the 5-5:30pm cutoff
+   approaches. Pulses more insistently than the generic orange-border pulse
+   used elsewhere, since missing this means the client walks away empty-handed. */
+.priority-note-card.priority-note-warning {
+  border-color: rgba(245, 158, 11, 0.7);
+  animation: pulse-border-priority-warning 1.6s infinite;
+}
+
+@keyframes pulse-border-priority-warning {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45); }
+  70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}

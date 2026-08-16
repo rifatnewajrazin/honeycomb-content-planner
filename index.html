@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3.10.7">
+  <link rel="stylesheet" href="style.css?v=3.11.0">
 </head>
 <body class="minimal-theme">
   <div class="grain-overlay"></div>
@@ -59,6 +59,16 @@
               <path d="M16 2v4M8 2v4M3 10h18" />
             </svg>
             Calendar
+          </a>
+
+          <a href="#" class="nav-item" id="nav-priority-board-link" data-view="priority-board" style="display: none; position: relative;">
+            <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+              <rect x="3" y="4" width="18" height="16" rx="2"/>
+              <path d="M8 2v4M16 2v4M3 10h18"/>
+              <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/>
+            </svg>
+            Priority Board
+            <span id="priority-board-badge" class="nav-badge" style="display: none;"></span>
           </a>
 
           <a href="#" class="nav-item" data-view="idea-board">
@@ -116,6 +126,7 @@
 
       <!-- View 1: Dashboard View -->
       <section id="dashboard-view" class="view-panel active">
+        <span id="dashboard-priority-board-badge" class="priority-board-dashboard-badge" style="display:none;"></span>
         <div class="dashboard-grid" id="dashboard-cards-grid">
           <!-- Dynamically Rendered Page Cards -->
         </div>
@@ -476,6 +487,29 @@
           </div>
         </section>
 
+        <!-- View: Priority Board -->
+        <section id="priority-board-view" class="view-panel">
+          <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex: 1;">
+              <input type="date" id="priority-board-date-filter" class="form-control" style="width: auto; height: 38px;">
+              <button type="button" class="btn-secondary" id="priority-board-today-btn" style="height: 38px; padding: 0 14px;">Today</button>
+              <button type="button" class="btn-secondary" id="priority-board-log-toggle-btn" style="height: 38px; padding: 0 14px;">View History Log</button>
+            </div>
+            <button class="btn-primary" id="priority-note-new-btn" style="display: none;">+ New Priority Note</button>
+          </div>
+
+          <div id="priority-board-grid">
+            <!-- Populated dynamically in app.js: sticky-note board grouped by date/slot -->
+          </div>
+
+          <div id="priority-board-log-panel" style="display: none; margin-top: 24px;">
+            <h3 style="font-size: 1rem; color: #e2e8f0; margin-bottom: 12px;">Priority Board History Log</h3>
+            <div id="priority-board-log-list" class="tasks-table-container" style="max-height: 400px; overflow-y: auto; padding: 8px;">
+              <!-- Populated dynamically in app.js -->
+            </div>
+          </div>
+        </section>
+
       </main>
 
     <!-- Modal Form (Create / Edit Idea Board entry) -->
@@ -529,6 +563,84 @@
             <button type="submit" class="btn-primary">Save Idea</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal Form (Create / Edit Priority Board note) -->
+    <div id="priority-note-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="priority-note-modal-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="priority-note-modal-title">New Priority Note</h3>
+          <button class="close-btn" id="priority-note-modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="priority-note-form">
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="priority-note-form-date">Date</label>
+                <input type="date" id="priority-note-form-date" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="priority-note-form-slot">Slot</label>
+                <select id="priority-note-form-slot" class="form-control" required>
+                  <option value="start-of-day">Start of Day</option>
+                  <option value="end-of-day">End of Day</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="priority-note-form-jobtype">Job Type</label>
+              <select id="priority-note-form-jobtype" class="form-control" required>
+                <option value="DTF">DTF</option>
+                <option value="Vinyl">Vinyl</option>
+                <option value="Mug">Mug</option>
+                <option value="Water Bottle">Water Bottle</option>
+                <option value="Frame">Frame</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="priority-note-form-text">What needs to be prepped?</label>
+              <textarea id="priority-note-form-text" class="form-control" rows="4" placeholder="e.g., 12x DTF transfers for the Rahman order, need before pickup at 5:30pm" required></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="priority-note-modal-delete-btn" style="background-color: var(--status-critical-glow); color: var(--status-critical); border-color: rgba(239, 68, 68, 0.15); margin-right: auto; display: none;">Delete Note</button>
+            <button type="button" class="btn-secondary modal-cancel" id="priority-note-modal-cancel-btn">Cancel</button>
+            <button type="submit" class="btn-primary">Save Note</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Detail / Comments Modal for a Priority Board note -->
+    <div id="priority-note-detail-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="priority-note-detail-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="priority-note-detail-title">Priority Note</h3>
+          <button class="close-btn" id="priority-note-detail-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="priority-note-detail-body" style="margin-bottom: 16px;"></div>
+          <div id="priority-note-comments-feed" class="modal-comments-feed" style="display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; margin-bottom: 12px;"></div>
+          <div class="form-group" style="display: flex; gap: 8px; align-items: flex-start;">
+            <textarea id="priority-note-comment-input" class="form-control" rows="2" placeholder="Write a reply..." style="flex: 1;"></textarea>
+            <button type="button" class="btn-primary" id="priority-note-comment-submit-btn" style="height: auto; align-self: stretch;">Send</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -868,6 +980,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.10.7"></script>
+  <script type="module" src="app.js?v=3.11.0"></script>
 </body>
 </html>

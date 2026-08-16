@@ -134,10 +134,10 @@ const DEFAULT_BRANDS = [
 
 // Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, canAccessPriorityBoard: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
   { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: false, aliases: ['Mahim'] },
-  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
-  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Niaz'] },
+  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
+  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Niaz'] },
   { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, password: 'smm123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
   { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canMarkPosted: true, aliases: ['Zahid', 'Zahidul Islam'] },
   { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Ashiq Bhaia', 'Ashiq'] },
@@ -145,7 +145,7 @@ const DEFAULT_TEAM = [
   { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Saddam'] },
   { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isAssigner: true, canLogin: true, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
   { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
-  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Orthee'] },
+  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, canManagePriorityNotes: true, aliases: ['Orthee'] },
   { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Rafi'] },
   { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', password: 'anik123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Anik', 'Milon'] },
   { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', photo: 'assets/avatars/Labiba-Laisa-Esha.png', password: 'esha123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Esha'] },
@@ -187,6 +187,37 @@ function canCurrentUserMarkPosted() {
 function canCurrentUserPlanContent() {
   const person = getCurrentUserPerson();
   return !!(person && person.canPlanContent);
+}
+
+// Gate for the Priority Board — only people with canAccessPriorityBoard: true
+// on their team-roster record may see the nav item or open the view.
+function canCurrentUserAccessPriorityBoard() {
+  const person = getCurrentUserPerson();
+  return !!(person && person.canAccessPriorityBoard);
+}
+
+// Gate for creating/editing/deleting Priority Board notes — only Orthee
+// (canManagePriorityNotes: true). Everyone with board access can still view,
+// comment, and (if isDesigner) toggle Handled — see renderPriorityBoard.
+function canCurrentUserManagePriorityNotes() {
+  const person = getCurrentUserPerson();
+  return !!(person && person.canManagePriorityNotes);
+}
+
+// Gate for toggling a Priority Board note to Handled — restricted to the
+// creative team (isDesigner: true), per the agreed permission model.
+function canCurrentUserHandlePriorityNotes() {
+  const person = getCurrentUserPerson();
+  return !!(person && person.isDesigner);
+}
+
+// A "board-only" account (Orthee) has canAccessPriorityBoard but is not part
+// of the creative team — their sidebar/view access is restricted to just the
+// Priority Board, unlike designers who also have canAccessPriorityBoard but
+// keep their normal full navigation.
+function isCurrentUserBoardOnly() {
+  const person = getCurrentUserPerson();
+  return !!(person && person.canAccessPriorityBoard && !person.isDesigner);
 }
 
 function isItemArchived(item) {
@@ -1784,6 +1815,12 @@ let state = {
   editingIdeaId: null,
   ideaSearchFilter: '',
   ideaStatusFilter: 'all',
+  priorityNotes: [],
+  priorityBoardLog: [],
+  editingPriorityNoteId: null,
+  viewingPriorityNoteId: null,
+  recentlyHandledNoteIds: {},
+  priorityBoardDateFilter: '',
   currentView: 'dashboard',
   selectedBrandFilter: 'all',
   currentDate: new Date('2026-07-05T12:00:00'), // Setting active app date based on user local time
@@ -1919,11 +1956,26 @@ async function runAppInit() {
   refreshViews();
   let lastView = localStorage.getItem('hc_last_view') || 'dashboard';
   if (lastView === 'kanban' || lastView === 'analytics' || lastView === 'ideas') lastView = 'dashboard';
+  if (isCurrentUserBoardOnly()) lastView = 'priority-board';
   switchView(lastView);
 
   // Safety net: don't let the loading overlay get stuck forever if the
   // Firestore listener errors out silently for some reason.
   setTimeout(hideAppLoadingOverlay, 6000);
+
+  // Re-render the Priority Board periodically while it's open so the
+  // deadline-warning state (approaching the 5-5:30pm end-of-day cutoff)
+  // updates live even with no new Firestore writes.
+  setInterval(() => {
+    if (state.currentView === 'priority-board') renderPriorityBoard();
+  }, 30000);
+
+  const dashboardPriorityBadge = document.getElementById('dashboard-priority-board-badge');
+  if (dashboardPriorityBadge) {
+    dashboardPriorityBadge.addEventListener('click', () => {
+      if (canCurrentUserAccessPriorityBoard()) switchView('priority-board');
+    });
+  }
 }
 
 // Hides the initial-load overlay once real data is in. Guarded so it only
@@ -1986,6 +2038,35 @@ function renderUserProfile() {
         switchView('dashboard');
       }
     }
+  }
+
+  // Toggle Priority Board link in sidebar (Restricted to canAccessPriorityBoard accounts)
+  const priorityBoardLink = document.getElementById('nav-priority-board-link');
+  if (priorityBoardLink) {
+    const canSeeBoard = currentUser && person && person.canAccessPriorityBoard;
+    if (canSeeBoard) {
+      priorityBoardLink.style.display = 'flex';
+    } else {
+      priorityBoardLink.style.display = 'none';
+      if (state.currentView === 'priority-board') {
+        switchView('dashboard');
+      }
+    }
+  }
+
+  // Board-only accounts (Orthee): restrict the whole sidebar (and any current
+  // view) to just the Priority Board — they don't get Task Tracker, Idea
+  // Board, Analytics, People & Roles, etc.
+  const boardOnly = currentUser && isCurrentUserBoardOnly();
+  // Items already gated individually above (logs/kanban) keep whatever those
+  // gates decided; only items without their own gate need restoring here.
+  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link'];
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (individuallyGatedIds.includes(item.id)) return;
+    item.style.display = boardOnly ? 'none' : 'flex';
+  });
+  if (boardOnly && state.currentView !== 'priority-board') {
+    switchView('priority-board');
   }
 
   if (currentUser && person) {
@@ -2196,6 +2277,24 @@ function initData() {
           if (defaultMatch && defaultMatch.photo) {
             data.photo = defaultMatch.photo;
           }
+
+          // One-time rollout of the Priority Board permission fields onto
+          // already-seeded Firestore docs (mirrors the `taskType` backfill
+          // above). Only ever fills in fields the stored doc doesn't have an
+          // explicit value for yet — never clobbers an admin's later edits —
+          // except Orthee's canLogin, which this feature deliberately flips
+          // from false to true so she can sign in to the board.
+          if (defaultMatch) {
+            const patch = {};
+            if (data.canAccessPriorityBoard === undefined && defaultMatch.canAccessPriorityBoard) patch.canAccessPriorityBoard = true;
+            if (data.canManagePriorityNotes === undefined && defaultMatch.canManagePriorityNotes) patch.canManagePriorityNotes = true;
+            if (defaultMatch.id === 'person-6' && !data.canLogin && defaultMatch.canLogin) patch.canLogin = true;
+            if (Object.keys(patch).length > 0) {
+              Object.assign(data, patch);
+              try { setDoc(doc(db, "team", docSnap.id), data); } catch (e) {}
+            }
+          }
+
           loadedTeam.push(data);
         });
 
@@ -2240,6 +2339,50 @@ function initData() {
     });
   } catch(err) {
     console.warn("Firestore content_ideas listener skipped:", err);
+  }
+
+  // Sync Priority Board notes from Firestore in real-time.
+  // No DEFAULT seed here — an empty board is a normal state.
+  try {
+    onSnapshot(collection(db, "priority_notes"), (querySnapshot) => {
+      const loadedNotes = [];
+      querySnapshot.forEach((docSnap) => {
+        loadedNotes.push(docSnap.data());
+      });
+      state.priorityNotes = loadedNotes.sort((a, b) => (a.postedAt || '').localeCompare(b.postedAt || ''));
+      updatePriorityBoardBadge();
+      if (state.currentView === 'priority-board') renderPriorityBoard();
+      if (state.viewingPriorityNoteId) {
+        const viewedNote = state.priorityNotes.find(n => n.id === state.viewingPriorityNoteId);
+        if (viewedNote) renderPriorityNoteComments(viewedNote);
+      }
+    }, (error) => {
+      console.error("Firestore priority_notes sync error:", error);
+      state.priorityNotes = state.priorityNotes || [];
+      if (state.currentView === 'priority-board') renderPriorityBoard();
+    });
+  } catch(err) {
+    console.warn("Firestore priority_notes listener skipped:", err);
+  }
+
+  // Sync the Priority Board's own scoped activity log (separate from the
+  // global Activity Log — see logPriorityBoardActivity()).
+  try {
+    onSnapshot(collection(db, "priority_board_log"), (querySnapshot) => {
+      const loadedLogs = [];
+      querySnapshot.forEach((docSnap) => {
+        loadedLogs.push(docSnap.data());
+      });
+      state.priorityBoardLog = loadedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      if (state.priorityBoardLog.length > 200) {
+        state.priorityBoardLog = state.priorityBoardLog.slice(0, 200);
+      }
+      if (state.currentView === 'priority-board') renderPriorityBoard();
+    }, (error) => {
+      console.error("Firestore priority_board_log sync error:", error);
+    });
+  } catch(err) {
+    console.warn("Firestore priority_board_log listener skipped:", err);
   }
 
   // Sync activity logs from Firestore in real-time
@@ -2287,6 +2430,26 @@ async function logActivity(actionText, dbInstance) {
     await setDoc(doc(targetDb, "activity_log", logEntry.id), logEntry);
   } catch (err) {
     console.error("Failed to write to activity log:", err);
+  }
+}
+
+// Scoped history log for the Priority Board only — a separate collection
+// from the global Activity Log so the creative team can review Priority
+// Board history (notes created/edited/deleted/handled, comments) without
+// wading through unrelated app activity. Mirrors logActivity()'s shape.
+async function logPriorityBoardActivity(actionText, dbInstance) {
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const logEntry = {
+    id: `pb-log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    user: currentUser,
+    actionText: actionText,
+    timestamp: new Date().toISOString()
+  };
+  try {
+    const targetDb = dbInstance || db;
+    await setDoc(doc(targetDb, "priority_board_log", logEntry.id), logEntry);
+  } catch (err) {
+    console.error("Failed to write to priority board log:", err);
   }
 }
 
@@ -3140,11 +3303,91 @@ function setupEventListeners() {
       renderIdeaBoard();
     });
   }
+
+  // --- Priority Board wiring ---
+  const priorityNoteNewBtn = document.getElementById('priority-note-new-btn');
+  if (priorityNoteNewBtn) {
+    priorityNoteNewBtn.addEventListener('click', () => openPriorityNoteModal());
+  }
+
+  const priorityNoteForm = document.getElementById('priority-note-form');
+  if (priorityNoteForm) {
+    priorityNoteForm.addEventListener('submit', handlePriorityNoteFormSubmit);
+  }
+
+  const deletePriorityNoteBtn = document.getElementById('priority-note-modal-delete-btn');
+  if (deletePriorityNoteBtn) {
+    deletePriorityNoteBtn.addEventListener('click', deletePriorityNote);
+  }
+
+  const closePriorityNoteBtn = document.getElementById('priority-note-modal-close-btn');
+  if (closePriorityNoteBtn) {
+    closePriorityNoteBtn.addEventListener('click', closePriorityNoteModal);
+  }
+
+  const cancelPriorityNoteBtn = document.getElementById('priority-note-modal-cancel-btn');
+  if (cancelPriorityNoteBtn) {
+    cancelPriorityNoteBtn.addEventListener('click', closePriorityNoteModal);
+  }
+
+  const closePriorityNoteDetailBtn = document.getElementById('priority-note-detail-close-btn');
+  if (closePriorityNoteDetailBtn) {
+    closePriorityNoteDetailBtn.addEventListener('click', closePriorityNoteDetailModal);
+  }
+
+  const priorityNoteCommentSubmitBtn = document.getElementById('priority-note-comment-submit-btn');
+  if (priorityNoteCommentSubmitBtn) {
+    priorityNoteCommentSubmitBtn.addEventListener('click', submitPriorityNoteComment);
+  }
+
+  const priorityNoteCommentInput = document.getElementById('priority-note-comment-input');
+  if (priorityNoteCommentInput) {
+    priorityNoteCommentInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitPriorityNoteComment();
+      }
+    });
+  }
+
+  const priorityBoardDateFilter = document.getElementById('priority-board-date-filter');
+  if (priorityBoardDateFilter) {
+    priorityBoardDateFilter.addEventListener('change', (e) => {
+      state.priorityBoardDateFilter = e.target.value;
+      renderPriorityBoard();
+    });
+  }
+
+  const priorityBoardTodayBtn = document.getElementById('priority-board-today-btn');
+  if (priorityBoardTodayBtn) {
+    priorityBoardTodayBtn.addEventListener('click', () => {
+      state.priorityBoardDateFilter = '';
+      const filterInput = document.getElementById('priority-board-date-filter');
+      if (filterInput) filterInput.value = '';
+      renderPriorityBoard();
+    });
+  }
+
+  const priorityBoardLogToggleBtn = document.getElementById('priority-board-log-toggle-btn');
+  if (priorityBoardLogToggleBtn) {
+    priorityBoardLogToggleBtn.addEventListener('click', () => {
+      const panel = document.getElementById('priority-board-log-panel');
+      if (!panel) return;
+      const showing = panel.style.display !== 'none';
+      panel.style.display = showing ? 'none' : 'block';
+      priorityBoardLogToggleBtn.textContent = showing ? 'View History Log' : 'Hide History Log';
+      if (!showing) renderPriorityBoardLog();
+    });
+  }
 }
 
 function switchView(viewName) {
   if (viewName === 'kanban' || viewName === 'analytics' || viewName === 'ideas') {
     viewName = 'dashboard';
+  }
+  // Board-only accounts (Orthee) may only ever land on the Priority Board.
+  if (viewName !== 'priority-board' && isCurrentUserBoardOnly()) {
+    viewName = 'priority-board';
   }
 
   state.currentView = viewName;
@@ -3158,6 +3401,7 @@ function switchView(viewName) {
     tasks: ['Task Tracker', 'Social media posts and general design tasks'],
     'content-links': ['Content Links', 'Directory of completed content deliverables and Google Drive links posted by creatives.'],
     'idea-board': ['Idea Board', 'Upcoming content ideas, seasonal campaigns, and inspiration — plan ahead before a task exists'],
+    'priority-board': ['Priority Board', 'DTF/Vinyl and sublimation print-prep requests, flagged by slot and job type'],
     team: ['People & Roles', 'Team roster, roles, and login permissions'],
     logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)']
   };
@@ -3190,7 +3434,7 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
@@ -3206,6 +3450,7 @@ function switchView(viewName) {
   else if (viewName === 'team') renderTeam();
   else if (viewName === 'content-links') renderContentLinks();
   else if (viewName === 'idea-board') renderIdeaBoard();
+  else if (viewName === 'priority-board') renderPriorityBoard();
   else if (viewName === 'dashboard') renderDashboard();
   else if (viewName === 'calendar') renderCalendar();
   else if (viewName === 'logs') renderLogs();
@@ -3251,7 +3496,9 @@ function refreshViews() {
   try { renderLogs(); } catch(e) { console.error("renderLogs error:", e); }
   try { renderContentLinks(); } catch(e) { console.error("renderContentLinks error:", e); }
   try { renderIdeaBoard(); } catch(e) { console.error("renderIdeaBoard error:", e); }
+  try { renderPriorityBoard(); } catch(e) { console.error("renderPriorityBoard error:", e); }
   try { updatePublishingQueueBadge(); } catch(e) { console.error("updatePublishingQueueBadge error:", e); }
+  try { updatePriorityBoardBadge(); } catch(e) { console.error("updatePriorityBoardBadge error:", e); }
 }
 
 function renderLogs() {
@@ -5740,6 +5987,470 @@ async function deleteIdea() {
   } catch (err) {
     console.error("Firestore idea delete failed:", err);
     showToast('Failed to delete idea — check your connection and try again', 'error');
+  }
+}
+
+// ============================================================
+// Priority Board — DTF/Vinyl and sublimation print-prep requests
+// ============================================================
+
+const PRIORITY_NOTE_JOB_TYPES = ['DTF', 'Vinyl', 'Mug', 'Water Bottle', 'Frame'];
+
+// The real internal cutoff to watch, not the 6:45pm office close — unhandled
+// end-of-day notes get a visual warning once the clock enters this window.
+const PRIORITY_BOARD_WARNING_HOUR = 17;   // 5:00 PM
+const PRIORITY_BOARD_WARNING_MINUTE = 0;
+
+// How long a note stays visible (with an Undo affordance) on the active
+// board after being marked Handled, before it drops off for good.
+const PRIORITY_NOTE_UNDO_WINDOW_MS = 6000;
+
+function getRelativeTimeString(isoString) {
+  const then = new Date(isoString).getTime();
+  const now = Date.now();
+  const diffSec = Math.round((now - then) / 1000);
+  if (diffSec < 5) return 'just now';
+  if (diffSec < 60) return `${diffSec}s ago`;
+  const diffMin = Math.round(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.round(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.round(diffHr / 24);
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return new Date(isoString).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function isPriorityNoteNearDeadline(note) {
+  if (note.status !== 'open' || note.slot !== 'end-of-day') return false;
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  if (note.date !== todayStr) return false;
+  const warningStart = new Date(today);
+  warningStart.setHours(PRIORITY_BOARD_WARNING_HOUR, PRIORITY_BOARD_WARNING_MINUTE, 0, 0);
+  return today >= warningStart;
+}
+
+function renderPriorityBoard() {
+  const grid = document.getElementById('priority-board-grid');
+  if (!grid) return;
+
+  const canManage = canCurrentUserManagePriorityNotes();
+  const canHandle = canCurrentUserHandlePriorityNotes();
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+
+  const newBtn = document.getElementById('priority-note-new-btn');
+  if (newBtn) newBtn.style.display = canManage ? 'inline-flex' : 'none';
+
+  const now = Date.now();
+  const recentlyHandled = state.recentlyHandledNoteIds || {};
+  // Purge expired undo-window entries so they don't leak forever.
+  Object.keys(recentlyHandled).forEach(id => {
+    if (now - recentlyHandled[id] > PRIORITY_NOTE_UNDO_WINDOW_MS) delete recentlyHandled[id];
+  });
+
+  let notes = (state.priorityNotes || []).filter(n => n.status === 'open' || recentlyHandled[n.id]);
+
+  const dateFilter = state.priorityBoardDateFilter;
+  if (dateFilter) notes = notes.filter(n => n.date === dateFilter);
+
+  if (notes.length === 0) {
+    grid.innerHTML = `<div style="text-align:center; padding: 48px; color: #64748b;">No open priority notes${canManage ? ' — click "New Priority Note" to flag print-prep work.' : '.'}</div>`;
+    return;
+  }
+
+  const dates = [...new Set(notes.map(n => n.date))].sort();
+
+  grid.innerHTML = dates.map(date => {
+    const dayNotes = notes.filter(n => n.date === date);
+    const startNotes = dayNotes.filter(n => n.slot === 'start-of-day');
+    const endNotes = dayNotes.filter(n => n.slot === 'end-of-day');
+    const dateLabel = new Date(date + 'T12:00:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+
+    const renderSlotCards = (slotNotes, slotClass) => slotNotes.map(note => {
+      const isUndo = !!recentlyHandled[note.id];
+      const isWarning = isPriorityNoteNearDeadline(note);
+      const postedTime = new Date(note.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const commentCount = (note.commentsList || []).length;
+
+      const handledControl = isUndo
+        ? `<div class="priority-note-undo-banner">Marked handled — <button type="button" class="priority-note-undo-btn" data-id="${note.id}">Undo</button></div>`
+        : (canHandle
+          ? `<label class="priority-note-handle-toggle"><input type="checkbox" class="priority-note-handled-checkbox" data-id="${note.id}"> Mark Handled</label>`
+          : '');
+
+      const editDeleteHtml = (canManage && note.postedBy === currentUser)
+        ? `<button type="button" class="btn-icon priority-note-edit-btn" data-id="${note.id}" title="Edit"><svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; width:14px; height:14px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`
+        : '';
+
+      return `
+        <div class="priority-note-card ${slotClass} ${isWarning ? 'priority-note-warning' : ''} ${isUndo ? 'priority-note-undoing' : ''}" data-id="${note.id}">
+          <div class="priority-note-card-top">
+            <span class="priority-note-jobtype">${escapeHtml(note.jobType)}</span>
+            ${isWarning ? '<span class="priority-note-warning-icon" title="Approaching end-of-day cutoff">⚠</span>' : ''}
+            ${editDeleteHtml}
+          </div>
+          <div class="priority-note-text">${escapeHtml(note.text)}</div>
+          <div class="priority-note-meta">
+            <span>${escapeHtml(note.postedBy || '')}</span>
+            <span>${postedTime}</span>
+          </div>
+          <div class="priority-note-footer">
+            <button type="button" class="priority-note-comments-btn" data-id="${note.id}">💬 ${commentCount}</button>
+            ${handledControl}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="priority-board-day">
+        <h4 class="priority-board-day-label">${dateLabel}</h4>
+        <div class="priority-board-slots">
+          <div class="priority-board-slot">
+            <div class="priority-board-slot-label priority-slot-start-label">Start of Day</div>
+            <div class="priority-board-slot-cards">${startNotes.length ? renderSlotCards(startNotes, 'priority-slot-start') : '<div class="priority-slot-empty">Nothing flagged</div>'}</div>
+          </div>
+          <div class="priority-board-slot">
+            <div class="priority-board-slot-label priority-slot-end-label">End of Day</div>
+            <div class="priority-board-slot-cards">${endNotes.length ? renderSlotCards(endNotes, 'priority-slot-end') : '<div class="priority-slot-empty">Nothing flagged</div>'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.priority-note-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openPriorityNoteModal(btn.dataset.id));
+  });
+  grid.querySelectorAll('.priority-note-comments-btn').forEach(btn => {
+    btn.addEventListener('click', () => openPriorityNoteDetailModal(btn.dataset.id));
+  });
+  grid.querySelectorAll('.priority-note-handled-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => togglePriorityNoteHandled(cb.dataset.id));
+  });
+  grid.querySelectorAll('.priority-note-undo-btn').forEach(btn => {
+    btn.addEventListener('click', () => undoPriorityNoteHandled(btn.dataset.id));
+  });
+
+  const logPanel = document.getElementById('priority-board-log-panel');
+  if (logPanel && logPanel.style.display !== 'none') renderPriorityBoardLog();
+}
+
+function renderPriorityBoardLog() {
+  const list = document.getElementById('priority-board-log-list');
+  if (!list) return;
+  const logs = state.priorityBoardLog || [];
+  if (logs.length === 0) {
+    list.innerHTML = `<div style="text-align:center; padding: 24px; color: #64748b;">No Priority Board activity yet.</div>`;
+    return;
+  }
+  list.innerHTML = logs.map(log => {
+    const date = new Date(log.timestamp);
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return `<div class="activity-log-item">
+      <div><span class="activity-log-user">${escapeHtml(log.user)}</span> <span class="activity-log-text">${escapeHtml(log.actionText)}</span></div>
+      <div class="activity-log-time">${dateStr} at ${timeStr}</div>
+    </div>`;
+  }).join('');
+}
+
+function updatePriorityBoardBadge() {
+  const openCount = (state.priorityNotes || []).filter(n => n.status === 'open').length;
+  const navBadge = document.getElementById('priority-board-badge');
+  if (navBadge) {
+    if (openCount > 0) {
+      navBadge.textContent = openCount;
+      navBadge.style.display = 'flex';
+    } else {
+      navBadge.style.display = 'none';
+    }
+  }
+  const dashboardBadge = document.getElementById('dashboard-priority-board-badge');
+  if (dashboardBadge) {
+    if (openCount > 0) {
+      dashboardBadge.textContent = `${openCount} open Priority Board note${openCount === 1 ? '' : 's'}`;
+      dashboardBadge.style.display = 'inline-flex';
+    } else {
+      dashboardBadge.style.display = 'none';
+    }
+  }
+}
+
+async function togglePriorityNoteHandled(noteId) {
+  if (!canCurrentUserHandlePriorityNotes()) {
+    showToast('Access Denied: Only the creative team can mark notes as handled', 'error');
+    renderPriorityBoard();
+    return;
+  }
+  const note = (state.priorityNotes || []).find(n => n.id === noteId);
+  if (!note) return;
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+
+  // Set the undo-window flag *before* writing to Firestore — the onSnapshot
+  // listener can fire (and call renderPriorityBoard) the instant the write
+  // lands, and if this flag isn't set yet by then the card would flash off
+  // the board before the undo banner ever has a chance to show.
+  state.recentlyHandledNoteIds = state.recentlyHandledNoteIds || {};
+  state.recentlyHandledNoteIds[noteId] = Date.now();
+  setTimeout(() => {
+    delete (state.recentlyHandledNoteIds || {})[noteId];
+    renderPriorityBoard();
+  }, PRIORITY_NOTE_UNDO_WINDOW_MS);
+
+  try {
+    await setDoc(doc(db, "priority_notes", noteId), { ...note, status: 'handled', handledBy: currentUser, handledAt: new Date().toISOString() });
+    renderPriorityBoard();
+    await logActivity(`marked priority note "${note.jobType}" (${note.date}, ${note.slot === 'start-of-day' ? 'start of day' : 'end of day'}) as handled`, db);
+    await logPriorityBoardActivity(`marked "${note.jobType}" note as handled`, db);
+  } catch (err) {
+    console.error("Failed to mark priority note handled:", err);
+    showToast('Failed to save — check your connection and try again', 'error');
+    delete (state.recentlyHandledNoteIds || {})[noteId];
+    renderPriorityBoard();
+  }
+}
+
+async function undoPriorityNoteHandled(noteId) {
+  const note = (state.priorityNotes || []).find(n => n.id === noteId);
+  if (!note) return;
+  delete (state.recentlyHandledNoteIds || {})[noteId];
+  try {
+    await setDoc(doc(db, "priority_notes", noteId), { ...note, status: 'open', handledBy: null, handledAt: null });
+    await logActivity(`undid "handled" on priority note "${note.jobType}" (${note.date})`, db);
+    await logPriorityBoardActivity(`undid "handled" on "${note.jobType}" note`, db);
+  } catch (err) {
+    console.error("Failed to undo priority note handled state:", err);
+    showToast('Failed to undo — check your connection and try again', 'error');
+  }
+  renderPriorityBoard();
+}
+
+function openPriorityNoteModal(noteId = null) {
+  if (!canCurrentUserManagePriorityNotes()) {
+    showToast('Access Denied: Only Orthee can add or edit Priority Board notes', 'error');
+    return;
+  }
+
+  const note = noteId ? (state.priorityNotes || []).find(n => n.id === noteId) : null;
+  if (noteId && note && note.postedBy !== localStorage.getItem('hc_logged_in_user')) {
+    showToast('Access Denied: You can only edit your own notes', 'error');
+    return;
+  }
+
+  state.editingPriorityNoteId = noteId;
+  const modal = document.getElementById('priority-note-modal');
+  const modalTitle = document.getElementById('priority-note-modal-title');
+  const deleteBtn = document.getElementById('priority-note-modal-delete-btn');
+  const form = document.getElementById('priority-note-form');
+
+  form.reset();
+
+  if (noteId && note) {
+    modalTitle.textContent = 'Edit Priority Note';
+    if (deleteBtn) deleteBtn.style.display = 'block';
+    document.getElementById('priority-note-form-date').value = note.date || '';
+    document.getElementById('priority-note-form-slot').value = note.slot || 'start-of-day';
+    document.getElementById('priority-note-form-jobtype').value = note.jobType || 'DTF';
+    document.getElementById('priority-note-form-text').value = note.text || '';
+  } else {
+    modalTitle.textContent = 'New Priority Note';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+    const today = new Date();
+    document.getElementById('priority-note-form-date').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  if (modal) modal.classList.add('active');
+}
+
+function closePriorityNoteModal() {
+  const modal = document.getElementById('priority-note-modal');
+  if (modal) modal.classList.remove('active');
+  state.editingPriorityNoteId = null;
+}
+
+async function handlePriorityNoteFormSubmit(e) {
+  e.preventDefault();
+
+  if (!canCurrentUserManagePriorityNotes()) {
+    showToast('Access Denied: Only Orthee can save Priority Board notes', 'error');
+    return;
+  }
+
+  const date = document.getElementById('priority-note-form-date').value;
+  const slot = document.getElementById('priority-note-form-slot').value;
+  const jobType = document.getElementById('priority-note-form-jobtype').value;
+  const text = document.getElementById('priority-note-form-text').value.trim();
+
+  if (!date || !slot || !jobType || !text) {
+    showToast('Please fill out all fields', 'error');
+    return;
+  }
+  if (!PRIORITY_NOTE_JOB_TYPES.includes(jobType)) {
+    showToast('Invalid job type', 'error');
+    return;
+  }
+
+  const isEditing = !!state.editingPriorityNoteId;
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  let noteId = state.editingPriorityNoteId;
+  const existing = isEditing ? (state.priorityNotes || []).find(n => n.id === noteId) : null;
+
+  if (isEditing && existing && existing.postedBy !== currentUser) {
+    showToast('Access Denied: You can only edit your own notes', 'error');
+    return;
+  }
+
+  if (!isEditing) {
+    let maxNum = 0;
+    (state.priorityNotes || []).forEach(n => {
+      const num = parseInt(String(n.id).replace('PN-', ''));
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    });
+    noteId = `PN-${maxNum + 1}`;
+  }
+
+  const noteData = {
+    id: noteId,
+    date,
+    slot,
+    jobType,
+    text,
+    postedAt: existing ? existing.postedAt : new Date().toISOString(),
+    postedBy: existing ? existing.postedBy : currentUser,
+    status: existing ? existing.status : 'open',
+    handledBy: existing ? existing.handledBy : null,
+    handledAt: existing ? existing.handledAt : null,
+    commentsList: existing ? (existing.commentsList || []) : []
+  };
+
+  try {
+    await setDoc(doc(db, "priority_notes", noteId), noteData);
+    showToast(isEditing ? 'Priority note updated' : 'Priority note posted', 'success');
+    const summary = `"${jobType}" note (${date}, ${slot === 'start-of-day' ? 'start of day' : 'end of day'})`;
+    await logActivity(`${isEditing ? 'updated' : 'posted'} priority board ${summary}`, db);
+    await logPriorityBoardActivity(`${isEditing ? 'updated' : 'posted'} ${summary}: "${text}"`, db);
+    closePriorityNoteModal();
+  } catch (err) {
+    console.error("Firestore priority note save failed:", err);
+    showToast('Failed to save note — check your connection and try again', 'error');
+  }
+}
+
+async function deletePriorityNote() {
+  if (!canCurrentUserManagePriorityNotes()) {
+    showToast('Access Denied: Only Orthee can delete Priority Board notes', 'error');
+    return;
+  }
+
+  const noteId = state.editingPriorityNoteId;
+  if (!noteId) return;
+
+  const note = (state.priorityNotes || []).find(n => n.id === noteId);
+  if (!note) return;
+
+  if (note.postedBy !== localStorage.getItem('hc_logged_in_user')) {
+    showToast('Access Denied: You can only delete your own notes', 'error');
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to delete this "${note.jobType}" priority note?`)) return;
+
+  try {
+    await deleteDoc(doc(db, "priority_notes", noteId));
+    showToast('Priority note deleted', 'info');
+    const summary = `"${note.jobType}" note (${note.date}, ${note.slot === 'start-of-day' ? 'start of day' : 'end of day'})`;
+    await logActivity(`deleted priority board ${summary}`, db);
+    await logPriorityBoardActivity(`deleted ${summary}`, db);
+    closePriorityNoteModal();
+  } catch (err) {
+    console.error("Firestore priority note delete failed:", err);
+    showToast('Failed to delete note — check your connection and try again', 'error');
+  }
+}
+
+// --- Priority Board note comment thread (mirrors renderPostComments/addCommentToPost) ---
+
+function openPriorityNoteDetailModal(noteId) {
+  const note = (state.priorityNotes || []).find(n => n.id === noteId);
+  if (!note) return;
+  state.viewingPriorityNoteId = noteId;
+
+  const modal = document.getElementById('priority-note-detail-modal');
+  const title = document.getElementById('priority-note-detail-title');
+  const body = document.getElementById('priority-note-detail-body');
+  if (title) title.textContent = `${note.jobType} — ${note.date} (${note.slot === 'start-of-day' ? 'Start of Day' : 'End of Day'})`;
+  if (body) {
+    const postedTime = new Date(note.postedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    body.innerHTML = `
+      <div style="color:#cbd5e1; font-size:0.9rem; line-height:1.5; margin-bottom:8px;">${escapeHtml(note.text)}</div>
+      <div style="color:#64748b; font-size:0.75rem;">Posted by ${escapeHtml(note.postedBy || '')} · ${postedTime}${note.status === 'handled' ? ` · Handled by ${escapeHtml(note.handledBy || '')}` : ''}</div>
+    `;
+  }
+  renderPriorityNoteComments(note);
+  if (modal) modal.classList.add('active');
+}
+
+function closePriorityNoteDetailModal() {
+  const modal = document.getElementById('priority-note-detail-modal');
+  if (modal) modal.classList.remove('active');
+  state.viewingPriorityNoteId = null;
+}
+
+function renderPriorityNoteComments(note) {
+  const feed = document.getElementById('priority-note-comments-feed');
+  if (!feed) return;
+  if (!note || !note.commentsList || note.commentsList.length === 0) {
+    feed.innerHTML = '<div style="color: #64748b; font-style: italic; font-size: 0.8rem; text-align: center; padding: 10px;">No comments yet. Start the discussion!</div>';
+    return;
+  }
+  feed.innerHTML = note.commentsList.map(c => {
+    const initials = c.user.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    return `
+      <div class="comment-bubble-card">
+        <div class="comment-avatar">${initials}</div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="comment-user">${escapeHtml(c.user)}</span>
+            <span class="comment-time">${getRelativeTimeString(c.timestamp)}</span>
+          </div>
+          <div class="comment-text">${escapeHtml(c.text)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  feed.scrollTop = feed.scrollHeight;
+}
+
+async function submitPriorityNoteComment() {
+  const input = document.getElementById('priority-note-comment-input');
+  const noteId = state.viewingPriorityNoteId;
+  if (!input || !noteId) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  if (!currentUser) {
+    showToast('Please sign in to comment', 'error');
+    return;
+  }
+
+  const note = (state.priorityNotes || []).find(n => n.id === noteId);
+  if (!note) return;
+
+  const commentsList = note.commentsList || [];
+  commentsList.push({ user: currentUser, text, timestamp: new Date().toISOString() });
+
+  try {
+    await setDoc(doc(db, "priority_notes", noteId), { ...note, commentsList });
+    input.value = '';
+    note.commentsList = commentsList;
+    renderPriorityNoteComments(note);
+    await logActivity(`commented on priority note "${note.jobType}" (${note.date}): "${text}"`, db);
+    await logPriorityBoardActivity(`commented on "${note.jobType}" note: "${text}"`, db);
+  } catch (err) {
+    console.error("Failed to add comment to priority note:", err);
+    showToast('Failed to post comment — check your connection and try again', 'error');
   }
 }
 
