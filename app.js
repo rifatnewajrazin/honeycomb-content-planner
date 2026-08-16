@@ -134,7 +134,7 @@ const DEFAULT_BRANDS = [
 
 // Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
   { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: false, aliases: ['Mahim'] },
   { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
   { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Niaz'] },
@@ -178,6 +178,15 @@ function getCurrentUserPerson() {
 function canCurrentUserMarkPosted() {
   const person = getCurrentUserPerson();
   return !!(person && person.canMarkPosted);
+}
+
+// Gate for creating/editing/deleting Idea Board entries — only people with
+// canPlanContent: true on their team-roster record. Everyone logged in can
+// still view the board, and any logged-in user can claim an idea (set the
+// assigned designer) or toggle the "Handled" checkbox — see renderIdeaBoard.
+function canCurrentUserPlanContent() {
+  const person = getCurrentUserPerson();
+  return !!(person && person.canPlanContent);
 }
 
 function isItemArchived(item) {
@@ -1771,6 +1780,10 @@ let state = {
   posts: [],
   tasks: [],
   team: [],
+  contentIdeas: [],
+  editingIdeaId: null,
+  ideaSearchFilter: '',
+  ideaStatusFilter: 'all',
   currentView: 'dashboard',
   selectedBrandFilter: 'all',
   currentDate: new Date('2026-07-05T12:00:00'), // Setting active app date based on user local time
@@ -2206,6 +2219,26 @@ function initData() {
     });
   } catch(err) {
     console.warn("Firestore team listener skipped:", err);
+  }
+
+  // Sync Idea Board (Content Planning) entries from Firestore in real-time.
+  // No DEFAULT seed here — an empty board is a perfectly normal state, unlike
+  // tasks/team/posts which ship with starter data.
+  try {
+    onSnapshot(collection(db, "content_ideas"), (querySnapshot) => {
+      const loadedIdeas = [];
+      querySnapshot.forEach((docSnap) => {
+        loadedIdeas.push(docSnap.data());
+      });
+      state.contentIdeas = loadedIdeas.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      renderIdeaBoard();
+    }, (error) => {
+      console.error("Firestore content_ideas sync error:", error);
+      state.contentIdeas = state.contentIdeas || [];
+      renderIdeaBoard();
+    });
+  } catch(err) {
+    console.warn("Firestore content_ideas listener skipped:", err);
   }
 
   // Sync activity logs from Firestore in real-time
@@ -3051,6 +3084,53 @@ function setupEventListeners() {
   if (cancelPersonBtn) {
     cancelPersonBtn.addEventListener('click', closePersonModal);
   }
+
+  // --- Idea Board (Content Planning) wiring ---
+  const ideaNewBtn = document.getElementById('idea-new-btn');
+  if (ideaNewBtn) {
+    ideaNewBtn.addEventListener('click', () => openIdeaModal());
+  }
+
+  const ideaForm = document.getElementById('idea-form');
+  if (ideaForm) {
+    ideaForm.addEventListener('submit', handleIdeaFormSubmit);
+  }
+
+  const deleteIdeaBtn = document.getElementById('idea-modal-delete-btn');
+  if (deleteIdeaBtn) {
+    deleteIdeaBtn.addEventListener('click', deleteIdea);
+  }
+
+  const closeIdeaBtn = document.getElementById('idea-modal-close-btn');
+  if (closeIdeaBtn) {
+    closeIdeaBtn.addEventListener('click', closeIdeaModal);
+  }
+
+  const cancelIdeaBtn = document.getElementById('idea-modal-cancel-btn');
+  if (cancelIdeaBtn) {
+    cancelIdeaBtn.addEventListener('click', closeIdeaModal);
+  }
+
+  const addIdeaLinkBtn = document.getElementById('idea-form-add-link-btn');
+  if (addIdeaLinkBtn) {
+    addIdeaLinkBtn.addEventListener('click', () => addIdeaLinkRow(''));
+  }
+
+  const ideaSearchInput = document.getElementById('idea-search-input');
+  if (ideaSearchInput) {
+    ideaSearchInput.addEventListener('input', (e) => {
+      state.ideaSearchFilter = e.target.value;
+      renderIdeaBoard();
+    });
+  }
+
+  const ideaStatusFilter = document.getElementById('idea-status-filter');
+  if (ideaStatusFilter) {
+    ideaStatusFilter.addEventListener('change', (e) => {
+      state.ideaStatusFilter = e.target.value;
+      renderIdeaBoard();
+    });
+  }
 }
 
 function switchView(viewName) {
@@ -3068,6 +3148,7 @@ function switchView(viewName) {
     calendar: ['Calendar', 'Scheduled posts and delivery dates at a glance'],
     tasks: ['Task Tracker', 'Social media posts and general design tasks'],
     'content-links': ['Content Links', 'Directory of completed content deliverables and Google Drive links posted by creatives.'],
+    'idea-board': ['Idea Board', 'Upcoming content ideas, seasonal campaigns, and inspiration — plan ahead before a task exists'],
     team: ['People & Roles', 'Team roster, roles, and login permissions'],
     logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)']
   };
@@ -3100,7 +3181,7 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
@@ -3115,6 +3196,7 @@ function switchView(viewName) {
   if (viewName === 'tasks') renderTasks();
   else if (viewName === 'team') renderTeam();
   else if (viewName === 'content-links') renderContentLinks();
+  else if (viewName === 'idea-board') renderIdeaBoard();
   else if (viewName === 'dashboard') renderDashboard();
   else if (viewName === 'calendar') renderCalendar();
   else if (viewName === 'logs') renderLogs();
@@ -3159,6 +3241,7 @@ function refreshViews() {
   try { renderTeam(); } catch(e) { console.error("renderTeam error:", e); }
   try { renderLogs(); } catch(e) { console.error("renderLogs error:", e); }
   try { renderContentLinks(); } catch(e) { console.error("renderContentLinks error:", e); }
+  try { renderIdeaBoard(); } catch(e) { console.error("renderIdeaBoard error:", e); }
   try { updatePublishingQueueBadge(); } catch(e) { console.error("updatePublishingQueueBadge error:", e); }
 }
 
@@ -3399,11 +3482,10 @@ function renderDashboard() {
     // Calculate progress for current week (let's define posts created/scheduled in current week)
     const brandPosts = state.posts.filter(p => p.brandId === brand.id);
     
-    // Filter posts for the current week (Sunday to Saturday), based on today's real date
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday
-    const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek, 0, 0, 0);
-    const weekEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + 6, 23, 59, 59);
+    // Let's filter posts for this week (using the week of 2026-07-05, Sunday to Saturday)
+    // 2026-07-05 is Sunday. So current week is 2026-07-05 to 2026-07-11
+    const weekStart = new Date('2026-07-05T00:00:00');
+    const weekEnd = new Date('2026-07-11T23:59:59');
     
     const weeklyPosts = brandPosts.filter(p => {
       const pDate = new Date(p.date + 'T00:00:00');
@@ -3421,7 +3503,7 @@ function renderDashboard() {
     // Check overdue posts: Status scheduled/ready/development but date before 2026-07-05
     const overduePosts = brandPosts.filter(p => {
       const pDate = new Date(p.date + 'T00:00:00');
-      return p.status !== 'published' && pDate < weekStart;
+      return p.status !== 'published' && pDate < new Date('2026-07-05T00:00:00');
     });
 
     if (overduePosts.length > 0) {
@@ -5199,6 +5281,7 @@ function openPersonModal(personId = null) {
       
       document.getElementById('person-role-designer').checked = !!person.isDesigner;
       document.getElementById('person-role-assigner').checked = !!person.isAssigner;
+      document.getElementById('person-role-plan-content').checked = !!person.canPlanContent;
     }
   } else {
     modalTitle.textContent = 'Add New Person';
@@ -5226,6 +5309,7 @@ async function handlePersonFormSubmit(e) {
   
   const isDesigner = document.getElementById('person-role-designer').checked;
   const isAssigner = document.getElementById('person-role-assigner').checked;
+  const canPlanContent = document.getElementById('person-role-plan-content').checked;
 
   if (!name || !role || !password) {
     showToast('Please fill out all required fields', 'error');
@@ -5244,7 +5328,8 @@ async function handlePersonFormSubmit(e) {
     access,
     photo: photo || null,
     isDesigner,
-    isAssigner
+    isAssigner,
+    canPlanContent
   };
 
   try {
@@ -5283,6 +5368,271 @@ async function deletePerson() {
   } catch (err) {
     console.error(err);
     showToast('Failed to delete person', 'error');
+  }
+}
+
+// ==========================================================================
+// Idea Board (Content Planning)
+//
+// Permission model:
+// - View: anyone logged in.
+// - Create / edit core fields (name, date, links, notes) / delete: only
+//   people with canPlanContent: true (canCurrentUserPlanContent()).
+// - Claim (set assigned designer) and toggle "Handled": any logged-in user.
+// ==========================================================================
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+function renderIdeaBoard() {
+  const tbody = document.getElementById('idea-board-list-body');
+  if (!tbody) return;
+
+  const canEdit = canCurrentUserPlanContent();
+
+  const newBtn = document.getElementById('idea-new-btn');
+  if (newBtn) newBtn.style.display = canEdit ? 'inline-flex' : 'none';
+
+  let ideas = [...(state.contentIdeas || [])];
+
+  const search = (state.ideaSearchFilter || '').toLowerCase().trim();
+  if (search) {
+    ideas = ideas.filter(i =>
+      (i.name || '').toLowerCase().includes(search) ||
+      (i.notes || '').toLowerCase().includes(search)
+    );
+  }
+
+  if (state.ideaStatusFilter === 'pending') {
+    ideas = ideas.filter(i => !i.handled);
+  } else if (state.ideaStatusFilter === 'handled') {
+    ideas = ideas.filter(i => !!i.handled);
+  }
+
+  if (ideas.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 32px; color: #64748b;">No ideas yet${canEdit ? ' — click "New Idea" to plan something ahead.' : '.'}</td></tr>`;
+    return;
+  }
+
+  const designerOptions = ((state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM)
+    .filter(p => p.isDesigner);
+
+  tbody.innerHTML = ideas.map(idea => {
+    const links = idea.links || [];
+    const linksHtml = links.length
+      ? links.map((l, idx) => `<a href="${escapeHtml(l)}" target="_blank" rel="noopener" style="display:block; color: var(--honey-gold); font-size: 0.8rem; text-decoration: none;">Link ${idx + 1} ↗</a>`).join('')
+      : `<span style="color:#64748b; font-size: 0.8rem;">—</span>`;
+
+    const assignedOptionsHtml = ['<option value="">Unassigned</option>']
+      .concat(designerOptions.map(p => `<option value="${escapeHtml(p.name)}" ${idea.assignedDesigner === p.name ? 'selected' : ''}>${escapeHtml(p.name)}</option>`))
+      .join('');
+
+    const actionsHtml = canEdit
+      ? `<button class="btn-icon idea-edit-btn" data-id="${idea.id}" style="width: 32px; height: 32px" title="Edit Idea"><svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; width:16px; height:16px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`
+      : '';
+
+    return `
+      <tr>
+        <td>${escapeHtml(idea.id)}</td>
+        <td><strong>${escapeHtml(idea.name)}</strong></td>
+        <td>${escapeHtml(idea.date)}</td>
+        <td>${linksHtml}</td>
+        <td style="max-width: 260px; white-space: normal; color: #cbd5e1; font-size: 0.85rem;">${escapeHtml(idea.notes || '')}</td>
+        <td>
+          <select class="form-control idea-assign-select" data-id="${idea.id}" style="height: 32px; font-size: 0.8rem; padding: 0 8px;">
+            ${assignedOptionsHtml}
+          </select>
+        </td>
+        <td style="text-align:center;">
+          <input type="checkbox" class="idea-handled-checkbox" data-id="${idea.id}" ${idea.handled ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--honey-gold); cursor: pointer;">
+        </td>
+        <td style="text-align:center;">${actionsHtml}</td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('.idea-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openIdeaModal(btn.dataset.id));
+  });
+
+  // Claiming an idea (assigning a designer) and toggling "Handled" are open
+  // to any logged-in user, per the agreed permission model — not gated
+  // behind canCurrentUserPlanContent().
+  tbody.querySelectorAll('.idea-assign-select').forEach(sel => {
+    sel.addEventListener('change', (e) => assignIdeaDesigner(sel.dataset.id, e.target.value));
+  });
+  tbody.querySelectorAll('.idea-handled-checkbox').forEach(cb => {
+    cb.addEventListener('change', (e) => toggleIdeaHandled(cb.dataset.id, e.target.checked));
+  });
+}
+
+async function assignIdeaDesigner(ideaId, designerName) {
+  const idea = (state.contentIdeas || []).find(i => i.id === ideaId);
+  if (!idea) return;
+  try {
+    await setDoc(doc(db, "content_ideas", ideaId), { ...idea, assignedDesigner: designerName || '' });
+    await logActivity(`${designerName ? `assigned "${designerName}" to` : 'unassigned'} idea ${ideaId}: "${idea.name}"`, db);
+  } catch (err) {
+    console.error("Failed to assign idea designer:", err);
+    showToast('Failed to update assignment — check your connection and try again', 'error');
+    renderIdeaBoard(); // revert the dropdown to last known-good state
+  }
+}
+
+async function toggleIdeaHandled(ideaId, handled) {
+  const idea = (state.contentIdeas || []).find(i => i.id === ideaId);
+  if (!idea) return;
+  try {
+    await setDoc(doc(db, "content_ideas", ideaId), { ...idea, handled });
+    await logActivity(`marked idea ${ideaId}: "${idea.name}" as ${handled ? 'handled' : 'not handled'}`, db);
+  } catch (err) {
+    console.error("Failed to update idea handled state:", err);
+    showToast('Failed to save — check your connection and try again', 'error');
+    renderIdeaBoard(); // revert the checkbox to last known-good state
+  }
+}
+
+function addIdeaLinkRow(value) {
+  const list = document.getElementById('idea-form-links-list');
+  if (!list) return;
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex; gap:8px; margin-top:8px;';
+  row.innerHTML = `
+    <input type="url" class="form-control idea-link-input" placeholder="https://..." value="${escapeHtml(value || '')}" style="flex:1;">
+    <button type="button" class="btn-secondary idea-link-remove-btn" style="padding: 0 12px;">✕</button>
+  `;
+  row.querySelector('.idea-link-remove-btn').addEventListener('click', () => row.remove());
+  list.appendChild(row);
+}
+
+function collectIdeaLinks() {
+  return Array.from(document.querySelectorAll('#idea-form-links-list .idea-link-input'))
+    .map(inp => inp.value.trim())
+    .filter(v => v.length > 0);
+}
+
+function openIdeaModal(ideaId = null) {
+  if (!canCurrentUserPlanContent()) {
+    showToast('Access Denied: Only Idea Board editors can add or edit ideas', 'error');
+    return;
+  }
+
+  state.editingIdeaId = ideaId;
+  const modal = document.getElementById('idea-modal');
+  const modalTitle = document.getElementById('idea-modal-title');
+  const deleteBtn = document.getElementById('idea-modal-delete-btn');
+  const form = document.getElementById('idea-form');
+  const linksList = document.getElementById('idea-form-links-list');
+
+  form.reset();
+  if (linksList) linksList.innerHTML = '';
+
+  // Populate the designer dropdown fresh each time the modal opens
+  const designerSelect = document.getElementById('idea-form-designer');
+  if (designerSelect) {
+    const designerOptions = ((state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM)
+      .filter(p => p.isDesigner);
+    designerSelect.innerHTML = '<option value="">Unassigned</option>' +
+      designerOptions.map(p => `<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
+  }
+
+  if (ideaId) {
+    modalTitle.textContent = 'Edit Idea';
+    if (deleteBtn) deleteBtn.style.display = 'block';
+
+    const idea = (state.contentIdeas || []).find(i => i.id === ideaId);
+    if (idea) {
+      document.getElementById('idea-form-name').value = idea.name || '';
+      document.getElementById('idea-form-date').value = idea.date || '';
+      document.getElementById('idea-form-notes').value = idea.notes || '';
+      if (designerSelect) designerSelect.value = idea.assignedDesigner || '';
+      (idea.links || []).forEach(link => addIdeaLinkRow(link));
+    }
+  } else {
+    modalTitle.textContent = 'New Idea';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+  }
+
+  if (linksList && linksList.children.length === 0) addIdeaLinkRow('');
+
+  if (modal) modal.classList.add('active');
+}
+
+function closeIdeaModal() {
+  const modal = document.getElementById('idea-modal');
+  if (modal) modal.classList.remove('active');
+  state.editingIdeaId = null;
+}
+
+async function handleIdeaFormSubmit(e) {
+  e.preventDefault();
+
+  if (!canCurrentUserPlanContent()) {
+    showToast('Access Denied: Only Idea Board editors can save ideas', 'error');
+    return;
+  }
+
+  const name = document.getElementById('idea-form-name').value.trim();
+  const date = document.getElementById('idea-form-date').value;
+  const notes = document.getElementById('idea-form-notes').value.trim();
+  const assignedDesigner = document.getElementById('idea-form-designer').value;
+  const links = collectIdeaLinks();
+
+  if (!name || !date) {
+    showToast('Please fill out the idea name and target date', 'error');
+    return;
+  }
+
+  const isEditing = !!state.editingIdeaId;
+  const ideaId = state.editingIdeaId || `I-${Date.now()}`;
+  const existing = isEditing ? (state.contentIdeas || []).find(i => i.id === ideaId) : null;
+
+  const ideaData = {
+    id: ideaId,
+    name,
+    date,
+    notes,
+    links,
+    assignedDesigner,
+    handled: existing ? !!existing.handled : false
+  };
+
+  try {
+    await setDoc(doc(db, "content_ideas", ideaId), ideaData);
+    showToast(isEditing ? 'Idea updated successfully' : 'Idea added to the board', 'success');
+    await logActivity(isEditing ? `updated idea ${ideaId}: "${name}"` : `added idea ${ideaId}: "${name}"`, db);
+    closeIdeaModal();
+  } catch (err) {
+    console.error("Firestore idea save failed:", err);
+    showToast('Failed to save idea — check your connection and try again', 'error');
+  }
+}
+
+async function deleteIdea() {
+  if (!canCurrentUserPlanContent()) {
+    showToast('Access Denied: Only Idea Board editors can delete ideas', 'error');
+    return;
+  }
+
+  const ideaId = state.editingIdeaId;
+  if (!ideaId) return;
+
+  const idea = (state.contentIdeas || []).find(i => i.id === ideaId);
+  if (!idea) return;
+
+  if (!confirm(`Are you sure you want to delete "${idea.name}" from the Idea Board?`)) return;
+
+  try {
+    await deleteDoc(doc(db, "content_ideas", ideaId));
+    showToast(`Idea "${idea.name}" removed`, 'info');
+    await logActivity(`deleted idea ${ideaId}: "${idea.name}"`, db);
+    closeIdeaModal();
+  } catch (err) {
+    console.error("Firestore idea delete failed:", err);
+    showToast('Failed to delete idea — check your connection and try again', 'error');
   }
 }
 
