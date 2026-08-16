@@ -5442,12 +5442,12 @@ function renderIdeaBoard() {
         <td>${linksHtml}</td>
         <td style="max-width: 260px; white-space: normal; color: #cbd5e1; font-size: 0.85rem;">${escapeHtml(idea.notes || '')}</td>
         <td>
-          <select class="form-control idea-assign-select" data-id="${idea.id}" style="height: 32px; font-size: 0.8rem; padding: 0 8px;">
+          <select class="idea-assign-select" data-id="${idea.id}" style="height: 34px; padding: 0 10px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.8rem; line-height: normal; outline: none; cursor: pointer; max-width: 180px;">
             ${assignedOptionsHtml}
           </select>
         </td>
         <td style="text-align:center;">
-          <input type="checkbox" class="idea-handled-checkbox" data-id="${idea.id}" ${idea.handled ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--honey-gold); cursor: pointer;">
+          <input type="checkbox" class="idea-handled-checkbox" data-id="${idea.id}" ${idea.handled ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: var(--honey-gold); cursor: pointer;">
         </td>
         <td style="text-align:center;">${actionsHtml}</td>
       </tr>
@@ -5587,7 +5587,18 @@ async function handleIdeaFormSubmit(e) {
   }
 
   const isEditing = !!state.editingIdeaId;
-  const ideaId = state.editingIdeaId || `I-${Date.now()}`;
+  let ideaId = state.editingIdeaId;
+  if (!isEditing) {
+    // Bug fix: this used to be I-${Date.now()}, producing ugly, non-sequential
+    // IDs like "I-1786881345197". Generate a clean sequential ID instead,
+    // matching the same pattern already used for tasks (T-1, T-2, ...).
+    let maxId = 0;
+    (state.contentIdeas || []).forEach(i => {
+      const num = parseInt(String(i.id).replace('I-', ''));
+      if (!isNaN(num) && num > maxId) maxId = num;
+    });
+    ideaId = `I-${maxId + 1}`;
+  }
   const existing = isEditing ? (state.contentIdeas || []).find(i => i.id === ideaId) : null;
 
   const ideaData = {
