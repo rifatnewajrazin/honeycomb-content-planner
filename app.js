@@ -2082,9 +2082,17 @@ function renderUserProfile() {
       item.style.display = 'flex';
       return;
     }
+    // Board-only accounts still get the Idea Board if they've been marked
+    // an Ideator (canPlanContent) — that permission should always come with
+    // visibility into the view it grants editing access to.
+    if (boardOnly && item.getAttribute('data-view') === 'idea-board' && person && person.canPlanContent) {
+      item.style.display = 'flex';
+      return;
+    }
     item.style.display = boardOnly ? 'none' : 'flex';
   });
-  if (boardOnly && state.currentView !== 'priority-board' && state.currentView !== 'team') {
+  const boardOnlyCanViewIdeaBoard = person && person.canPlanContent;
+  if (boardOnly && state.currentView !== 'priority-board' && state.currentView !== 'team' && !(boardOnlyCanViewIdeaBoard && state.currentView === 'idea-board')) {
     switchView('priority-board');
   }
 
