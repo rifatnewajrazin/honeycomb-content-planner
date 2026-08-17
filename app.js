@@ -195,6 +195,23 @@ function canCurrentUserMarkPosted() {
   return !!(person && person.canMarkPosted);
 }
 
+// Short codes for the Posted column, so checkbox/badge labels stay compact
+// instead of wrapping brand names across lines.
+const BRAND_SHORT_CODES = {
+  'SammTech': 'SMT',
+  'Lovelife Memories': 'LLM',
+  'Tahams': 'TMS',
+  'Perfume de Tahams': 'PDT',
+  'Lumina by Tahams': 'LBT',
+  'Tahams Little Star': 'TLS',
+  'Merchtile': 'MER',
+  'Evoka Experiences': 'EE'
+};
+
+function brandShortCode(brandName) {
+  return (brandName && BRAND_SHORT_CODES[brandName]) || brandName || '';
+}
+
 // Tahams sub-brand → parent mapping. A task whose effective brand name is a
 // key here needs to be posted on TWO separate pages (the sub-brand's own
 // page and the Tahams mother page) to count as fully posted — everything
@@ -5075,13 +5092,22 @@ function renderTasks() {
   // keeps the original single badge/checkbox/"Pending" cell. Each page is
   // its own badge-or-checkbox, so a sub-brand row can show one page already
   // posted (green ✓) right next to the other page still needing a click.
-  const PAGE_LABELS = { main: null, sub: 'Sub', parent: 'Tahams' };
-
   const buildPostedCellHtml = (task) => {
     const posted = task.posted || {};
     const pageKeys = pageKeysForTask(task);
     const isSub = pageKeys.length > 1;
     const postedState = getTaskPostedState(task);
+
+    // 'sub' uses the task's own brand short code (e.g. "PDT"); 'parent' is
+    // always the Tahams mother page; 'main' (non-Tahams tasks) also gets its
+    // own brand's short code instead of a blank checkbox.
+    const brandName = (state.brands && state.brands.length > 0 ? state.brands : DEFAULT_BRANDS)
+      .find(b => b.id === taskEffectiveBrandId(task))?.name;
+    const PAGE_LABELS = {
+      main: brandShortCode(brandName),
+      sub: brandShortCode(brandName),
+      parent: 'TMS'
+    };
 
     const partialBadge = (isSub && postedState === 'partial')
       ? `<div class="posted-partial-badge" title="Only one of the two pages has been posted">◐ Partially Posted</div>`
@@ -5094,23 +5120,23 @@ function renderTasks() {
         // click. canMarkPosted users can now click the badge itself to undo
         // that one page (confirmed first, since it's a meaningful change).
         if (canMarkPosted) {
-          return `<button type="button" class="posted-badge posted-undo-btn" data-task-id="${task.id}" data-page-key="${key}" title="${label ? label + ' page — ' : ''}Click to undo this posted mark" style="display:inline-flex;align-items:center;gap:4px;color:#22c55e;font-weight:700;font-size:0.78rem;background:none;border:none;padding:0;cursor:pointer;">
-            <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;"><path d="M20 6L9 17l-5-5"/></svg>${label ? label + ' Posted' : 'Posted'}
+          return `<button type="button" class="posted-badge posted-undo-btn" data-task-id="${task.id}" data-page-key="${key}" title="${label ? label + ' page — ' : ''}Click to undo this posted mark">
+            <svg viewBox="0 0 24 24" class="posted-badge-icon"><path d="M20 6L9 17l-5-5"/></svg><span class="posted-badge-label">${label}</span>
           </button>`;
         }
-        return `<span class="posted-badge" title="${label ? label + ' page — ' : ''}Already marked posted" style="display:inline-flex;align-items:center;gap:4px;color:#22c55e;font-weight:700;font-size:0.78rem;">
-          <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;"><path d="M20 6L9 17l-5-5"/></svg>${label ? label + ' Posted' : 'Posted'}
+        return `<span class="posted-badge" title="${label ? label + ' page — ' : ''}Already marked posted">
+          <svg viewBox="0 0 24 24" class="posted-badge-icon"><path d="M20 6L9 17l-5-5"/></svg><span class="posted-badge-label">${label}</span>
         </span>`;
       }
       if (canMarkPosted) {
-        return `<label style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:#94a3b8; cursor:pointer;">
-          <input type="checkbox" class="post-select-checkbox" data-task-id="${task.id}" data-page-key="${key}" title="Select to mark ${label ? label + ' page' : 'as posted'}">${label ? label : ''}
+        return `<label class="posted-checkbox-label" title="Select to mark ${label} page as posted">
+          <input type="checkbox" class="post-select-checkbox" data-task-id="${task.id}" data-page-key="${key}"><span class="posted-checkbox-tag">${label}</span>
         </label>`;
       }
-      return `<span style="color:#64748b;font-size:0.78rem;">${label ? label + ' Pending' : 'Pending'}</span>`;
+      return `<span class="posted-pending-label">${label} Pending</span>`;
     }).join('');
 
-    return `${partialBadge}<div style="display:flex; flex-direction:${isSub ? 'column' : 'row'}; align-items:${isSub ? 'flex-start' : 'center'}; gap:4px;">${pageHtml}</div>`;
+    return `${partialBadge}<div class="posted-cell-pages">${pageHtml}</div>`;
   };
 
   socialTasks.forEach(t => {
