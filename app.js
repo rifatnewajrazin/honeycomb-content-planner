@@ -195,6 +195,56 @@ function canCurrentUserMarkPosted() {
   return !!(person && person.canMarkPosted);
 }
 
+// Tahams sub-brand → parent mapping. A task whose effective brand name is a
+// key here needs to be posted on TWO separate pages (the sub-brand's own
+// page and the Tahams mother page) to count as fully posted — everything
+// else keeps the single-page behavior. Extend this map if more sub-brands
+// are added later; nothing else about the posted-tracking code needs to
+// change to support that.
+const BRAND_HIERARCHY = {
+  "Perfume de Tahams": "Tahams",
+  "Lumina by Tahams": "Tahams",
+  "Tahams Little Star": "Tahams"
+};
+
+// Which posted-status page keys apply to a task: two ('sub'/'parent') for
+// Tahams sub-brand tasks, one ('main') for everything else.
+function taskIsSubBrandBucket(task) {
+  const brandId = taskEffectiveBrandId(task);
+  const brand = ((state.brands && state.brands.length > 0) ? state.brands : DEFAULT_BRANDS).find(b => b.id === brandId);
+  return !!(brand && BRAND_HIERARCHY[brand.name]);
+}
+
+function pageKeysForTask(task) {
+  return taskIsSubBrandBucket(task) ? ['sub', 'parent'] : ['main'];
+}
+
+// A task counts as fully posted only once every page it needs to be posted
+// on (see pageKeysForTask) has been marked true — a Tahams sub-brand task
+// posted only on its own page but not yet on the Tahams parent page is NOT
+// fully posted. Replaces the old flat `task.isPosted === true` check.
+function isTaskFullyPosted(task) {
+  const posted = task && task.posted;
+  if (!posted || typeof posted !== 'object') return false;
+  const keys = Object.keys(posted);
+  if (keys.length === 0) return false;
+  return keys.every(k => posted[k] === true);
+}
+
+// 'posted' (every page done), 'partial' (some but not all — the case that
+// should catch a moderator's eye, e.g. posted on the sub-brand page but not
+// yet the Tahams parent page), or 'not_posted' (nothing done yet).
+function getTaskPostedState(task) {
+  const posted = task && task.posted;
+  if (!posted || typeof posted !== 'object') return 'not_posted';
+  const vals = Object.values(posted);
+  if (vals.length === 0) return 'not_posted';
+  const allTrue = vals.every(v => v === true);
+  if (allTrue) return 'posted';
+  const anyTrue = vals.some(v => v === true);
+  return anyTrue ? 'partial' : 'not_posted';
+}
+
 // Gate for creating/editing/deleting Idea Board entries — only people with
 // canPlanContent: true on their team-roster record. Everyone logged in can
 // still view the board, and any logged-in user can claim an idea (set the
@@ -2256,6 +2306,22 @@ function initData() {
             try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
           }
 
+          // One-time migration: the old flat `isPosted: boolean` field can't
+          // represent "posted on the sub-brand page but not yet the Tahams
+          // parent page", so it's replaced with a per-page `posted` object.
+          // Sub-brand tasks that were already isPosted: true are assumed to
+          // have been posted on both pages (nothing before this migration
+          // could distinguish the two); everything else just carries its old
+          // true/false forward under the page key(s) it actually needs.
+          if (!t.posted || typeof t.posted !== 'object') {
+            const wasPosted = !!t.isPosted;
+            t.posted = taskIsSubBrandBucket(t)
+              ? { sub: wasPosted, parent: wasPosted }
+              : { main: wasPosted };
+            delete t.isPosted;
+            try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
+          }
+
           const designerPerson = findTeamMember(t.designer);
           if (designerPerson) t.designer = designerPerson.name;
 
@@ -2601,7 +2667,7 @@ function renderActivityLog() {
   const container = document.getElementById('activity-log-list');
   if (!container) return;
 
-  const pendingPublishing = (state.tasks || []).filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
+  const pendingPublishing = (state.tasks || []).filter(t => t.taskType === 'post' && t.status === 'Finished' && !isTaskFullyPosted(t));
 
   let publishingHtml = '';
   if (pendingPublishing.length > 0) {
@@ -2669,7 +2735,7 @@ function updateActivityBadge() {
   const badge = document.getElementById('activity-badge');
   if (!badge) return;
   
-  const pendingPublishing = (state.tasks || []).filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
+  const pendingPublishing = (state.tasks || []).filter(t => t.taskType === 'post' && t.status === 'Finished' && !isTaskFullyPosted(t));
   const pendingCount = pendingPublishing.length;
   
   if (pendingCount > 0) {
@@ -3822,7 +3888,7 @@ function renderDashboard() {
     // postedAt existed have no timestamp to go on, so they fall back to
     // their scheduled date.
     const publishedCount = (state.tasks || []).filter(t => {
-      if (t.taskType !== 'post' || !t.isPosted) return false;
+      if (t.taskType !== 'post' || !isTaskFullyPosted(t)) return false;
       const postedDateStr = t.postedAt ? t.postedAt.slice(0, 10) : t.date;
       if (!postedDateStr) return false;
       const postedDate = new Date(postedDateStr + 'T00:00:00');
@@ -3842,7 +3908,7 @@ function renderDashboard() {
     // anymore now that Posted-tracking lives in Task Tracker — that left
     // every brand permanently stuck Critical regardless of real activity.)
     const overduePosts = (state.tasks || []).filter(t => {
-      if (t.taskType !== 'post' || t.isPosted || !t.date) return false;
+      if (t.taskType !== 'post' || isTaskFullyPosted(t) || !t.date) return false;
       const tDate = new Date(t.date + 'T00:00:00');
       if (!(tDate < weekStart)) return false;
       return taskEffectiveBrandId(t) === brand.id;
@@ -4985,27 +5051,51 @@ function renderTasks() {
       });
     }
 
-    // Hook "Posted" checkbox — only present for social rows the current user is allowed to mark
-    const postedCheckbox = row.querySelector('.post-select-checkbox');
-    if (postedCheckbox) {
-      postedCheckbox.addEventListener('change', updateMarkSelectedPostedButtonState);
-    }
+    // Hook "Posted" checkbox(es) — only present for social rows the current
+    // user is allowed to mark. Tahams sub-brand rows carry two (sub page +
+    // Tahams parent page); everyone else carries at most one.
+    row.querySelectorAll('.post-select-checkbox').forEach(cb => {
+      cb.addEventListener('change', updateMarkSelectedPostedButtonState);
+    });
 
     targetBody.appendChild(row);
   };
 
   const canMarkPosted = canCurrentUserMarkPosted();
 
+  // Tahams sub-brand tasks need two independent posted pages (their own
+  // sub-brand page + the Tahams parent page) instead of one; everything else
+  // keeps the original single badge/checkbox/"Pending" cell. Each page is
+  // its own badge-or-checkbox, so a sub-brand row can show one page already
+  // posted (green ✓) right next to the other page still needing a click.
+  const PAGE_LABELS = { main: null, sub: 'Sub', parent: 'Tahams' };
+
   const buildPostedCellHtml = (task) => {
-    if (task.isPosted) {
-      return `<span class="posted-badge" title="Already marked posted" style="display:inline-flex;align-items:center;gap:4px;color:#22c55e;font-weight:700;font-size:0.78rem;">
-        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;"><path d="M20 6L9 17l-5-5"/></svg>Posted
-      </span>`;
-    }
-    if (canMarkPosted) {
-      return `<input type="checkbox" class="post-select-checkbox" data-task-id="${task.id}" title="Select to mark as posted">`;
-    }
-    return `<span style="color:#64748b;font-size:0.78rem;">Pending</span>`;
+    const posted = task.posted || {};
+    const pageKeys = pageKeysForTask(task);
+    const isSub = pageKeys.length > 1;
+    const postedState = getTaskPostedState(task);
+
+    const partialBadge = (isSub && postedState === 'partial')
+      ? `<div class="posted-partial-badge" title="Only one of the two pages has been posted">◐ Partially Posted</div>`
+      : '';
+
+    const pageHtml = pageKeys.map(key => {
+      const label = PAGE_LABELS[key];
+      if (posted[key]) {
+        return `<span class="posted-badge" title="${label ? label + ' page — ' : ''}Already marked posted" style="display:inline-flex;align-items:center;gap:4px;color:#22c55e;font-weight:700;font-size:0.78rem;">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;"><path d="M20 6L9 17l-5-5"/></svg>${label ? label + ' Posted' : 'Posted'}
+        </span>`;
+      }
+      if (canMarkPosted) {
+        return `<label style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:#94a3b8; cursor:pointer;">
+          <input type="checkbox" class="post-select-checkbox" data-task-id="${task.id}" data-page-key="${key}" title="Select to mark ${label ? label + ' page' : 'as posted'}">${label ? label : ''}
+        </label>`;
+      }
+      return `<span style="color:#64748b;font-size:0.78rem;">${label ? label + ' Pending' : 'Pending'}</span>`;
+    }).join('');
+
+    return `${partialBadge}<div style="display:flex; flex-direction:${isSub ? 'column' : 'row'}; align-items:${isSub ? 'flex-start' : 'center'}; gap:4px;">${pageHtml}</div>`;
   };
 
   socialTasks.forEach(t => {
@@ -5028,7 +5118,7 @@ function setupMarkAsPostedControls(canMarkPosted, socialTasks) {
   const bulkBtn = document.getElementById('mark-selected-posted-btn');
   const selectAllCheckbox = document.getElementById('posted-select-all');
 
-  const anyUnposted = socialTasks.some(t => !t.isPosted);
+  const anyUnposted = socialTasks.some(t => !isTaskFullyPosted(t));
 
   if (selectAllWrap) selectAllWrap.style.display = (canMarkPosted && anyUnposted) ? 'flex' : 'none';
   if (readonlyLabel) readonlyLabel.style.display = (canMarkPosted && anyUnposted) ? 'none' : 'inline';
@@ -5044,10 +5134,17 @@ function setupMarkAsPostedControls(canMarkPosted, socialTasks) {
 
   if (bulkBtn) {
     bulkBtn.onclick = async () => {
+      // Each checkbox represents one page (main, or sub/parent for Tahams
+      // sub-brands) — collect {taskId, pageKey} pairs rather than plain task
+      // IDs so checking only the "Sub" box (say) marks just that page, not
+      // both, while checking both marks the task fully posted.
       const checked = Array.from(document.querySelectorAll('.post-select-checkbox:checked'));
-      const taskIds = checked.map(cb => cb.getAttribute('data-task-id'));
-      if (taskIds.length === 0) return;
-      await markTasksPostedBulk(taskIds);
+      const selections = checked.map(cb => ({
+        taskId: cb.getAttribute('data-task-id'),
+        pageKey: cb.getAttribute('data-page-key') || 'main'
+      }));
+      if (selections.length === 0) return;
+      await markTasksPostedBulk(selections);
     };
   }
 
@@ -5064,21 +5161,37 @@ function updateMarkSelectedPostedButtonState() {
   bulkBtn.innerHTML = `${svgHtml} ${label}`;
 }
 
-// Marks a batch of tasks (and their linked posts) as posted in one action.
-// Reuses the same per-task logic as the original single-item markTaskPosted,
-// but writes everything and logs one summarized activity entry.
-async function markTasksPostedBulk(taskIds) {
+// Marks a batch of (task, page) selections as posted in one action. Takes
+// {taskId, pageKey} pairs rather than plain task IDs so that, for a Tahams
+// sub-brand task, checking only the "Sub" box marks just posted.sub — the
+// other page stays untouched until its own box is checked (possibly in a
+// later pass) — while checking both boxes for a row marks it fully posted.
+async function markTasksPostedBulk(selections) {
   if (!canCurrentUserMarkPosted()) {
     showToast('You do not have permission to mark posts as posted', 'error');
     return;
   }
 
-  let successCount = 0;
-  for (const taskId of taskIds) {
-    const task = state.tasks.find(t => t.id === taskId);
-    if (!task || task.isPosted) continue;
+  // Group selected page keys by task so each task gets exactly one write.
+  const pageKeysByTaskId = new Map();
+  for (const { taskId, pageKey } of selections) {
+    if (!pageKeysByTaskId.has(taskId)) pageKeysByTaskId.set(taskId, new Set());
+    pageKeysByTaskId.get(taskId).add(pageKey);
+  }
 
-    task.isPosted = true;
+  let successCount = 0;
+  for (const [taskId, pageKeys] of pageKeysByTaskId) {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (!task) continue;
+
+    const posted = { ...(task.posted || {}) };
+    let changed = false;
+    pageKeys.forEach(key => {
+      if (!posted[key]) { posted[key] = true; changed = true; }
+    });
+    if (!changed) continue;
+
+    task.posted = posted;
     task.postedAt = new Date().toISOString();
 
     try {
@@ -6463,7 +6576,7 @@ function updatePublishingQueueBadge() {
   const badge = document.getElementById('publishing-queue-badge');
   if (!badge) return;
 
-  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
+  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !isTaskFullyPosted(t));
   const count = pendingPublishing.length;
   
   if (count > 0) {
@@ -6478,7 +6591,7 @@ function renderPublishingQueue() {
   const list = document.getElementById('publishing-queue-list');
   if (!list) return;
 
-  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !t.isPosted);
+  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !isTaskFullyPosted(t));
 
   if (pendingPublishing.length === 0) {
     list.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">No pending posts to publish.</div>`;
@@ -6523,7 +6636,13 @@ window.markTaskPosted = async function(taskId) {
   // posted mark back off with no indication anything went wrong. This is a
   // very likely explanation for previously-marked posts losing their
   // "Posted" status. Now the write is confirmed before claiming success.
-  const updatedTask = { ...task, isPosted: true, postedAt: new Date().toISOString() };
+  // A single "Mark as Posted" action (Publishing Queue / Activity Log quick
+  // button) marks the task fully posted — both pages for a Tahams sub-brand
+  // task, the one page for everyone else. Marking just one page of a
+  // sub-brand task is done via the Task Tracker table's per-page checkboxes.
+  const posted = { ...(task.posted || {}) };
+  pageKeysForTask(task).forEach(key => { posted[key] = true; });
+  const updatedTask = { ...task, posted, postedAt: new Date().toISOString() };
   try {
     await setDoc(doc(db, "tasks", taskId), updatedTask);
     Object.assign(task, updatedTask);
