@@ -5791,18 +5791,18 @@ function renderIdeaBoard() {
     return;
   }
 
-  const designerOptions = ((state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM)
-    .filter(p => p.isDesigner);
-
   tbody.innerHTML = ideas.map(idea => {
     const links = idea.links || [];
     const linksHtml = links.length
       ? links.map((l, idx) => `<a href="${escapeHtml(l)}" target="_blank" rel="noopener" style="display:block; color: var(--honey-gold); font-size: 0.8rem; text-decoration: none;">Link ${idx + 1} ↗</a>`).join('')
       : `<span style="color:#64748b; font-size: 0.8rem;">—</span>`;
 
-    const assignedOptionsHtml = ['<option value="">Unassigned</option>']
-      .concat(designerOptions.map(p => `<option value="${escapeHtml(p.name)}" ${idea.assignedDesigner === p.name ? 'selected' : ''}>${escapeHtml(p.name)}</option>`))
-      .join('');
+    // Idea Initiator badge — who created it and when, set automatically at
+    // creation time (see handleIdeaFormSubmit) and never editable, so it
+    // stays a reliable "signed" record instead of an assignable field.
+    const initiatorHtml = idea.initiatedBy
+      ? `<div class="idea-initiator-badge"><span class="idea-initiator-name">${escapeHtml(idea.initiatedBy)}</span>${idea.initiatedAt ? `<span class="idea-initiator-time">${escapeHtml(new Date(idea.initiatedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</span>` : ''}</div>`
+      : `<span style="color:#64748b; font-size: 0.8rem;">—</span>`;
 
     const actionsHtml = canEdit
       ? `<button class="btn-icon idea-edit-btn" data-id="${idea.id}" style="width: 32px; height: 32px" title="Edit Idea"><svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; width:16px; height:16px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`
@@ -5815,11 +5815,7 @@ function renderIdeaBoard() {
         <td>${escapeHtml(idea.date)}</td>
         <td>${linksHtml}</td>
         <td style="padding-top: 18px; padding-bottom: 18px;" title="${escapeHtml(idea.notes || '')}"><div style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(idea.notes || '')}</div></td>
-        <td>
-          <select class="idea-assign-select" data-id="${idea.id}" style="height: 34px; padding: 0 10px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.8rem; line-height: normal; outline: none; cursor: pointer; max-width: 180px;">
-            ${assignedOptionsHtml}
-          </select>
-        </td>
+        <td>${initiatorHtml}</td>
         <td style="text-align:center;">
           <input type="checkbox" class="idea-handled-checkbox" data-id="${idea.id}" ${idea.handled ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: var(--honey-gold); cursor: pointer;">
         </td>
@@ -5832,28 +5828,11 @@ function renderIdeaBoard() {
     btn.addEventListener('click', () => openIdeaModal(btn.dataset.id));
   });
 
-  // Claiming an idea (assigning a designer) and toggling "Handled" are open
-  // to any logged-in user, per the agreed permission model — not gated
-  // behind canCurrentUserPlanContent().
-  tbody.querySelectorAll('.idea-assign-select').forEach(sel => {
-    sel.addEventListener('change', (e) => assignIdeaDesigner(sel.dataset.id, e.target.value));
-  });
+  // Toggling "Handled" is open to any logged-in user, per the agreed
+  // permission model — not gated behind canCurrentUserPlanContent().
   tbody.querySelectorAll('.idea-handled-checkbox').forEach(cb => {
     cb.addEventListener('change', (e) => toggleIdeaHandled(cb.dataset.id, e.target.checked));
   });
-}
-
-async function assignIdeaDesigner(ideaId, designerName) {
-  const idea = (state.contentIdeas || []).find(i => i.id === ideaId);
-  if (!idea) return;
-  try {
-    await setDoc(doc(db, "content_ideas", ideaId), { ...idea, assignedDesigner: designerName || '' });
-    await logActivity(`${designerName ? `assigned "${designerName}" to` : 'unassigned'} idea ${ideaId}: "${idea.name}"`, db);
-  } catch (err) {
-    console.error("Failed to assign idea designer:", err);
-    showToast('Failed to update assignment — check your connection and try again', 'error');
-    renderIdeaBoard(); // revert the dropdown to last known-good state
-  }
 }
 
 async function toggleIdeaHandled(ideaId, handled) {
@@ -5904,15 +5883,6 @@ function openIdeaModal(ideaId = null) {
   form.reset();
   if (linksList) linksList.innerHTML = '';
 
-  // Populate the designer dropdown fresh each time the modal opens
-  const designerSelect = document.getElementById('idea-form-designer');
-  if (designerSelect) {
-    const designerOptions = ((state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM)
-      .filter(p => p.isDesigner);
-    designerSelect.innerHTML = '<option value="">Unassigned</option>' +
-      designerOptions.map(p => `<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}</option>`).join('');
-  }
-
   if (ideaId) {
     modalTitle.textContent = 'Edit Idea';
     if (deleteBtn) deleteBtn.style.display = 'block';
@@ -5922,7 +5892,6 @@ function openIdeaModal(ideaId = null) {
       document.getElementById('idea-form-name').value = idea.name || '';
       document.getElementById('idea-form-date').value = idea.date || '';
       document.getElementById('idea-form-notes').value = idea.notes || '';
-      if (designerSelect) designerSelect.value = idea.assignedDesigner || '';
       (idea.links || []).forEach(link => addIdeaLinkRow(link));
     }
   } else {
@@ -5952,7 +5921,6 @@ async function handleIdeaFormSubmit(e) {
   const name = document.getElementById('idea-form-name').value.trim();
   const date = document.getElementById('idea-form-date').value;
   const notes = document.getElementById('idea-form-notes').value.trim();
-  const assignedDesigner = document.getElementById('idea-form-designer').value;
   const links = collectIdeaLinks();
 
   if (!name || !date) {
@@ -5975,13 +5943,18 @@ async function handleIdeaFormSubmit(e) {
   }
   const existing = isEditing ? (state.contentIdeas || []).find(i => i.id === ideaId) : null;
 
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+
   const ideaData = {
     id: ideaId,
     name,
     date,
     notes,
     links,
-    assignedDesigner,
+    // Idea Initiator is set once, at creation, and never re-signed on edits —
+    // it records who originated the idea, not who last touched it.
+    initiatedBy: existing ? existing.initiatedBy : currentUser,
+    initiatedAt: existing ? existing.initiatedAt : new Date().toISOString(),
     handled: existing ? !!existing.handled : false
   };
 

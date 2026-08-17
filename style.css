@@ -2571,6 +2571,29 @@ body.minimal-theme .brand-badge-img {
   margin-bottom: 10px;
 }
 
+.idea-initiator-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  line-height: 1.3;
+}
+
+.idea-initiator-name {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.idea-initiator-time {
+  color: #64748b;
+  font-size: 0.68rem;
+}
+
 .priority-note-footer {
   display: flex;
   align-items: center;
