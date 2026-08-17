@@ -1920,23 +1920,7 @@ function initAuth() {
           console.error('Login blocked: account.canLogin is falsy for', account.name, account);
           return;
         }
-        if (!auth || !account.authEmail) {
-          showToast('Sign-in is unavailable right now — check your connection and try again.', 'error');
-          console.error('Login blocked: Firebase Auth not initialized or account has no authEmail', { hasAuth: !!auth, account });
-          return;
-        }
-
-        // Real authentication — the app used to compare passwordInput against
-        // a plaintext account.password field shipped in this public source
-        // file, which meant Firestore had no way to tell a real team member
-        // from anyone poking the SDK in devtools. Now the password is only
-        // ever checked by Firebase Auth's own servers, and Firestore's rules
-        // gate writes on request.auth != null (a real Auth session), not on
-        // anything client-supplied.
-        try {
-          await signInWithEmailAndPassword(auth, account.authEmail, passwordInput);
-        } catch (authErr) {
-          console.error('Firebase Auth sign-in failed:', authErr && authErr.code, authErr);
+        if (String(account.password || '') !== passwordInput) {
           showToast('Invalid password. Please try again.', 'error');
           shakeWrongPassword();
           return;
@@ -1979,25 +1963,6 @@ function showLoginOverlay() {
 
 async function runAppInit() {
   await initFirebase();
-
-  // Firebase Auth persists its own session independently of the app's
-  // 'hc_logged_in_user' localStorage flag. If that flag says someone is
-  // logged in but Firebase disagrees (session expired, storage partially
-  // cleared, etc.), every write would silently fail against the new
-  // request.auth-gated Firestore rules — so drop the stale flag and send
-  // them back to a real login instead of a broken "logged in" UI.
-  if (auth) {
-    onAuthStateChanged(auth, (firebaseUser) => {
-      const claimedUser = localStorage.getItem('hc_logged_in_user');
-      if (claimedUser && !firebaseUser) {
-        console.warn('Local session claimed a logged-in user but Firebase Auth has no session — signing out locally.');
-        localStorage.removeItem('hc_logged_in_user');
-        renderUserProfile();
-        refreshViews();
-      }
-    });
-  }
-
   initData();
   setupEventListeners();
   renderUserProfile();
