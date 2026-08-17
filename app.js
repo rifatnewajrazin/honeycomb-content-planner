@@ -5058,6 +5058,13 @@ function renderTasks() {
       cb.addEventListener('change', updateMarkSelectedPostedButtonState);
     });
 
+    // Hook the "Posted" badge's undo control, if present for this row.
+    row.querySelectorAll('.posted-undo-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        unpostTaskPage(btn.dataset.taskId, btn.dataset.pageKey);
+      });
+    });
+
     targetBody.appendChild(row);
   };
 
@@ -5083,6 +5090,14 @@ function renderTasks() {
     const pageHtml = pageKeys.map(key => {
       const label = PAGE_LABELS[key];
       if (posted[key]) {
+        // Marking posted was previously one-way — no way to fix a mistaken
+        // click. canMarkPosted users can now click the badge itself to undo
+        // that one page (confirmed first, since it's a meaningful change).
+        if (canMarkPosted) {
+          return `<button type="button" class="posted-badge posted-undo-btn" data-task-id="${task.id}" data-page-key="${key}" title="${label ? label + ' page — ' : ''}Click to undo this posted mark" style="display:inline-flex;align-items:center;gap:4px;color:#22c55e;font-weight:700;font-size:0.78rem;background:none;border:none;padding:0;cursor:pointer;">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;"><path d="M20 6L9 17l-5-5"/></svg>${label ? label + ' Posted' : 'Posted'}
+          </button>`;
+        }
         return `<span class="posted-badge" title="${label ? label + ' page — ' : ''}Already marked posted" style="display:inline-flex;align-items:center;gap:4px;color:#22c55e;font-weight:700;font-size:0.78rem;">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:3;"><path d="M20 6L9 17l-5-5"/></svg>${label ? label + ' Posted' : 'Posted'}
         </span>`;
@@ -5210,6 +5225,39 @@ async function markTasksPostedBulk(selections) {
   renderActivityLog();
   updateActivityBadge();
   refreshViews();
+}
+
+// Undoes a single posted page on a task (clicked from the green "Posted"
+// badge in the Task Tracker table). Posting used to be one-way with no
+// fix for a mistaken click — this is the escape hatch. Confirmed first
+// since it reverses a real, logged action.
+const PAGE_KEY_LABELS = { main: 'this task', sub: 'the sub-brand page', parent: 'the Tahams parent page' };
+
+async function unpostTaskPage(taskId, pageKey) {
+  if (!canCurrentUserMarkPosted()) {
+    showToast('You do not have permission to change posted status', 'error');
+    return;
+  }
+
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task || !task.posted || !task.posted[pageKey]) return;
+
+  const label = PAGE_KEY_LABELS[pageKey] || 'this page';
+  if (!confirm(`Undo "Posted" for ${label} on "${task.name}"? This can't be undone automatically — you'll need to re-mark it if this was a mistake.`)) return;
+
+  const posted = { ...task.posted, [pageKey]: false };
+  const updatedTask = { ...task, posted };
+
+  try {
+    await setDoc(doc(db, "tasks", taskId), updatedTask);
+    Object.assign(task, updatedTask);
+    logActivity(`Undid posted mark (${pageKey}) on task "${task.name}"`, db);
+    showToast(`Undid posted mark for ${label}`, 'info');
+    refreshViews();
+  } catch (err) {
+    console.error(`Failed to undo posted mark for task ${taskId}:`, err);
+    showToast('Failed to undo — check your connection and try again', 'error');
+  }
 }
 
 function openTaskModal(task = null) {
