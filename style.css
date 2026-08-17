@@ -1915,6 +1915,7 @@ textarea.form-control {
   font-size: 0.7rem;
   letter-spacing: 0.5px;
   border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .tasks-table td {
