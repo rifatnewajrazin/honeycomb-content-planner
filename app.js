@@ -5121,11 +5121,11 @@ function renderTasks() {
         // that one page (confirmed first, since it's a meaningful change).
         if (canMarkPosted) {
           return `<button type="button" class="posted-badge posted-undo-btn" data-task-id="${task.id}" data-page-key="${key}" title="${label ? label + ' page — ' : ''}Click to undo this posted mark">
-            <svg viewBox="0 0 24 24" class="posted-badge-icon"><path d="M20 6L9 17l-5-5"/></svg><span class="posted-badge-label">${label}</span>
+            <svg viewBox="0 0 24 24" class="posted-badge-icon"><path d="M20 6L9 17l-5-5"/></svg><span class="posted-badge-label">${label} Posted</span>
           </button>`;
         }
         return `<span class="posted-badge" title="${label ? label + ' page — ' : ''}Already marked posted">
-          <svg viewBox="0 0 24 24" class="posted-badge-icon"><path d="M20 6L9 17l-5-5"/></svg><span class="posted-badge-label">${label}</span>
+          <svg viewBox="0 0 24 24" class="posted-badge-icon"><path d="M20 6L9 17l-5-5"/></svg><span class="posted-badge-label">${label} Posted</span>
         </span>`;
       }
       if (canMarkPosted) {
