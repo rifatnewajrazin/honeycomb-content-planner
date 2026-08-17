@@ -5,6 +5,15 @@ let setDoc = async () => {};
 let deleteDoc = async () => {};
 let onSnapshot = () => {};
 
+// Real Firebase Authentication (replaces the old plaintext-password compare
+// against DEFAULT_TEAM). Every canLogin team member has a matching Firebase
+// Auth account — see AUTH_EMAIL_BY_NAME below — so Firestore writes can
+// finally require request.auth != null instead of being open to anyone.
+let auth = null;
+let signInWithEmailAndPassword = async () => { throw new Error('Auth not initialized'); };
+let signOutFn = async () => {};
+let onAuthStateChanged = () => {};
+
 const firebaseConfig = {
   apiKey: "AIzaSyAFhMBHmaUzJm14MPgY6oQscuFblPJZ-rE",
   authDomain: "honeycomb-content-hub.firebaseapp.com",
@@ -20,6 +29,7 @@ async function initFirebase() {
   try {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
     const fbFS = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const fbAuth = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
     const app = initializeApp(firebaseConfig);
     db = fbFS.getFirestore(app);
     collection = fbFS.collection;
@@ -27,6 +37,11 @@ async function initFirebase() {
     setDoc = fbFS.setDoc;
     deleteDoc = fbFS.deleteDoc;
     onSnapshot = fbFS.onSnapshot;
+
+    auth = fbAuth.getAuth(app);
+    signInWithEmailAndPassword = fbAuth.signInWithEmailAndPassword;
+    signOutFn = fbAuth.signOut;
+    onAuthStateChanged = fbAuth.onAuthStateChanged;
   } catch (err) {
     console.warn("Firebase CDN unreachable or blocked, running in offline fallback mode:", err);
   }
@@ -134,18 +149,18 @@ const DEFAULT_BRANDS = [
 
 // Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, canAccessPriorityBoard: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', authEmail: 'rifat@honeycomb-hub.app', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, canAccessPriorityBoard: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
   { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: false, aliases: ['Mahim'] },
-  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
-  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Niaz'] },
+  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', authEmail: 'rabby@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
+  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', authEmail: 'niaz@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Niaz'] },
   { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, password: 'smm123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
-  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canMarkPosted: true, aliases: ['Zahid', 'Zahidul Islam'] },
+  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', authEmail: 'zahid@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canMarkPosted: true, aliases: ['Zahid', 'Zahidul Islam'] },
   { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Ashiq Bhaia', 'Ashiq'] },
   { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Tohfa Apu', 'Tohfa'] },
   { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Saddam'] },
-  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', access: 'admin', isDesigner: false, isAssigner: true, canLogin: true, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
+  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', authEmail: 'naim@honeycomb-hub.app', access: 'admin', isDesigner: false, isAssigner: true, canLogin: true, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
   { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
-  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, canManagePriorityNotes: true, aliases: ['Orthee'] },
+  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', authEmail: 'orthee@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, canManagePriorityNotes: true, aliases: ['Orthee'] },
   { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Rafi'] },
   { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', password: 'anik123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Anik', 'Milon'] },
   { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', photo: 'assets/avatars/Labiba-Laisa-Esha.png', password: 'esha123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Esha'] },
@@ -1878,7 +1893,7 @@ function initAuth() {
   const loginForm = document.getElementById('login-form');
   
   if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
         const usernameEl = document.getElementById('login-user');
@@ -1905,7 +1920,23 @@ function initAuth() {
           console.error('Login blocked: account.canLogin is falsy for', account.name, account);
           return;
         }
-        if (String(account.password || '') !== passwordInput) {
+        if (!auth || !account.authEmail) {
+          showToast('Sign-in is unavailable right now — check your connection and try again.', 'error');
+          console.error('Login blocked: Firebase Auth not initialized or account has no authEmail', { hasAuth: !!auth, account });
+          return;
+        }
+
+        // Real authentication — the app used to compare passwordInput against
+        // a plaintext account.password field shipped in this public source
+        // file, which meant Firestore had no way to tell a real team member
+        // from anyone poking the SDK in devtools. Now the password is only
+        // ever checked by Firebase Auth's own servers, and Firestore's rules
+        // gate writes on request.auth != null (a real Auth session), not on
+        // anything client-supplied.
+        try {
+          await signInWithEmailAndPassword(auth, account.authEmail, passwordInput);
+        } catch (authErr) {
+          console.error('Firebase Auth sign-in failed:', authErr && authErr.code, authErr);
           showToast('Invalid password. Please try again.', 'error');
           shakeWrongPassword();
           return;
@@ -1948,6 +1979,25 @@ function showLoginOverlay() {
 
 async function runAppInit() {
   await initFirebase();
+
+  // Firebase Auth persists its own session independently of the app's
+  // 'hc_logged_in_user' localStorage flag. If that flag says someone is
+  // logged in but Firebase disagrees (session expired, storage partially
+  // cleared, etc.), every write would silently fail against the new
+  // request.auth-gated Firestore rules — so drop the stale flag and send
+  // them back to a real login instead of a broken "logged in" UI.
+  if (auth) {
+    onAuthStateChanged(auth, (firebaseUser) => {
+      const claimedUser = localStorage.getItem('hc_logged_in_user');
+      if (claimedUser && !firebaseUser) {
+        console.warn('Local session claimed a logged-in user but Firebase Auth has no session — signing out locally.');
+        localStorage.removeItem('hc_logged_in_user');
+        renderUserProfile();
+        refreshViews();
+      }
+    });
+  }
+
   initData();
   setupEventListeners();
   renderUserProfile();
@@ -2092,8 +2142,9 @@ function renderUserProfile() {
       </button>
     `;
     
-    document.getElementById('btn-logout').addEventListener('click', () => {
+    document.getElementById('btn-logout').addEventListener('click', async () => {
       localStorage.removeItem('hc_logged_in_user');
+      try { if (auth) await signOutFn(auth); } catch (err) { console.warn('Firebase signOut failed:', err); }
       showToast('Logged out successfully', 'info');
       renderUserProfile();
       refreshViews();
@@ -2293,6 +2344,7 @@ function initData() {
             if (data.canAccessPriorityBoard === undefined && defaultMatch.canAccessPriorityBoard) patch.canAccessPriorityBoard = true;
             if (data.canManagePriorityNotes === undefined && defaultMatch.canManagePriorityNotes) patch.canManagePriorityNotes = true;
             if (defaultMatch.id === 'person-6' && !data.canLogin && defaultMatch.canLogin) patch.canLogin = true;
+            if (data.authEmail === undefined && defaultMatch.authEmail) patch.authEmail = defaultMatch.authEmail;
             if (Object.keys(patch).length > 0) {
               Object.assign(data, patch);
               try { setDoc(doc(db, "team", docSnap.id), data); } catch (e) {}
@@ -5544,6 +5596,7 @@ function renderTeam() {
     let roleTagsHtml = '';
     if (p.isDesigner) roleTagsHtml += `<span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.15); margin-right: 4px;">Creative</span>`;
     if (p.isAssigner) roleTagsHtml += `<span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.15); margin-right: 4px;">Assigner</span>`;
+    if (p.canPlanContent) roleTagsHtml += `<span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.15); margin-right: 4px;">Ideator</span>`;
     if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
 
     // Access tags
