@@ -3169,8 +3169,17 @@ function setupEventListeners() {
       e.preventDefault();
       const view = item.getAttribute('data-view');
       switchView(view);
+      closeMobileSidebar();
     });
   });
+
+  // Mobile sidebar toggle (hamburger + backdrop + close button)
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+  const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+  if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMobileSidebar);
+  if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeMobileSidebar);
+  if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
 
   // Top bar brand filters
   const globalFilter = document.getElementById('global-brand-filter');
@@ -3491,6 +3500,16 @@ function setupEventListeners() {
       if (!showing) renderPriorityBoardLog();
     });
   }
+}
+
+function openMobileSidebar() {
+  document.getElementById('sidebar')?.classList.add('mobile-open');
+  document.getElementById('sidebar-backdrop')?.classList.add('active');
+}
+
+function closeMobileSidebar() {
+  document.getElementById('sidebar')?.classList.remove('mobile-open');
+  document.getElementById('sidebar-backdrop')?.classList.remove('active');
 }
 
 function switchView(viewName) {

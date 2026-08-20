@@ -26,9 +26,18 @@
   </div>
 
   <div class="app-container">
-    
+
+    <!-- Mobile-only dimmed backdrop behind the slide-out sidebar -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
+      <!-- Mobile-only top bar: "X Close" row, shown above the nav list -->
+      <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <span>Close</span>
+      </button>
+
       <div class="logo-wrap">
         <div class="logo-section">
           <img src="assets/logos/honeycomb.png" class="sidebar-logo-img" alt="HoneyComb logo">
@@ -111,11 +120,14 @@
       
       <!-- Sticky Top Header -->
       <header class="header">
+        <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">
+          <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
         <div class="header-title">
           <h2>Content Hub</h2>
           <p>HoneyComb Inc. Active Pages & Subsections</p>
         </div>
-        
+
         <div class="header-actions">
           <!-- Page Filter -->
           <select id="global-brand-filter" class="filter-select">
