@@ -1184,6 +1184,12 @@ button.posted-badge {
   flex-shrink: 0; /* Prevents calendar events from shrinking into thin lines */
 }
 
+/* Overflow "+N" chip — only relevant once mobile collapses events into dots
+   capped at 4; the desktop pill list already scrolls to show everything. */
+.calendar-day-overflow {
+  display: none;
+}
+
 /* Analytics View Styling */
 .analytics-summary {
   display: grid;
@@ -3033,17 +3039,89 @@ body.minimal-theme .brand-badge-img {
     justify-content: center;
   }
 
-  /* Calendar */
+  /* Calendar — the desktop pill-per-event layout can't fit readable text
+     in a ~48px-wide mobile cell (it truncated to unreadable "[..." shards),
+     so cells collapse to a day number + up to 4 small colour-coded dots,
+     with a "+N" chip for anything beyond that. Tapping a dot still opens
+     its post/task like before; tapping empty cell space still quick-adds. */
   .calendar-view-header {
     flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .calendar-nav-wrap {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .calendar-month-year {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
+  }
+
+  .calendar-grid {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .calendar-weekdays {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
   }
 
   .calendar-weekdays div {
-    font-size: 0.7rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.3px;
+  }
+
+  .calendar-days {
+    grid-auto-rows: minmax(56px, auto);
+    gap: 4px;
+  }
+
+  .calendar-day-cell {
+    padding: 5px 3px;
+    border-radius: 8px;
+    gap: 4px;
+  }
+
+  .calendar-day-num {
+    font-size: 0.72rem;
+  }
+
+  .calendar-events {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px;
+    margin-top: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .calendar-event-item {
+    width: 7px;
+    height: 7px;
+    min-width: 0;
+    padding: 0;
+    border-radius: 50%;
+    border-left: none;
+    background: var(--brand-color);
+    font-size: 0;
+    line-height: 0;
+    color: transparent;
+  }
+
+  /* Only the first 4 dots show — the rest are represented by the +N chip */
+  .calendar-event-item:nth-child(n+5) {
+    display: none;
+  }
+
+  .calendar-day-overflow {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #94a3b8;
+    line-height: 1;
   }
 
   /* Modals go near-fullscreen so form fields have room to breathe */

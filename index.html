@@ -873,8 +873,9 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label for="person-form-password">Login Password</label>
-                <input type="text" id="person-form-password" class="form-control" placeholder="e.g., rifat123 (For sign in)" required>
+                <label for="person-form-auth-email">Login Email (Supabase Auth)</label>
+                <input type="email" id="person-form-auth-email" class="form-control" placeholder="e.g., rifat@honeycomb-hub.app">
+                <small style="display:block; margin-top:4px; opacity:0.7;">Optional. To enable login, create this exact email as a user in the Supabase dashboard and set their password there — passwords are never stored in this app.</small>
               </div>
               <div class="form-group">
                 <label for="person-form-access">Accessibility (Permissions)</label>

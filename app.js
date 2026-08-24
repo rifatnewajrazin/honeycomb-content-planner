@@ -1,50 +1,81 @@
+// Supabase backs both auth (real, server-side hashed password verification)
+// and data storage (replacing Firestore, which had no access control tied
+// to this app's login — see supabase_migration.sql for the schema/RLS).
+// The publishable key below is meant to be public (like a site key); it
+// only grants what Row Level Security policies on the Supabase project
+// allow, and carries no ability to read or guess anyone's password.
+const SUPABASE_URL = "https://vmompbhqmselujfqpmvj.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_fwM2XHB2dNJHn6gwnD7-IA_GmBIxCBN";
+let supabase = null;
+
+// `db` mirrors the old Firestore handle: truthy once ready, and passed
+// opaquely through collection()/doc() so every call site elsewhere in this
+// file is unchanged. collection()/doc() just remember a {table, id}; the
+// row's entire JS object lives in one jsonb `data` column per table, so no
+// per-collection schema is needed to match Firestore's schemaless documents.
 let db = null;
-let collection = () => ({});
-let doc = () => ({});
-let setDoc = async () => {};
-let deleteDoc = async () => {};
-let onSnapshot = () => {};
 
-// Real Firebase Authentication (replaces the old plaintext-password compare
-// against DEFAULT_TEAM). Every canLogin team member has a matching Firebase
-// Auth account — see AUTH_EMAIL_BY_NAME below — so Firestore writes can
-// finally require request.auth != null instead of being open to anyone.
-let auth = null;
-let signInWithEmailAndPassword = async () => { throw new Error('Auth not initialized'); };
-let signOutFn = async () => {};
-let onAuthStateChanged = () => {};
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAFhMBHmaUzJm14MPgY6oQscuFblPJZ-rE",
-  authDomain: "honeycomb-content-hub.firebaseapp.com",
-  projectId: "honeycomb-content-hub",
-  storageBucket: "honeycomb-content-hub.firebasestorage.app",
-  messagingSenderId: "900897411326",
-  appId: "1:900897411326:web:80b7a46d0f0848f1955af",
-  measurementId: "G-SLZMBC7307"
-};
-
-// Resilient Firebase initialization with offline fallback
-async function initFirebase() {
+async function initSupabase() {
   try {
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-    const fbFS = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
-    const fbAuth = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
-    const app = initializeApp(firebaseConfig);
-    db = fbFS.getFirestore(app);
-    collection = fbFS.collection;
-    doc = fbFS.doc;
-    setDoc = fbFS.setDoc;
-    deleteDoc = fbFS.deleteDoc;
-    onSnapshot = fbFS.onSnapshot;
-
-    auth = fbAuth.getAuth(app);
-    signInWithEmailAndPassword = fbAuth.signInWithEmailAndPassword;
-    signOutFn = fbAuth.signOut;
-    onAuthStateChanged = fbAuth.onAuthStateChanged;
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    db = supabase;
   } catch (err) {
-    console.warn("Firebase CDN unreachable or blocked, running in offline fallback mode:", err);
+    console.warn("Supabase CDN unreachable or blocked, running in offline fallback mode:", err);
   }
+}
+
+function collection(dbHandle, table) {
+  return { table };
+}
+
+function doc(dbHandle, table, id) {
+  return { table, id };
+}
+
+async function setDoc(ref, data) {
+  const payload = { id: ref.id, data, updated_at: new Date().toISOString() };
+  const { error } = await supabase.from(ref.table).upsert(payload, { onConflict: 'id' });
+  if (error) throw error;
+}
+
+async function deleteDoc(ref) {
+  const { error } = await supabase.from(ref.table).delete().eq('id', ref.id);
+  if (error) throw error;
+}
+
+// Mimics Firestore's onSnapshot(collectionRef, onNext, onError): fires
+// immediately with the current rows, then again on every insert/update/
+// delete via Supabase Realtime. Requires the table to be added to the
+// `supabase_realtime` publication (done by supabase_migration.sql).
+function onSnapshot(ref, onNext, onError) {
+  const cache = new Map();
+
+  function emit() {
+    const rows = Array.from(cache.values());
+    onNext({
+      empty: rows.length === 0,
+      forEach: (fn) => rows.forEach((row) => fn({ id: row.id, data: () => row.data }))
+    });
+  }
+
+  supabase.from(ref.table).select('id,data').then(({ data, error }) => {
+    if (error) { if (onError) onError(error); return; }
+    data.forEach((row) => cache.set(row.id, row));
+    emit();
+  });
+
+  supabase
+    .channel(`realtime:${ref.table}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: ref.table }, (payload) => {
+      if (payload.eventType === 'DELETE') {
+        cache.delete(payload.old.id);
+      } else {
+        cache.set(payload.new.id, payload.new);
+      }
+      emit();
+    })
+    .subscribe();
 }
 
 // Default brands config
@@ -149,23 +180,23 @@ const DEFAULT_BRANDS = [
 
 // Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', password: 'rifat123', authEmail: 'rifat@honeycomb-hub.app', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, canAccessPriorityBoard: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
-  { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', password: 'mahim123', access: 'limited', isDesigner: true, isAssigner: false, canLogin: false, aliases: ['Mahim'] },
-  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', password: 'rabby123', authEmail: 'rabby@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
-  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', password: 'niaz123', authEmail: 'niaz@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Niaz'] },
-  { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, password: 'smm123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
-  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', password: 'zahid123', authEmail: 'zahid@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canMarkPosted: true, aliases: ['Zahid', 'Zahidul Islam'] },
-  { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', password: 'ashiq123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Ashiq Bhaia', 'Ashiq'] },
-  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', password: 'tohfa123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Tohfa Apu', 'Tohfa'] },
-  { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', password: 'saddam123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Saddam'] },
-  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', password: 'naim123', authEmail: 'naim@honeycomb-hub.app', access: 'admin', isDesigner: false, isAssigner: true, canLogin: true, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
-  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', password: 'oisarjo123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
-  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', password: 'orthee123', authEmail: 'orthee@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, canManagePriorityNotes: true, aliases: ['Orthee'] },
-  { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', password: 'rafi123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Rafi'] },
-  { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', password: 'anik123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Anik', 'Milon'] },
-  { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', photo: 'assets/avatars/Labiba-Laisa-Esha.png', password: 'esha123', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Esha'] },
-  { id: 'person-16', name: 'Rafiunoor Rahman Rajjo', role: 'Event Decor & Management', initial: 'RR', photo: 'assets/avatars/Rafiunoor-Rahman-Rajjo.png', password: 'rajjo123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Rajjo', 'Rafiunoor Rahman Rajjo', 'Rafiunoor'] },
-  { id: 'person-17', name: 'Nazmul Hoseen Emon', role: 'Manager, Display Center', initial: 'NE', photo: 'assets/avatars/Nazmul-Hoseen-Emon.png', password: 'emon123', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Emon', 'Emon Bhai', 'Nazmul Hoseen Emon', 'Nazmul'] }
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', authEmail: 'rifat@honeycomb-hub.app', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, canAccessPriorityBoard: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-2', name: 'Md. Mahim', role: 'Cinematographer and Video Editor', initial: 'MM', photo: 'assets/avatars/Md.-Mahim.png', access: 'limited', isDesigner: true, isAssigner: false, canLogin: false, aliases: ['Mahim'] },
+  { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', authEmail: 'rabby@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
+  { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', authEmail: 'niaz@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Niaz'] },
+  { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
+  { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', authEmail: 'zahid@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canMarkPosted: true, aliases: ['Zahid', 'Zahidul Islam'] },
+  { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Ashiq Bhaia', 'Ashiq'] },
+  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Tohfa Apu', 'Tohfa'] },
+  { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Saddam'] },
+  { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', authEmail: 'naim@honeycomb-hub.app', access: 'admin', isDesigner: false, isAssigner: true, canLogin: true, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
+  { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
+  { id: 'person-6', name: 'Sharmin Mahmud Khan Orthee', role: 'Sales & Customer Support Executive', initial: 'SO', photo: 'assets/avatars/Sharmin-Mahmud-Khan-Orthee.png', authEmail: 'orthee@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, canManagePriorityNotes: true, aliases: ['Orthee'] },
+  { id: 'person-7', name: 'Md. Abdur Rafi Islam', role: 'Client Relationship Executive', initial: 'RI', photo: 'assets/avatars/Abdur-Rafi-Islam.png', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Rafi'] },
+  { id: 'person-9', name: 'Md. Milon Hossain Anik', role: 'Inventory & Quality Assurance Officer', initial: 'MA', photo: 'assets/avatars/Milon-Hossain-Anik.png', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Anik', 'Milon'] },
+  { id: 'person-15', name: 'Labiba Laisa Esha', role: 'Executive, Growth and Strategic Planning', initial: 'LE', photo: 'assets/avatars/Labiba-Laisa-Esha.png', access: 'limited', isDesigner: false, isAssigner: false, canLogin: false, aliases: ['Esha'] },
+  { id: 'person-16', name: 'Rafiunoor Rahman Rajjo', role: 'Event Decor & Management', initial: 'RR', photo: 'assets/avatars/Rafiunoor-Rahman-Rajjo.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Rajjo', 'Rafiunoor Rahman Rajjo', 'Rafiunoor'] },
+  { id: 'person-17', name: 'Nazmul Hoseen Emon', role: 'Manager, Display Center', initial: 'NE', photo: 'assets/avatars/Nazmul-Hoseen-Emon.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Emon', 'Emon Bhai', 'Nazmul Hoseen Emon', 'Nazmul'] }
 ];
 
 function findTeamMember(name) {
@@ -1987,7 +2018,22 @@ function initAuth() {
           console.error('Login blocked: account.canLogin is falsy for', account.name, account);
           return;
         }
-        if (String(account.password || '') !== passwordInput) {
+        if (!account.authEmail) {
+          showToast('This account has no Supabase login configured. Contact an admin.', 'error');
+          console.error('Login blocked: account.authEmail missing for', account.name, account);
+          return;
+        }
+        if (!supabase) {
+          showToast('Login service unavailable. Check your connection and try again.', 'error');
+          console.error('Login blocked: Supabase client failed to initialize.');
+          return;
+        }
+
+        const { error } = await supabase.auth.signInWithPassword({
+          email: account.authEmail,
+          password: passwordInput
+        });
+        if (error) {
           showToast('Invalid password. Please try again.', 'error');
           shakeWrongPassword();
           return;
@@ -2029,7 +2075,7 @@ function showLoginOverlay() {
 }
 
 async function runAppInit() {
-  await initFirebase();
+  await initSupabase();
   initData();
   setupEventListeners();
   renderUserProfile();
@@ -2184,7 +2230,7 @@ function renderUserProfile() {
     
     document.getElementById('btn-logout').addEventListener('click', async () => {
       localStorage.removeItem('hc_logged_in_user');
-      try { if (auth) await signOutFn(auth); } catch (err) { console.warn('Firebase signOut failed:', err); }
+      try { if (supabase) await supabase.auth.signOut(); } catch (err) { console.warn('Supabase signOut failed:', err); }
       showToast('Logged out successfully', 'info');
       renderUserProfile();
       refreshViews();
@@ -4339,6 +4385,17 @@ function renderCalendar() {
       eventsArea.appendChild(eventItem);
     });
 
+    // On the compact mobile grid, event pills collapse into small dots (see
+    // CSS) capped at 4 per day — this chip surfaces the remainder so density
+    // is still visible without needing full pill text to fit in a ~48px cell.
+    const totalDayEvents = dayPosts.length + dayTasks.length;
+    if (totalDayEvents > 4) {
+      const overflowChip = document.createElement('span');
+      overflowChip.className = 'calendar-day-overflow';
+      overflowChip.textContent = `+${totalDayEvents - 4}`;
+      eventsArea.appendChild(overflowChip);
+    }
+
     // Quick add task click event on cell
     dayCell.addEventListener('click', () => {
       openTaskModal(null, dateStr);
@@ -5855,7 +5912,7 @@ function openPersonModal(personId = null) {
       document.getElementById('person-form-name').value = person.name;
       document.getElementById('person-form-name').disabled = true; // Don't allow changing name to avoid breaking reference links
       document.getElementById('person-form-title').value = person.role;
-      document.getElementById('person-form-password').value = person.password || '';
+      document.getElementById('person-form-auth-email').value = person.authEmail || '';
       document.getElementById('person-form-access').value = person.access || 'none';
       document.getElementById('person-form-photo').value = person.photo || '';
       
@@ -5883,28 +5940,29 @@ async function handlePersonFormSubmit(e) {
   
   const name = document.getElementById('person-form-name').value.trim();
   const role = document.getElementById('person-form-title').value.trim();
-  const password = document.getElementById('person-form-password').value.trim();
+  const authEmail = document.getElementById('person-form-auth-email').value.trim();
   const access = document.getElementById('person-form-access').value;
   const photo = document.getElementById('person-form-photo').value.trim();
-  
+
   const isDesigner = document.getElementById('person-role-designer').checked;
   const isAssigner = document.getElementById('person-role-assigner').checked;
   const canPlanContent = document.getElementById('person-role-plan-content').checked;
 
-  if (!name || !role || !password) {
+  if (!name || !role) {
     showToast('Please fill out all required fields', 'error');
     return;
   }
 
   const initial = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-  
+
   const personId = state.editingPersonId || `person-${Date.now()}`;
   const personData = {
     id: personId,
     name,
     role,
     initial,
-    password,
+    authEmail: authEmail || null,
+    canLogin: !!authEmail,
     access,
     photo: photo || null,
     isDesigner,
