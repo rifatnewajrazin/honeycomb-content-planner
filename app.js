@@ -4911,6 +4911,19 @@ function formatCardDate(dateStr) {
   return dateStr;
 }
 
+// Turns a Supabase/Postgrest error (or anything else thrown) into a short,
+// human-readable suffix so failure toasts show the real cause (e.g. "not
+// logged in" / RLS rejection) instead of a generic, misleading network
+// message that's impossible to debug from the UI alone.
+function errSuffix(err) {
+  const msg = err && (err.message || err.error_description || err.msg);
+  if (!msg) return '';
+  if (err.code === '42501' || /row-level security/i.test(msg)) {
+    return ' (not signed in, or your session expired — please sign in again)';
+  }
+  return ` (${msg})`;
+}
+
 // Success Notification Toast Helper
 function showToast(msg, type = 'success') {
   const container = document.getElementById('toast-wrapper');
@@ -5358,7 +5371,7 @@ async function unpostTaskPage(taskId, pageKey) {
     refreshViews();
   } catch (err) {
     console.error(`Failed to undo posted mark for task ${taskId}:`, err);
-    showToast('Failed to undo — check your connection and try again', 'error');
+    showToast('Failed to undo — check your connection and try again' + errSuffix(err), 'error');
   }
 }
 
@@ -5529,7 +5542,7 @@ async function handleTaskFormSubmit(e) {
         closeTaskModal();
       } catch (err) {
         console.error("Firestore task update failed:", err);
-        showToast('Failed to save changes — check your connection and try again', 'error');
+        showToast('Failed to save changes — check your connection and try again' + errSuffix(err), 'error');
         return; // keep the modal open so nothing typed is lost
       }
     }
@@ -5569,7 +5582,7 @@ async function handleTaskFormSubmit(e) {
       closeTaskModal();
     } catch (err) {
       console.error("Firestore new task save failed:", err);
-      showToast('Failed to create task — check your connection and try again', 'error');
+      showToast('Failed to create task — check your connection and try again' + errSuffix(err), 'error');
       return; // keep the modal open so nothing typed is lost
     }
   }
@@ -5596,7 +5609,7 @@ async function deleteTask() {
       closeTaskModal();
     } catch (err) {
       console.error("Firestore delete failed:", err);
-      showToast('Failed to delete task — check your connection and try again', 'error');
+      showToast('Failed to delete task — check your connection and try again' + errSuffix(err), 'error');
     }
   }
 }
@@ -6107,7 +6120,7 @@ async function toggleIdeaHandled(ideaId, handled) {
     await logActivity(`marked idea ${ideaId}: "${idea.name}" as ${handled ? 'handled' : 'not handled'}`, db);
   } catch (err) {
     console.error("Failed to update idea handled state:", err);
-    showToast('Failed to save — check your connection and try again', 'error');
+    showToast('Failed to save — check your connection and try again' + errSuffix(err), 'error');
     renderIdeaBoard(); // revert the checkbox to last known-good state
   }
 }
@@ -6229,7 +6242,7 @@ async function handleIdeaFormSubmit(e) {
     closeIdeaModal();
   } catch (err) {
     console.error("Firestore idea save failed:", err);
-    showToast('Failed to save idea — check your connection and try again', 'error');
+    showToast('Failed to save idea — check your connection and try again' + errSuffix(err), 'error');
   }
 }
 
@@ -6254,7 +6267,7 @@ async function deleteIdea() {
     closeIdeaModal();
   } catch (err) {
     console.error("Firestore idea delete failed:", err);
-    showToast('Failed to delete idea — check your connection and try again', 'error');
+    showToast('Failed to delete idea — check your connection and try again' + errSuffix(err), 'error');
   }
 }
 
@@ -6473,7 +6486,7 @@ async function togglePriorityNoteHandled(noteId) {
     await logPriorityBoardActivity(`marked "${note.jobType}" note as handled`, db);
   } catch (err) {
     console.error("Failed to mark priority note handled:", err);
-    showToast('Failed to save — check your connection and try again', 'error');
+    showToast('Failed to save — check your connection and try again' + errSuffix(err), 'error');
     delete (state.recentlyHandledNoteIds || {})[noteId];
     renderPriorityBoard();
   }
@@ -6489,7 +6502,7 @@ async function undoPriorityNoteHandled(noteId) {
     await logPriorityBoardActivity(`undid "handled" on "${note.jobType}" note`, db);
   } catch (err) {
     console.error("Failed to undo priority note handled state:", err);
-    showToast('Failed to undo — check your connection and try again', 'error');
+    showToast('Failed to undo — check your connection and try again' + errSuffix(err), 'error');
   }
   renderPriorityBoard();
 }
@@ -6601,7 +6614,7 @@ async function handlePriorityNoteFormSubmit(e) {
     closePriorityNoteModal();
   } catch (err) {
     console.error("Firestore priority note save failed:", err);
-    showToast('Failed to save note — check your connection and try again', 'error');
+    showToast('Failed to save note — check your connection and try again' + errSuffix(err), 'error');
   }
 }
 
@@ -6633,7 +6646,7 @@ async function deletePriorityNote() {
     closePriorityNoteModal();
   } catch (err) {
     console.error("Firestore priority note delete failed:", err);
-    showToast('Failed to delete note — check your connection and try again', 'error');
+    showToast('Failed to delete note — check your connection and try again' + errSuffix(err), 'error');
   }
 }
 
@@ -6718,7 +6731,7 @@ async function submitPriorityNoteComment() {
     await logPriorityBoardActivity(`commented on "${note.jobType}" note: "${text}"`, db);
   } catch (err) {
     console.error("Failed to add comment to priority note:", err);
-    showToast('Failed to post comment — check your connection and try again', 'error');
+    showToast('Failed to post comment — check your connection and try again' + errSuffix(err), 'error');
   }
 }
 
@@ -6804,6 +6817,6 @@ window.markTaskPosted = async function(taskId) {
     refreshViews();
   } catch (err) {
     console.error("Firestore task update failed:", err);
-    showToast(`Failed to mark "${task.name}" as posted — check your connection and try again`, 'error');
+    showToast(`Failed to mark "${task.name}" as posted — check your connection and try again${errSuffix(err)}`, 'error');
   }
 };
