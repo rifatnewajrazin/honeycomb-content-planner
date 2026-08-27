@@ -2745,6 +2745,14 @@ function initData() {
     onSnapshot(collection(db, "employee_records"), (querySnapshot) => {
       const loaded = [];
       querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
+      // Guard against a stale realtime frame reverting onboarding checkboxes
+      // that were just toggled locally but whose write hasn't round-tripped.
+      loaded.forEach(r => {
+        if (_onbDirtyIds.has(r.id)) {
+          const local = (state.employeeRecords || []).find(x => x.id === r.id);
+          if (local && local.deliverables) r.deliverables = local.deliverables;
+        }
+      });
       state.employeeRecords = loaded;
       if (state.currentView === 'employee-database') renderEmployeeDatabase();
       if (state.currentView === 'onboarding') renderOnboarding();
@@ -4723,47 +4731,86 @@ function renderOnboardingDetail(rec) {
   });
 }
 
-async function setOnboardingStep(empId, dKey, stepKey, checked) {
-  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+// --- Onboarding write queue -----------------------------------------------
+// Toggling several checkboxes in a row used to race: each handler did a
+// read-modify-write of the WHOLE employee record from `state`, so a second
+// quick toggle read a stale copy and clobbered the first write (2/2 -> 1/2).
+// Now every edit mutates the in-memory record immediately (optimistic) and
+// a single debounced writer flushes the current full record, so rapid
+// toggles collapse into one correct write.
+const _onbDirtyIds = new Set();
+const _onbWriteTimers = {};
+let _onbWriteInflight = {};
+
+function scheduleOnboardingWrite(empId) {
+  clearTimeout(_onbWriteTimers[empId]);
+  _onbWriteTimers[empId] = setTimeout(() => flushOnboardingWrite(empId), 350);
+}
+
+async function flushOnboardingWrite(empId) {
+  if (_onbWriteInflight[empId]) { scheduleOnboardingWrite(empId); return; }
   const rec = (state.employeeRecords || []).find(r => r.id === empId);
-  if (!rec) return;
-  const deliverables = mergeDeliverables(rec);
-  deliverables[dKey].steps[stepKey] = !!checked;
-  applyDeliveredDates(deliverables, rec);
-  const updated = { ...rec, deliverables, updatedBy: localStorage.getItem('hc_logged_in_user') || 'System', updatedAt: new Date().toISOString() };
+  if (!rec) { _onbDirtyIds.delete(empId); return; }
+  _onbWriteInflight[empId] = true;
   try {
-    await setDoc(doc(db, "employee_records", empId), updated);
-    const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
-    const step = def.steps.find(s => s.key === stepKey);
-    const wasComplete = deliverableProgress(rec, def).complete;
-    logEmployeeDbActivity(`${checked ? 'ticked' : 'unticked'} "${def.label} › ${step.label}" for ${rec.fullName} (${rec.employeeId})`);
-    if (checked) {
-      showToast(`Marked done: ${def.label} › ${step.label}`, 'success');
-    } else {
-      showToast(`Undone: ${def.label} › ${step.label}${wasComplete ? ` — "${def.label}" is pending again` : ''}`, 'info');
-    }
+    await setDoc(doc(db, "employee_records", empId), {
+      ...rec,
+      updatedBy: localStorage.getItem('hc_logged_in_user') || 'System',
+      updatedAt: new Date().toISOString()
+    });
+    // keep the snapshot guard alive briefly so our own echo doesn't revert
+    setTimeout(() => {
+      if (!_onbWriteTimers[empId] && !_onbWriteInflight[empId]) _onbDirtyIds.delete(empId);
+    }, 2000);
   } catch (err) {
     console.error(err);
-    showToast('Failed to save' + errSuffix(err), 'error');
+    showToast('Failed to save onboarding change' + errSuffix(err), 'error');
+    scheduleOnboardingWrite(empId); // retry
+  } finally {
+    _onbWriteInflight[empId] = false;
   }
 }
 
-async function setOnboardingLink(empId, dKey, stepKey, url) {
+function setOnboardingStep(empId, dKey, stepKey, checked) {
   if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
   const rec = (state.employeeRecords || []).find(r => r.id === empId);
   if (!rec) return;
+  const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
+  const step = def.steps.find(s => s.key === stepKey);
+  const wasComplete = deliverableProgress(rec, def).complete;
+
+  const deliverables = mergeDeliverables(rec);
+  deliverables[dKey].steps[stepKey] = !!checked;
+  applyDeliveredDates(deliverables, rec);
+  rec.deliverables = deliverables;            // optimistic in-memory update
+
+  _onbDirtyIds.add(empId);
+  scheduleOnboardingWrite(empId);
+  logEmployeeDbActivity(`${checked ? 'ticked' : 'unticked'} "${def.label} › ${step.label}" for ${rec.fullName} (${rec.employeeId})`);
+
+  if (checked) showToast(`Marked done: ${def.label} › ${step.label}`, 'success');
+  else showToast(`Undone: ${def.label} › ${step.label}${wasComplete ? ` — "${def.label}" is pending again` : ''}`, 'info');
+
+  updateOnboardingBadge();
+  if (state.currentView === 'onboarding') renderOnboarding();
+  if (state.viewingOnboardingId === empId) renderOnboardingDetail(rec);
+}
+
+function setOnboardingLink(empId, dKey, stepKey, url) {
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  const rec = (state.employeeRecords || []).find(r => r.id === empId);
+  if (!rec) return;
+  const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
+  const step = def.steps.find(s => s.key === stepKey);
+
   const deliverables = mergeDeliverables(rec);
   deliverables[dKey].links[stepKey] = empVal(url);
-  const updated = { ...rec, deliverables, updatedBy: localStorage.getItem('hc_logged_in_user') || 'System', updatedAt: new Date().toISOString() };
-  try {
-    await setDoc(doc(db, "employee_records", empId), updated);
-    const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
-    const step = def.steps.find(s => s.key === stepKey);
-    logEmployeeDbActivity(`updated link for "${def.label} › ${step.label}" — ${rec.fullName} (${rec.employeeId})`);
-  } catch (err) {
-    console.error(err);
-    showToast('Failed to save link' + errSuffix(err), 'error');
-  }
+  rec.deliverables = deliverables;
+
+  _onbDirtyIds.add(empId);
+  scheduleOnboardingWrite(empId);
+  logEmployeeDbActivity(`updated link for "${def.label} › ${step.label}" — ${rec.fullName} (${rec.employeeId})`);
+  if (state.viewingOnboardingId === empId) renderOnboardingDetail(rec);
 }
 
 function openMobileSidebar() {
