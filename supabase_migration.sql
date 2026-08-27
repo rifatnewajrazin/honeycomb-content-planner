@@ -54,6 +54,46 @@ create table if not exists public.activity_log (
   updated_at timestamptz not null default now()
 );
 
+-- Employee Database (HR directory). Kept separate from `team` on purpose:
+-- these hold PII (DOB, phone, blood group, NID, address) and must NOT be
+-- world-readable like the rest of the app. Read is restricted to an
+-- authenticated Supabase session; writes likewise.
+create table if not exists public.employee_records (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.employee_db_log (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['employee_records','employee_db_log']
+  loop
+    execute format('alter table public.%I enable row level security;', t);
+
+    execute format('drop policy if exists "Public read access" on public.%I;', t);
+    execute format('drop policy if exists "Authenticated read access" on public.%I;', t);
+    execute format('create policy "Authenticated read access" on public.%I for select using (auth.role() = ''authenticated'');', t);
+
+    execute format('drop policy if exists "Authenticated write access" on public.%I;', t);
+    execute format(
+      'create policy "Authenticated write access" on public.%I for all using (auth.role() = ''authenticated'') with check (auth.role() = ''authenticated'');',
+      t
+    );
+  end loop;
+end $$;
+
+alter publication supabase_realtime add table
+  public.employee_records,
+  public.employee_db_log;
+
 -- Row Level Security: same policy shape on every table.
 do $$
 declare

@@ -333,6 +333,59 @@ function isCurrentUserBoardOnly() {
   return !!(person && person.canAccessPriorityBoard && !person.isDesigner);
 }
 
+// Gate for the Employee Database (HR directory) — only people with
+// canAccessEmployeeDb: true on their roster record, or any admin, may see
+// the nav item or open the view. This permission is completely independent
+// of the roster data itself: the employee records live in their own
+// Supabase table (employee_records) and never touch state.team.
+function canCurrentUserAccessEmployeeDb() {
+  const person = getCurrentUserPerson();
+  return !!(person && (person.canAccessEmployeeDb || person.access === 'admin'));
+}
+
+// The three physical office spaces employees can be seated in. Rename here
+// in one place if the offices ever change.
+const DEFAULT_OFFICE_SPACES = ['HQ1', 'Warehouse 2', 'HQ2'];
+
+// Blood group options for the Employee Database dropdown.
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+// Employee record status options.
+const EMPLOYEE_STATUSES = ['Active', 'Inactive'];
+
+// Field keys on an employee record that are required when adding/editing.
+// Everything except cvLink and notes is mandatory.
+const EMPLOYEE_REQUIRED_FIELDS = [
+  'employeeId', 'fullName', 'designation', 'department', 'officeSpace',
+  'deskSeat', 'phone', 'workEmail', 'personalEmail', 'dob', 'bloodGroup',
+  'status', 'joinDate', 'emergencyContactName', 'emergencyContactPhone',
+  'address', 'nationalId'
+];
+
+// Human-readable labels + CSV header names for every employee record field,
+// in display order. Used by the table, the detail modal, and CSV import/export.
+const EMPLOYEE_FIELD_DEFS = [
+  { key: 'employeeId',            label: 'Employee ID' },
+  { key: 'fullName',              label: 'Full Name' },
+  { key: 'designation',           label: 'Designation' },
+  { key: 'department',            label: 'Department' },
+  { key: 'officeSpace',           label: 'Office Space' },
+  { key: 'deskSeat',              label: 'Desk / Seat' },
+  { key: 'phone',                 label: 'Phone' },
+  { key: 'workEmail',             label: 'Work Email' },
+  { key: 'personalEmail',         label: 'Personal Email' },
+  { key: 'dob',                   label: 'Date of Birth' },
+  { key: 'bloodGroup',            label: 'Blood Group' },
+  { key: 'status',                label: 'Status' },
+  { key: 'joinDate',              label: 'Join Date' },
+  { key: 'emergencyContactName',  label: 'Emergency Contact Name' },
+  { key: 'emergencyContactPhone', label: 'Emergency Contact Phone' },
+  { key: 'address',               label: 'Address' },
+  { key: 'nationalId',            label: 'National ID' },
+  { key: 'cvLink',                label: 'CV / Resume Link' },
+  { key: 'notes',                 label: 'Notes' }
+];
+
 function isItemArchived(item) {
   return false;
 }
@@ -1950,7 +2003,20 @@ let state = {
   contentLinksSortCol: 'date',
   contentLinksSortDir: 'desc',
   teamSortCol: 'name',
-  teamSortDir: 'asc'
+  teamSortDir: 'asc',
+  // Employee Database (HR directory) — fully isolated from `team`.
+  employeeRecords: [],
+  employeeDbLog: [],
+  editingEmployeeId: null,
+  viewingEmployeeId: null,
+  employeeSearchFilter: '',
+  employeeDesignationFilter: 'all',
+  employeeDepartmentFilter: 'all',
+  employeeOfficeFilter: 'all',
+  employeeBloodGroupFilter: 'all',
+  employeeStatusFilter: 'all',
+  employeeSortCol: 'fullName',
+  employeeSortDir: 'asc'
 };
 
 // Initialize Application
@@ -2182,13 +2248,26 @@ function renderUserProfile() {
     }
   }
 
+  // Toggle Employee Database link in sidebar (HR / admins only)
+  const employeeDbLink = document.getElementById('nav-employee-db-link');
+  if (employeeDbLink) {
+    if (currentUser && canCurrentUserAccessEmployeeDb()) {
+      employeeDbLink.style.display = 'flex';
+    } else {
+      employeeDbLink.style.display = 'none';
+      if (state.currentView === 'employee-database') {
+        switchView('dashboard');
+      }
+    }
+  }
+
   // Board-only accounts (Orthee): restrict the sidebar (and any current view)
   // to just the Priority Board plus People & Roles — they don't get Task
   // Tracker, Idea Board, Analytics, Calendar, Content Links, etc.
   const boardOnly = currentUser && isCurrentUserBoardOnly();
   // Items already gated individually above (logs/kanban) keep whatever those
   // gates decided; People & Roles stays visible for board-only accounts too.
-  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link'];
+  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link', 'nav-employee-db-link'];
   document.querySelectorAll('.nav-item').forEach(item => {
     if (individuallyGatedIds.includes(item.id)) return;
     if (boardOnly && item.getAttribute('data-view') === 'team') {
@@ -2567,6 +2646,43 @@ function initData() {
     });
   } catch(err) {
     console.warn("Firestore activity_log listener skipped:", err);
+  }
+
+  // Sync the Employee Database (HR directory) in real-time. Completely
+  // separate table from `team` — no seed data, an empty directory is normal.
+  try {
+    onSnapshot(collection(db, "employee_records"), (querySnapshot) => {
+      const loaded = [];
+      querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
+      state.employeeRecords = loaded;
+      if (state.currentView === 'employee-database') renderEmployeeDatabase();
+      if (state.viewingEmployeeId) {
+        const rec = state.employeeRecords.find(r => r.id === state.viewingEmployeeId);
+        if (rec) renderEmployeeDetail(rec);
+      }
+    }, (error) => {
+      console.error("Supabase employee_records sync error:", error);
+      state.employeeRecords = state.employeeRecords || [];
+      if (state.currentView === 'employee-database') renderEmployeeDatabase();
+    });
+  } catch(err) {
+    console.warn("Supabase employee_records listener skipped:", err);
+  }
+
+  // Employee Database's own scoped change log (separate from the global
+  // Activity Log so PII edits stay inside the HR view).
+  try {
+    onSnapshot(collection(db, "employee_db_log"), (querySnapshot) => {
+      const loaded = [];
+      querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
+      state.employeeDbLog = loaded.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+      if (state.employeeDbLog.length > 200) state.employeeDbLog = state.employeeDbLog.slice(0, 200);
+      if (state.currentView === 'employee-database') renderEmployeeDatabase();
+    }, (error) => {
+      console.error("Supabase employee_db_log sync error:", error);
+    });
+  } catch(err) {
+    console.warn("Supabase employee_db_log listener skipped:", err);
   }
 }
 
@@ -3546,6 +3662,521 @@ function setupEventListeners() {
       if (!showing) renderPriorityBoardLog();
     });
   }
+
+  setupEmployeeDatabaseControls();
+}
+
+// ==========================================================================
+// Employee Database (HR directory)
+//
+// Completely self-contained: its own Supabase tables (employee_records,
+// employee_db_log), its own state keys, its own modals. It never reads from
+// or writes to state.team / the roster. Visibility is gated by the
+// canAccessEmployeeDb flag (or admin) — see canCurrentUserAccessEmployeeDb().
+// ==========================================================================
+
+function empVal(v) { return (v == null ? '' : String(v)).trim(); }
+
+// Draft parsed from an import, awaiting the user pressing "Import".
+let employeeImportDraft = null;
+
+function setupEmployeeDatabaseControls() {
+  const q = (id) => document.getElementById(id);
+
+  q('employee-db-new-btn')?.addEventListener('click', () => openEmployeeModal());
+  q('employee-form')?.addEventListener('submit', handleEmployeeFormSubmit);
+  q('employee-modal-close-btn')?.addEventListener('click', closeEmployeeModal);
+  q('employee-modal-cancel-btn')?.addEventListener('click', closeEmployeeModal);
+  q('employee-modal-delete-btn')?.addEventListener('click', deleteEmployeeRecord);
+
+  q('employee-detail-modal-close-btn')?.addEventListener('click', closeEmployeeDetailModal);
+  q('employee-detail-modal-cancel-btn')?.addEventListener('click', closeEmployeeDetailModal);
+  q('employee-detail-edit-btn')?.addEventListener('click', () => {
+    const id = state.viewingEmployeeId;
+    closeEmployeeDetailModal();
+    if (id) openEmployeeModal(id);
+  });
+
+  q('employee-db-export-btn')?.addEventListener('click', exportEmployeeCsv);
+  q('employee-db-import-btn')?.addEventListener('click', openEmployeeImportModal);
+  q('employee-import-modal-close-btn')?.addEventListener('click', closeEmployeeImportModal);
+  q('employee-import-modal-cancel-btn')?.addEventListener('click', closeEmployeeImportModal);
+  q('emp-import-url-btn')?.addEventListener('click', () => {
+    const url = empVal(q('emp-import-url').value);
+    if (!url) { showToast('Paste a published Google Sheet CSV URL first', 'error'); return; }
+    fetch(url).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(text => prepareEmployeeImport(text)).catch(err => {
+      console.error(err);
+      showToast('Could not fetch that URL — make sure the sheet is published to the web as CSV', 'error');
+    });
+  });
+  q('emp-import-file')?.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => prepareEmployeeImport(String(reader.result));
+    reader.readAsText(file);
+  });
+  q('emp-import-text')?.addEventListener('input', (e) => prepareEmployeeImport(e.target.value, true));
+  q('emp-import-commit-btn')?.addEventListener('click', commitEmployeeImport);
+
+  q('employee-db-log-toggle-btn')?.addEventListener('click', () => {
+    const panel = q('employee-db-log-panel');
+    if (!panel) return;
+    const showing = panel.style.display !== 'none';
+    panel.style.display = showing ? 'none' : 'block';
+    q('employee-db-log-toggle-btn').textContent = showing ? 'View Change Log' : 'Hide Change Log';
+    if (!showing) renderEmployeeDbLog();
+  });
+
+  const searchInput = q('employee-db-search-input');
+  if (searchInput) searchInput.addEventListener('input', (e) => {
+    state.employeeSearchFilter = e.target.value.toLowerCase();
+    renderEmployeeDatabase();
+  });
+  const filterMap = {
+    'employee-db-designation-filter': 'employeeDesignationFilter',
+    'employee-db-department-filter': 'employeeDepartmentFilter',
+    'employee-db-office-filter': 'employeeOfficeFilter',
+    'employee-db-blood-filter': 'employeeBloodGroupFilter',
+    'employee-db-status-filter': 'employeeStatusFilter'
+  };
+  Object.entries(filterMap).forEach(([elId, stateKey]) => {
+    q(elId)?.addEventListener('change', (e) => {
+      state[stateKey] = e.target.value;
+      renderEmployeeDatabase();
+    });
+  });
+
+  document.querySelectorAll('#employee-database-view th.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.getAttribute('data-sort');
+      if (state.employeeSortCol === col) {
+        state.employeeSortDir = state.employeeSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.employeeSortCol = col;
+        state.employeeSortDir = 'asc';
+      }
+      renderEmployeeDatabase();
+    });
+  });
+}
+
+function getFilteredEmployeeRecords() {
+  let rows = [...(state.employeeRecords || [])];
+  const s = state.employeeSearchFilter;
+  if (s) {
+    rows = rows.filter(r =>
+      ['employeeId', 'fullName', 'phone', 'workEmail', 'personalEmail', 'nationalId', 'designation', 'department']
+        .some(k => empVal(r[k]).toLowerCase().includes(s))
+    );
+  }
+  const eq = (a, b) => empVal(a).toLowerCase() === empVal(b).toLowerCase();
+  if (state.employeeDesignationFilter !== 'all') rows = rows.filter(r => eq(r.designation, state.employeeDesignationFilter));
+  if (state.employeeDepartmentFilter !== 'all') rows = rows.filter(r => eq(r.department, state.employeeDepartmentFilter));
+  if (state.employeeOfficeFilter !== 'all') rows = rows.filter(r => eq(r.officeSpace, state.employeeOfficeFilter));
+  if (state.employeeBloodGroupFilter !== 'all') rows = rows.filter(r => eq(r.bloodGroup, state.employeeBloodGroupFilter));
+  if (state.employeeStatusFilter !== 'all') rows = rows.filter(r => eq(r.status, state.employeeStatusFilter));
+
+  const col = state.employeeSortCol || 'fullName';
+  const dir = state.employeeSortDir === 'desc' ? -1 : 1;
+  rows.sort((a, b) => empVal(a[col]).localeCompare(empVal(b[col]), undefined, { numeric: true, sensitivity: 'base' }) * dir);
+  return rows;
+}
+
+function populateEmployeeFilterDropdowns() {
+  const recs = state.employeeRecords || [];
+  const fill = (elId, values, current) => {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const first = el.querySelector('option');
+    el.innerHTML = '';
+    if (first) el.appendChild(first);
+    values.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      if (empVal(current) === v) o.selected = true;
+      el.appendChild(o);
+    });
+  };
+  const uniq = (key) => [...new Set(recs.map(r => empVal(r[key])).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  fill('employee-db-designation-filter', uniq('designation'), state.employeeDesignationFilter);
+  fill('employee-db-department-filter', uniq('department'), state.employeeDepartmentFilter);
+  fill('employee-db-office-filter', DEFAULT_OFFICE_SPACES.slice(), state.employeeOfficeFilter);
+  fill('employee-db-blood-filter', BLOOD_GROUPS.slice(), state.employeeBloodGroupFilter);
+}
+
+function renderEmployeeDatabase() {
+  const tbody = document.getElementById('employee-db-list-body');
+  if (!tbody) return;
+
+  const canView = canCurrentUserAccessEmployeeDb();
+  const toolbar = ['employee-db-new-btn', 'employee-db-import-btn', 'employee-db-export-btn'];
+  toolbar.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = canView ? 'inline-flex' : 'none'; });
+  if (!canView) { tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>'; return; }
+
+  populateEmployeeFilterDropdowns();
+  const rows = getFilteredEmployeeRecords();
+  const totalEl = document.getElementById('employee-db-total-count');
+  if (totalEl) totalEl.textContent = String((state.employeeRecords || []).length);
+
+  document.querySelectorAll('#employee-database-view th.sortable-th').forEach(th => {
+    const icon = th.querySelector('.sort-icon');
+    if (!icon) return;
+    icon.textContent = th.getAttribute('data-sort') === state.employeeSortCol
+      ? (state.employeeSortDir === 'asc' ? '↑' : '↓') : '↕';
+  });
+
+  if (!rows.length) {
+    const empty = (state.employeeRecords || []).length === 0
+      ? 'No employees yet. Use "+ Add Employee" or "Import".'
+      : 'No employees match the current filters.';
+    tbody.innerHTML = `<tr><td colspan="14" style="text-align:center; padding:32px; color:#64748b;">${empty}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const cv = empVal(r.cvLink)
+      ? `<a href="${escapeHtml(r.cvLink)}" target="_blank" rel="noopener" style="color:#60a5fa;">Open CV</a>`
+      : '<span style="color:#475569;">—</span>';
+    const statusColor = empVal(r.status) === 'Inactive' ? '#f87171' : '#4ade80';
+    return `<tr data-emp-id="${escapeHtml(r.id)}" style="cursor:pointer;">
+      <td>${escapeHtml(r.employeeId)}</td>
+      <td style="font-weight:600; color:#fff;">${escapeHtml(r.fullName)}</td>
+      <td>${escapeHtml(r.designation)}</td>
+      <td>${escapeHtml(r.department)}</td>
+      <td>${escapeHtml(r.officeSpace)}</td>
+      <td>${escapeHtml(r.deskSeat)}</td>
+      <td>${escapeHtml(r.phone)}</td>
+      <td>${escapeHtml(r.workEmail)}</td>
+      <td>${escapeHtml(r.dob)}</td>
+      <td>${escapeHtml(r.bloodGroup)}</td>
+      <td>${escapeHtml(r.joinDate)}</td>
+      <td style="color:${statusColor}; font-weight:600;">${escapeHtml(r.status)}</td>
+      <td style="text-align:center;">${cv}</td>
+      <td style="text-align:center; white-space:nowrap;">
+        <button class="btn-secondary emp-edit-btn" data-emp-id="${escapeHtml(r.id)}" style="padding:4px 10px; font-size:0.75rem;">Edit</button>
+        <button class="btn-secondary emp-delete-btn" data-emp-id="${escapeHtml(r.id)}" style="padding:4px 10px; font-size:0.75rem; color:var(--status-critical);">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('tr[data-emp-id]').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      openEmployeeDetailModal(tr.getAttribute('data-emp-id'));
+    });
+  });
+  tbody.querySelectorAll('.emp-edit-btn').forEach(b => b.addEventListener('click', (e) => {
+    e.stopPropagation(); openEmployeeModal(b.getAttribute('data-emp-id'));
+  }));
+  tbody.querySelectorAll('.emp-delete-btn').forEach(b => b.addEventListener('click', (e) => {
+    e.stopPropagation(); deleteEmployeeRecordById(b.getAttribute('data-emp-id'));
+  }));
+
+  if (document.getElementById('employee-db-log-panel')?.style.display === 'block') renderEmployeeDbLog();
+}
+
+function openEmployeeModal(recordId = null) {
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  const modal = document.getElementById('employee-modal');
+  const form = document.getElementById('employee-form');
+  if (!modal || !form) return;
+  form.reset();
+  state.editingEmployeeId = recordId;
+
+  const officeSel = document.getElementById('emp-form-officeSpace');
+  officeSel.innerHTML = '<option value="">Select…</option>' + DEFAULT_OFFICE_SPACES.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+  const bloodSel = document.getElementById('emp-form-bloodGroup');
+  bloodSel.innerHTML = '<option value="">Select…</option>' + BLOOD_GROUPS.map(o => `<option value="${o}">${o}</option>`).join('');
+
+  const deleteBtn = document.getElementById('employee-modal-delete-btn');
+  const title = document.getElementById('employee-modal-title');
+
+  if (recordId) {
+    const rec = (state.employeeRecords || []).find(r => r.id === recordId);
+    if (!rec) { showToast('Record not found', 'error'); return; }
+    title.textContent = 'Edit Employee';
+    if (deleteBtn) deleteBtn.style.display = 'block';
+    EMPLOYEE_FIELD_DEFS.forEach(({ key }) => {
+      const el = document.getElementById('emp-form-' + key);
+      if (el) el.value = empVal(rec[key]);
+    });
+  } else {
+    title.textContent = 'Add Employee';
+    if (deleteBtn) deleteBtn.style.display = 'none';
+  }
+  modal.classList.add('active');
+}
+
+function closeEmployeeModal() {
+  document.getElementById('employee-modal')?.classList.remove('active');
+  state.editingEmployeeId = null;
+}
+
+async function handleEmployeeFormSubmit(e) {
+  e.preventDefault();
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+
+  const data = {};
+  EMPLOYEE_FIELD_DEFS.forEach(({ key }) => {
+    const el = document.getElementById('emp-form-' + key);
+    data[key] = el ? empVal(el.value) : '';
+  });
+
+  const missing = EMPLOYEE_REQUIRED_FIELDS.filter(k => !data[k]);
+  if (missing.length) {
+    const labels = missing.map(k => (EMPLOYEE_FIELD_DEFS.find(f => f.key === k) || {}).label || k);
+    showToast('Required: ' + labels.join(', '), 'error');
+    return;
+  }
+
+  const editingId = state.editingEmployeeId;
+  const dupe = (state.employeeRecords || []).find(r =>
+    empVal(r.employeeId).toLowerCase() === data.employeeId.toLowerCase() && r.id !== editingId);
+  if (dupe) { showToast(`Employee ID "${data.employeeId}" already exists`, 'error'); return; }
+
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const nowIso = new Date().toISOString();
+  const id = editingId || `emp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const existing = (state.employeeRecords || []).find(r => r.id === id);
+  const record = {
+    ...(existing || {}),
+    ...data,
+    id,
+    createdBy: existing ? existing.createdBy : currentUser,
+    createdAt: existing ? existing.createdAt : nowIso,
+    updatedBy: currentUser,
+    updatedAt: nowIso
+  };
+
+  try {
+    await setDoc(doc(db, "employee_records", id), record);
+    await logEmployeeDbActivity(`${editingId ? 'updated' : 'added'} employee "${record.fullName}" (${record.employeeId})`);
+    showToast(editingId ? 'Employee updated' : 'Employee added', 'success');
+    closeEmployeeModal();
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to save employee' + errSuffix(err), 'error');
+  }
+}
+
+function deleteEmployeeRecordById(recordId) {
+  const rec = (state.employeeRecords || []).find(r => r.id === recordId);
+  if (!rec) return;
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  if (!confirm(`Delete employee "${rec.fullName}" (${rec.employeeId})? This cannot be undone.`)) return;
+  deleteDoc(doc(db, "employee_records", recordId))
+    .then(() => {
+      logEmployeeDbActivity(`deleted employee "${rec.fullName}" (${rec.employeeId})`);
+      showToast('Employee deleted', 'info');
+    })
+    .catch(err => { console.error(err); showToast('Failed to delete' + errSuffix(err), 'error'); });
+}
+
+function deleteEmployeeRecord() {
+  if (state.editingEmployeeId) {
+    const id = state.editingEmployeeId;
+    closeEmployeeModal();
+    deleteEmployeeRecordById(id);
+  }
+}
+
+function openEmployeeDetailModal(recordId) {
+  const rec = (state.employeeRecords || []).find(r => r.id === recordId);
+  if (!rec) return;
+  state.viewingEmployeeId = recordId;
+  renderEmployeeDetail(rec);
+  document.getElementById('employee-detail-modal')?.classList.add('active');
+}
+
+function renderEmployeeDetail(rec) {
+  const body = document.getElementById('employee-detail-body');
+  const titleEl = document.getElementById('employee-detail-modal-title');
+  if (titleEl) titleEl.textContent = `${empVal(rec.fullName)} — ${empVal(rec.employeeId)}`;
+  if (!body) return;
+  body.innerHTML = EMPLOYEE_FIELD_DEFS.map(({ key, label }) => {
+    let val = empVal(rec[key]) || '—';
+    if (key === 'cvLink' && empVal(rec.cvLink)) {
+      val = `<a href="${escapeHtml(rec.cvLink)}" target="_blank" rel="noopener" style="color:#60a5fa;">Open CV</a>`;
+    } else {
+      val = escapeHtml(val);
+    }
+    return `<div style="display:flex; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="width:210px; color:#94a3b8; font-size:0.82rem;">${label}</div>
+      <div style="flex:1; color:#e2e8f0; font-size:0.88rem; word-break:break-word;">${val}</div>
+    </div>`;
+  }).join('');
+}
+
+function closeEmployeeDetailModal() {
+  document.getElementById('employee-detail-modal')?.classList.remove('active');
+  state.viewingEmployeeId = null;
+}
+
+// ---- CSV helpers -------------------------------------------------------------
+
+function csvEscape(v) {
+  const s = (v == null ? '' : String(v));
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  text = String(text).replace(/^﻿/, '');
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else if (c === '"') inQuotes = true;
+    else if (c === ',') { row.push(field); field = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); field = '';
+      if (row.some(x => x !== '')) rows.push(row);
+      row = [];
+    } else field += c;
+  }
+  if (field !== '' || row.length) { row.push(field); if (row.some(x => x !== '')) rows.push(row); }
+  return rows;
+}
+
+function exportEmployeeCsv() {
+  const rows = getFilteredEmployeeRecords();
+  if (!rows.length) { showToast('Nothing to export', 'info'); return; }
+  const headers = EMPLOYEE_FIELD_DEFS.map(f => f.label);
+  const lines = [headers.map(csvEscape).join(',')];
+  rows.forEach(r => lines.push(EMPLOYEE_FIELD_DEFS.map(f => csvEscape(r[f.key])).join(',')));
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `employee-database-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function openEmployeeImportModal() {
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  employeeImportDraft = null;
+  ['emp-import-url', 'emp-import-text'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const fileEl = document.getElementById('emp-import-file'); if (fileEl) fileEl.value = '';
+  const prev = document.getElementById('emp-import-preview'); if (prev) prev.textContent = '';
+  const commit = document.getElementById('emp-import-commit-btn'); if (commit) commit.disabled = true;
+  document.getElementById('employee-import-modal')?.classList.add('active');
+}
+
+function closeEmployeeImportModal() {
+  document.getElementById('employee-import-modal')?.classList.remove('active');
+  employeeImportDraft = null;
+}
+
+function prepareEmployeeImport(text, silent) {
+  const preview = document.getElementById('emp-import-preview');
+  const commitBtn = document.getElementById('emp-import-commit-btn');
+  const rows = parseCsv(text);
+  if (rows.length < 2) {
+    employeeImportDraft = null;
+    if (commitBtn) commitBtn.disabled = true;
+    if (preview) preview.textContent = silent ? '' : 'Could not find any data rows.';
+    return;
+  }
+  const labelToKey = {};
+  EMPLOYEE_FIELD_DEFS.forEach(f => { labelToKey[f.label.toLowerCase()] = f.key; labelToKey[f.key.toLowerCase()] = f.key; });
+  const header = rows[0].map(h => labelToKey[empVal(h).toLowerCase()] || null);
+  if (!header.includes('employeeId')) {
+    employeeImportDraft = null;
+    if (commitBtn) commitBtn.disabled = true;
+    if (preview) preview.textContent = 'CSV must have an "Employee ID" column.';
+    return;
+  }
+
+  const parsed = [];
+  let skipped = 0;
+  for (let i = 1; i < rows.length; i++) {
+    const rec = {};
+    header.forEach((k, idx) => { if (k) rec[k] = empVal(rows[i][idx]); });
+    if (!empVal(rec.employeeId)) { skipped++; continue; }
+    parsed.push(rec);
+  }
+
+  const existingById = {};
+  (state.employeeRecords || []).forEach(r => { existingById[empVal(r.employeeId).toLowerCase()] = r; });
+  let willUpdate = 0, willAdd = 0, missingReq = 0;
+  parsed.forEach(rec => {
+    const match = existingById[empVal(rec.employeeId).toLowerCase()];
+    const merged = { ...(match || {}), ...rec };
+    if (EMPLOYEE_REQUIRED_FIELDS.some(k => !empVal(merged[k]))) missingReq++;
+    if (match) willUpdate++; else willAdd++;
+  });
+
+  employeeImportDraft = parsed;
+  if (commitBtn) commitBtn.disabled = parsed.length === 0;
+  if (preview) {
+    preview.innerHTML = `Ready to import <strong>${parsed.length}</strong> row(s): `
+      + `${willAdd} new, ${willUpdate} updated`
+      + (skipped ? `, ${skipped} skipped (no Employee ID)` : '')
+      + (missingReq ? `. <span style="color:#fbbf24;">${missingReq} row(s) will be missing required fields — they still import; fix them via Edit.</span>` : '.');
+  }
+}
+
+async function commitEmployeeImport() {
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  if (!employeeImportDraft || !employeeImportDraft.length) return;
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const nowIso = new Date().toISOString();
+  const existingById = {};
+  (state.employeeRecords || []).forEach(r => { existingById[empVal(r.employeeId).toLowerCase()] = r; });
+
+  let ok = 0, fail = 0;
+  for (const rec of employeeImportDraft) {
+    const match = existingById[empVal(rec.employeeId).toLowerCase()];
+    const id = match ? match.id : `emp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const record = {
+      ...(match || {}),
+      ...rec,
+      id,
+      createdBy: match ? match.createdBy : currentUser,
+      createdAt: match ? match.createdAt : nowIso,
+      updatedBy: currentUser,
+      updatedAt: nowIso
+    };
+    try { await setDoc(doc(db, "employee_records", id), record); ok++; }
+    catch (err) { console.error('Import row failed', err); fail++; }
+  }
+  await logEmployeeDbActivity(`imported employee records (${ok} saved${fail ? `, ${fail} failed` : ''})`);
+  showToast(`Import complete: ${ok} saved${fail ? `, ${fail} failed` : ''}`, fail ? 'error' : 'success');
+  closeEmployeeImportModal();
+}
+
+async function logEmployeeDbActivity(actionText) {
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const entry = {
+    id: `emplog-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    user: currentUser,
+    action: actionText,
+    timestamp: new Date().toISOString()
+  };
+  try { await setDoc(doc(db, "employee_db_log", entry.id), entry); }
+  catch (err) { console.warn('employee_db_log write failed:', err); }
+}
+
+function renderEmployeeDbLog() {
+  const list = document.getElementById('employee-db-log-list');
+  if (!list) return;
+  const logs = state.employeeDbLog || [];
+  if (!logs.length) { list.innerHTML = '<div style="color:#64748b; padding:12px;">No changes logged yet.</div>'; return; }
+  list.innerHTML = logs.map(l => `<div style="padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.83rem;">
+    <span style="color:#e2e8f0;">${escapeHtml(l.user)}</span>
+    <span style="color:#cbd5e1;"> ${escapeHtml(l.action)}</span>
+    <span style="color:#64748b; float:right;">${escapeHtml((l.timestamp || '').replace('T', ' ').slice(0, 16))}</span>
+  </div>`).join('');
 }
 
 function openMobileSidebar() {
@@ -3567,6 +4198,10 @@ function switchView(viewName) {
   if (viewName !== 'priority-board' && viewName !== 'team' && isCurrentUserBoardOnly()) {
     viewName = 'priority-board';
   }
+  // Employee Database is HR/admin only — bounce anyone else to the dashboard.
+  if (viewName === 'employee-database' && !canCurrentUserAccessEmployeeDb()) {
+    viewName = 'dashboard';
+  }
 
   state.currentView = viewName;
   localStorage.setItem('hc_last_view', viewName);
@@ -3581,7 +4216,8 @@ function switchView(viewName) {
     'idea-board': ['Idea Board', 'Upcoming content ideas, seasonal campaigns, and inspiration — plan ahead before a task exists'],
     'priority-board': ['Priority Board', 'DTF/Vinyl and sublimation print-prep requests, flagged by slot and job type'],
     team: ['People & Roles', 'Team roster, roles, and login permissions'],
-    logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)']
+    logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)'],
+    'employee-database': ['Employee Database', 'HR directory — employee records, contact details, and seating (HR & Admins only)']
   };
   const headerTitleEl = document.querySelector('.header-title');
   if (headerTitleEl && VIEW_HEADERS[viewName]) {
@@ -3612,7 +4248,7 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board' || viewName === 'employee-database') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
@@ -3632,6 +4268,7 @@ function switchView(viewName) {
   else if (viewName === 'dashboard') renderDashboard();
   else if (viewName === 'calendar') renderCalendar();
   else if (viewName === 'logs') renderLogs();
+  else if (viewName === 'employee-database') renderEmployeeDatabase();
 
   // Scroll main back to top
   document.querySelector('.main-content').scrollTop = 0;
@@ -3675,6 +4312,7 @@ function refreshViews() {
   try { renderContentLinks(); } catch(e) { console.error("renderContentLinks error:", e); }
   try { renderIdeaBoard(); } catch(e) { console.error("renderIdeaBoard error:", e); }
   try { renderPriorityBoard(); } catch(e) { console.error("renderPriorityBoard error:", e); }
+  try { renderEmployeeDatabase(); } catch(e) { console.error("renderEmployeeDatabase error:", e); }
   try { updatePublishingQueueBadge(); } catch(e) { console.error("updatePublishingQueueBadge error:", e); }
   try { updatePriorityBoardBadge(); } catch(e) { console.error("updatePriorityBoardBadge error:", e); }
 }
@@ -5846,6 +6484,7 @@ function renderTeam() {
     if (p.isDesigner) roleTagsHtml += `<span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.15); margin-right: 4px;">Creative</span>`;
     if (p.isAssigner) roleTagsHtml += `<span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.15); margin-right: 4px;">Assigner</span>`;
     if (p.canPlanContent) roleTagsHtml += `<span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.15); margin-right: 4px;">Ideator</span>`;
+    if (p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.15); margin-right: 4px;">HR</span>`;
     if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
 
     // Access tags
@@ -5932,6 +6571,8 @@ function openPersonModal(personId = null) {
       document.getElementById('person-role-designer').checked = !!person.isDesigner;
       document.getElementById('person-role-assigner').checked = !!person.isAssigner;
       document.getElementById('person-role-plan-content').checked = !!person.canPlanContent;
+      const empDbCb = document.getElementById('person-role-employee-db');
+      if (empDbCb) empDbCb.checked = !!person.canAccessEmployeeDb;
     }
   } else {
     modalTitle.textContent = 'Add New Person';
@@ -5960,6 +6601,8 @@ async function handlePersonFormSubmit(e) {
   const isDesigner = document.getElementById('person-role-designer').checked;
   const isAssigner = document.getElementById('person-role-assigner').checked;
   const canPlanContent = document.getElementById('person-role-plan-content').checked;
+  const empDbCb = document.getElementById('person-role-employee-db');
+  const canAccessEmployeeDb = empDbCb ? empDbCb.checked : false;
 
   if (!name || !role) {
     showToast('Please fill out all required fields', 'error');
@@ -5980,7 +6623,8 @@ async function handlePersonFormSubmit(e) {
     photo: photo || null,
     isDesigner,
     isAssigner,
-    canPlanContent
+    canPlanContent,
+    canAccessEmployeeDb
   };
 
   try {
