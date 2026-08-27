@@ -17,7 +17,7 @@
     #employee-database-view .tasks-table td { padding: 10px 14px; vertical-align: middle; white-space: nowrap; }
     #employee-database-view .tasks-table td { font-size: 0.82rem; }
     #employee-database-view .emp-actions-cell { text-align: left; }
-    #employee-database-view .emp-actions-cell .btn-secondary { padding: 4px 10px; font-size: 0.72rem; margin: 0 4px 0 0; }
+    #employee-database-view .emp-actions-cell .btn-secondary { padding: 4px 12px; font-size: 0.72rem; margin: 0 8px 0 0; }
     #employee-database-view .tasks-table th:last-child,
     #employee-database-view .tasks-table td:last-child { text-align: left; }
   </style>
@@ -543,26 +543,27 @@
 
         <!-- View: Employee Database (HR directory) — fully isolated from People & Roles -->
         <section id="employee-database-view" class="view-panel">
-          <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-            <span style="background: rgba(236, 72, 153, 0.12); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 9999px; padding: 6px 16px; font-size: 0.8rem; font-weight: 600;">
+          <!-- Toolbar — spacing on the 4-point system: 24px row gap, 12px between buttons, 40px targets -->
+          <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <span style="background: rgba(236, 72, 153, 0.12); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 9999px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600;">
               Total Employees: <strong id="employee-db-total-count">0</strong>
             </span>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-              <button type="button" class="btn-secondary" id="employee-db-log-toggle-btn" style="height: 38px; padding: 0 14px;">View Change Log</button>
-              <button type="button" class="btn-secondary" id="employee-db-import-btn" style="height: 38px; padding: 0 14px;">Import</button>
-              <button type="button" class="btn-secondary" id="employee-db-export-btn" style="height: 38px; padding: 0 14px;">Export CSV</button>
-              <button type="button" class="btn-primary" id="employee-db-new-btn" style="height: 38px;">+ Add Employee</button>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+              <button type="button" class="btn-secondary" id="employee-db-log-toggle-btn" style="height: 40px; padding: 0 16px;">View Change Log</button>
+              <button type="button" class="btn-secondary" id="employee-db-import-btn" style="height: 40px; padding: 0 16px;">Import</button>
+              <button type="button" class="btn-secondary" id="employee-db-export-btn" style="height: 40px; padding: 0 16px;">Export CSV</button>
+              <button type="button" class="btn-primary" id="employee-db-new-btn" style="height: 40px; padding: 0 16px;">+ Add Employee</button>
             </div>
           </div>
 
           <!-- Filters -->
-          <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
-            <input type="text" id="employee-db-search-input" placeholder="Search name, ID, phone, email, NID..." class="search-input" style="flex: 2; min-width: 220px; height: 38px; padding: 0 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none;">
-            <select id="employee-db-designation-filter" class="filter-select" style="min-width: 150px; height: 38px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Designations</option></select>
-            <select id="employee-db-department-filter" class="filter-select" style="min-width: 140px; height: 38px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Departments</option></select>
-            <select id="employee-db-office-filter" class="filter-select" style="min-width: 130px; height: 38px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Offices</option></select>
-            <select id="employee-db-blood-filter" class="filter-select" style="min-width: 120px; height: 38px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Blood Groups</option></select>
-            <select id="employee-db-status-filter" class="filter-select" style="min-width: 110px; height: 38px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Statuses</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+          <div style="display: flex; gap: 12px; margin-bottom: 24px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="employee-db-search-input" placeholder="Search name, ID, phone, email, NID..." class="search-input" style="flex: 2; min-width: 224px; height: 40px; padding: 0 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none;">
+            <select id="employee-db-designation-filter" class="filter-select" style="min-width: 160px; height: 40px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Designations</option></select>
+            <select id="employee-db-department-filter" class="filter-select" style="min-width: 160px; height: 40px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Departments</option></select>
+            <select id="employee-db-office-filter" class="filter-select" style="min-width: 144px; height: 40px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Offices</option></select>
+            <select id="employee-db-blood-filter" class="filter-select" style="min-width: 128px; height: 40px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Blood Groups</option></select>
+            <select id="employee-db-status-filter" class="filter-select" style="min-width: 120px; height: 40px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Statuses</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
           </div>
 
           <div class="tasks-table-container" style="max-height: calc(100vh - 300px); overflow: auto;">
@@ -670,7 +671,7 @@
               <div class="form-group"><label for="emp-form-status">Status</label><select id="emp-form-status" class="form-control"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
             </div>
 
-            <div style="margin:6px 0 10px; font-size:0.78rem; color:#64748b; text-transform:uppercase; letter-spacing:0.04em;">Optional details</div>
+            <div style="margin:8px 0 12px; font-size:0.78rem; color:#64748b; text-transform:uppercase; letter-spacing:0.04em;">Optional details</div>
             <div class="form-row">
               <div class="form-group"><label for="emp-form-department">Department</label><input type="text" id="emp-form-department" class="form-control" placeholder="e.g., Multimedia & Creative"></div>
               <div class="form-group"><label for="emp-form-officeSpace">Office Space</label><select id="emp-form-officeSpace" class="form-control"></select></div>
@@ -730,7 +731,7 @@
           <div class="form-group">
             <label for="emp-import-url">Published Google Sheet CSV URL</label>
             <input type="url" id="emp-import-url" class="form-control" placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv">
-            <button type="button" class="btn-secondary" id="emp-import-url-btn" style="margin-top: 8px; font-size: 0.8rem; padding: 6px 12px;">Fetch from URL</button>
+            <button type="button" class="btn-secondary" id="emp-import-url-btn" style="margin-top: 8px; font-size: 0.8rem; padding: 8px 16px;">Fetch from URL</button>
           </div>
           <div style="text-align: center; color: #64748b; font-size: 0.8rem; margin: 12px 0;">— or —</div>
           <div class="form-group">
