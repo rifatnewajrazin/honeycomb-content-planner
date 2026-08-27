@@ -367,7 +367,7 @@ const EMPLOYEE_FIELD_DEFS = [
   { key: 'designation',           label: 'Designation' },
   { key: 'department',            label: 'Department' },
   { key: 'officeSpace',           label: 'Office Space' },
-  { key: 'phone',                 label: 'Phone' },
+  { key: 'phone',                 label: 'Phone Number' },
   { key: 'workEmail',             label: 'Work Email' },
   { key: 'personalEmail',         label: 'Email' },
   { key: 'dob',                   label: 'Date of Birth' },
@@ -3850,10 +3850,10 @@ function renderEmployeeDatabase() {
       <td>${escapeHtml(r.bloodGroup)}</td>
       <td>${escapeHtml(r.joinDate)}</td>
       <td style="color:${statusColor}; font-weight:600;">${escapeHtml(r.status)}</td>
-      <td style="text-align:center;">${cv}</td>
-      <td style="text-align:center; white-space:nowrap;">
-        <button class="btn-secondary emp-edit-btn" data-emp-id="${escapeHtml(r.id)}" style="padding:4px 10px; font-size:0.75rem;">Edit</button>
-        <button class="btn-secondary emp-delete-btn" data-emp-id="${escapeHtml(r.id)}" style="padding:4px 10px; font-size:0.75rem; color:var(--status-critical);">Delete</button>
+      <td>${cv}</td>
+      <td class="emp-actions-cell">
+        <button class="btn-secondary emp-edit-btn" data-emp-id="${escapeHtml(r.id)}">Edit</button>
+        <button class="btn-secondary emp-delete-btn" data-emp-id="${escapeHtml(r.id)}" style="color:var(--status-critical);">Delete</button>
       </td>
     </tr>`;
   }).join('');
@@ -4084,6 +4084,27 @@ function prepareEmployeeImport(text, silent) {
   }
   const labelToKey = {};
   EMPLOYEE_FIELD_DEFS.forEach(f => { labelToKey[f.label.toLowerCase()] = f.key; labelToKey[f.key.toLowerCase()] = f.key; });
+  // Extra header spellings people commonly use in their sheets.
+  Object.assign(labelToKey, {
+    'id': 'employeeId', 'emp id': 'employeeId', 'employee id': 'employeeId', 'employee no': 'employeeId', 'staff id': 'employeeId',
+    'name': 'fullName', 'employee name': 'fullName', 'full name': 'fullName',
+    'designation': 'designation', 'title': 'designation', 'job title': 'designation', 'role': 'designation', 'position': 'designation',
+    'department': 'department', 'dept': 'department', 'team': 'department',
+    'office': 'officeSpace', 'office space': 'officeSpace', 'location': 'officeSpace', 'branch': 'officeSpace',
+    'phone': 'phone', 'phone number': 'phone', 'phone no': 'phone', 'mobile': 'phone', 'contact number': 'phone', 'cell': 'phone',
+    'email': 'personalEmail', 'personal email': 'personalEmail', 'email address': 'personalEmail', 'e-mail': 'personalEmail',
+    'work email': 'workEmail', 'official email': 'workEmail', 'company email': 'workEmail',
+    'dob': 'dob', 'date of birth': 'dob', 'birth date': 'dob', 'birthday': 'dob',
+    'blood': 'bloodGroup', 'blood group': 'bloodGroup', 'blood type': 'bloodGroup',
+    'status': 'status', 'employment status': 'status', 'active': 'status',
+    'joined': 'joinDate', 'join date': 'joinDate', 'joining date': 'joinDate', 'date of joining': 'joinDate', 'doj': 'joinDate', 'start date': 'joinDate',
+    'nid': 'nationalId', 'national id': 'nationalId', 'passport': 'nationalId', 'nid/passport': 'nationalId', 'national id / passport': 'nationalId',
+    'emergency contact': 'emergencyContactName', 'emergency contact name': 'emergencyContactName', 'emergency name': 'emergencyContactName',
+    'emergency contact phone': 'emergencyContactPhone', 'emergency phone': 'emergencyContactPhone', 'emergency number': 'emergencyContactPhone',
+    'address': 'address', 'home address': 'address', 'present address': 'address',
+    'cv': 'cvLink', 'cv link': 'cvLink', 'resume': 'cvLink', 'resume link': 'cvLink', 'cv / resume link': 'cvLink', 'cv/resume': 'cvLink',
+    'notes': 'notes', 'note': 'notes', 'remarks': 'notes', 'comment': 'notes'
+  });
   const header = rows[0].map(h => labelToKey[empVal(h).toLowerCase()] || null);
   if (!header.includes('employeeId')) {
     employeeImportDraft = null;
@@ -6479,7 +6500,7 @@ function renderTeam() {
     if (p.isDesigner) roleTagsHtml += `<span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.15); margin-right: 4px;">Creative</span>`;
     if (p.isAssigner) roleTagsHtml += `<span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.15); margin-right: 4px;">Assigner</span>`;
     if (p.canPlanContent) roleTagsHtml += `<span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.15); margin-right: 4px;">Ideator</span>`;
-    if (p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.15); margin-right: 4px;">HR</span>`;
+    if (p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.15); margin-right: 4px;">Employee DB</span>`;
     if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
 
     // Access tags
