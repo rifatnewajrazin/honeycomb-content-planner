@@ -3759,6 +3759,24 @@ function setupEmployeeDatabaseControls() {
 
   q('employee-db-new-btn')?.addEventListener('click', () => openEmployeeModal());
   q('employee-form')?.addEventListener('submit', handleEmployeeFormSubmit);
+
+  // Date fields: a read-only text box shows "07 Apr 1995"; the transparent
+  // native <input type=date> layered over it provides the calendar popup.
+  EMPLOYEE_DATE_FIELDS.forEach(key => {
+    const native = q('emp-form-' + key);
+    const display = q('emp-form-' + key + '-display');
+    if (!native || !display) return;
+    native.addEventListener('change', () => {
+      display.value = native.value ? toDisplayDate(native.value) : '';
+    });
+    const openPicker = () => { try { native.showPicker(); } catch (e) { native.focus(); } };
+    const wrapper = native.closest('.date-field') || display;
+    wrapper.addEventListener('click', openPicker);
+    display.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); }
+    });
+  });
+
   q('employee-modal-close-btn')?.addEventListener('click', closeEmployeeModal);
   q('employee-modal-cancel-btn')?.addEventListener('click', closeEmployeeModal);
   q('employee-modal-delete-btn')?.addEventListener('click', deleteEmployeeRecord);
@@ -3960,6 +3978,10 @@ function openEmployeeModal(recordId = null) {
   const form = document.getElementById('employee-form');
   if (!modal || !form) return;
   form.reset();
+  EMPLOYEE_DATE_FIELDS.forEach(key => {
+    const disp = document.getElementById('emp-form-' + key + '-display');
+    if (disp) disp.value = '';
+  });
   state.editingEmployeeId = recordId;
 
   const officeSel = document.getElementById('emp-form-officeSpace');
@@ -3977,7 +3999,15 @@ function openEmployeeModal(recordId = null) {
     if (deleteBtn) deleteBtn.style.display = 'block';
     EMPLOYEE_FIELD_DEFS.forEach(({ key }) => {
       const el = document.getElementById('emp-form-' + key);
-      if (el) el.value = EMPLOYEE_DATE_FIELDS.includes(key) ? toDisplayDate(rec[key]) : empVal(rec[key]);
+      if (!el) return;
+      if (EMPLOYEE_DATE_FIELDS.includes(key)) {
+        const iso = toIsoDate(rec[key]);
+        el.value = (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) ? iso : '';
+        const disp = document.getElementById('emp-form-' + key + '-display');
+        if (disp) disp.value = el.value ? toDisplayDate(el.value) : '';
+      } else {
+        el.value = empVal(rec[key]);
+      }
     });
   } else {
     title.textContent = 'Add Employee';

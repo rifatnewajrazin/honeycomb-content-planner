@@ -12,6 +12,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="style.css?v=3.14.1">
   <style>
+    /* Date field: word-month display text with a native calendar picker layered on top */
+    .date-field { position: relative; }
+    .date-field-display { cursor: pointer; padding-right: 40px; }
+    .date-field-native {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; border: 0; margin: 0; padding: 0;
+      color-scheme: dark;
+    }
+    .date-field-native::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; }
+    .date-field-icon {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; pointer-events: none;
+      fill: none; stroke: #94a3b8; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
     /* Employee Database toolbar — uniform, symmetric buttons on the 4-point grid */
     #employee-database-view .db-toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
     #employee-database-view .db-toolbar > button {
@@ -671,7 +686,13 @@
             </div>
             <div class="form-row">
               <div class="form-group"><label for="emp-form-personalEmail">Email *</label><input type="email" id="emp-form-personalEmail" class="form-control" placeholder="name@example.com" required></div>
-              <div class="form-group"><label for="emp-form-dob">Date of Birth * <span style="color:#64748b; font-weight:400;">(e.g. 07 Apr 1995)</span></label><input type="text" id="emp-form-dob" class="form-control" placeholder="07 Apr 1995" required></div>
+              <div class="form-group"><label for="emp-form-dob-display">Date of Birth *</label>
+                <div class="date-field">
+                  <input type="text" id="emp-form-dob-display" class="form-control date-field-display" placeholder="Select date" readonly>
+                  <input type="date" id="emp-form-dob" class="date-field-native" required aria-label="Date of Birth">
+                  <svg class="date-field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                </div>
+              </div>
             </div>
             <div class="form-row">
               <div class="form-group"><label for="emp-form-bloodGroup">Blood Group *</label><select id="emp-form-bloodGroup" class="form-control" required></select></div>
@@ -684,7 +705,13 @@
               <div class="form-group"><label for="emp-form-officeSpace">Office Space</label><select id="emp-form-officeSpace" class="form-control"></select></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label for="emp-form-joinDate">Join Date <span style="color:#64748b; font-weight:400;">(e.g. 07 Apr 1995)</span></label><input type="text" id="emp-form-joinDate" class="form-control" placeholder="07 Apr 1995"></div>
+              <div class="form-group"><label for="emp-form-joinDate-display">Join Date</label>
+                <div class="date-field">
+                  <input type="text" id="emp-form-joinDate-display" class="form-control date-field-display" placeholder="Select date" readonly>
+                  <input type="date" id="emp-form-joinDate" class="date-field-native" aria-label="Join Date">
+                  <svg class="date-field-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                </div>
+              </div>
               <div class="form-group"><label for="emp-form-workEmail">Work Email</label><input type="email" id="emp-form-workEmail" class="form-control" placeholder="name@honeycomb-hub.app"></div>
             </div>
             <div class="form-row">
@@ -1177,6 +1204,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.16.4"></script>
+  <script type="module" src="app.js?v=3.16.5"></script>
 </body>
 </html>
