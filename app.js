@@ -4663,11 +4663,14 @@ function renderOnboardingDetail(rec) {
   const statusColor = status === 'complete' ? '#4ade80' : (status === 'overdue' ? '#f87171' : '#fbbf24');
   const jd = toDisplayDate(rec.joinDate);
 
-  let html = `<div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; font-size:0.82rem; color:#94a3b8;">
+  let html = `<div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:8px; font-size:0.82rem; color:#94a3b8;">
     <span>Join date: <strong style="color:#e2e8f0;">${escapeHtml(jd) || '—'}</strong></span>
     <span>Status: <strong style="color:${statusColor};">${status.charAt(0).toUpperCase() + status.slice(1)}</strong></span>
     ${status === 'overdue' ? `<span style="color:#f87171;">Overdue (&gt;${ONBOARDING_OVERDUE_DAYS} days past join date)</span>` : ''}
   </div>`;
+  if (canEdit) {
+    html += `<div style="margin-bottom:16px; font-size:0.78rem; color:#64748b;">Tick to mark a step done. Untick any step to undo it — if that step had completed the deliverable, its delivered date clears too. "From record" steps follow the employee's data automatically.</div>`;
+  }
 
   DELIVERABLE_DEFS.forEach(def => {
     const p = deliverableProgress(rec, def);
@@ -4732,7 +4735,13 @@ async function setOnboardingStep(empId, dKey, stepKey, checked) {
     await setDoc(doc(db, "employee_records", empId), updated);
     const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
     const step = def.steps.find(s => s.key === stepKey);
+    const wasComplete = deliverableProgress(rec, def).complete;
     logEmployeeDbActivity(`${checked ? 'ticked' : 'unticked'} "${def.label} › ${step.label}" for ${rec.fullName} (${rec.employeeId})`);
+    if (checked) {
+      showToast(`Marked done: ${def.label} › ${step.label}`, 'success');
+    } else {
+      showToast(`Undone: ${def.label} › ${step.label}${wasComplete ? ` — "${def.label}" is pending again` : ''}`, 'info');
+    }
   } catch (err) {
     console.error(err);
     showToast('Failed to save' + errSuffix(err), 'error');
