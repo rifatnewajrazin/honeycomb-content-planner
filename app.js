@@ -386,6 +386,7 @@ const EMPLOYEE_FIELD_DEFS = [
   { key: 'emergencyContactPhone', label: 'Emergency Contact Phone' },
   { key: 'address',               label: 'Address' },
   { key: 'nationalId',            label: 'National ID' },
+  { key: 'bankAccountNumber',     label: 'Bank Account Number' },
   { key: 'cvLink',                label: 'CV / Resume Link' },
   { key: 'notes',                 label: 'Notes' }
 ];
@@ -4359,6 +4360,7 @@ function prepareEmployeeImport(text, silent) {
     'status': 'status', 'employment status': 'status', 'active': 'status',
     'joined': 'joinDate', 'join date': 'joinDate', 'joining date': 'joinDate', 'date of joining': 'joinDate', 'doj': 'joinDate', 'start date': 'joinDate',
     'nid': 'nationalId', 'national id': 'nationalId', 'passport': 'nationalId', 'nid/passport': 'nationalId', 'national id / passport': 'nationalId',
+    'bank account number': 'bankAccountNumber', 'bank account': 'bankAccountNumber', 'account number': 'bankAccountNumber', 'bank a/c': 'bankAccountNumber', 'a/c number': 'bankAccountNumber', 'bank ac no': 'bankAccountNumber',
     'emergency contact': 'emergencyContactName', 'emergency contact name': 'emergencyContactName', 'emergency name': 'emergencyContactName',
     'emergency contact phone': 'emergencyContactPhone', 'emergency phone': 'emergencyContactPhone', 'emergency number': 'emergencyContactPhone',
     'address': 'address', 'home address': 'address', 'present address': 'address',
