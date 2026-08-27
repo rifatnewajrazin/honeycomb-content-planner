@@ -671,7 +671,7 @@
             </div>
             <div class="form-row">
               <div class="form-group"><label for="emp-form-personalEmail">Email *</label><input type="email" id="emp-form-personalEmail" class="form-control" placeholder="name@example.com" required></div>
-              <div class="form-group"><label for="emp-form-dob">Date of Birth *</label><input type="date" id="emp-form-dob" class="form-control" required></div>
+              <div class="form-group"><label for="emp-form-dob">Date of Birth * <span style="color:#64748b; font-weight:400;">(dd-mm-yyyy)</span></label><input type="text" id="emp-form-dob" class="form-control" inputmode="numeric" placeholder="dd-mm-yyyy" pattern="\d{1,2}[-/]\d{1,2}[-/]\d{4}" required></div>
             </div>
             <div class="form-row">
               <div class="form-group"><label for="emp-form-bloodGroup">Blood Group *</label><select id="emp-form-bloodGroup" class="form-control" required></select></div>
@@ -684,7 +684,7 @@
               <div class="form-group"><label for="emp-form-officeSpace">Office Space</label><select id="emp-form-officeSpace" class="form-control"></select></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label for="emp-form-joinDate">Join Date</label><input type="date" id="emp-form-joinDate" class="form-control"></div>
+              <div class="form-group"><label for="emp-form-joinDate">Join Date <span style="color:#64748b; font-weight:400;">(dd-mm-yyyy)</span></label><input type="text" id="emp-form-joinDate" class="form-control" inputmode="numeric" placeholder="dd-mm-yyyy" pattern="\d{1,2}[-/]\d{1,2}[-/]\d{4}"></div>
               <div class="form-group"><label for="emp-form-workEmail">Work Email</label><input type="email" id="emp-form-workEmail" class="form-control" placeholder="name@honeycomb-hub.app"></div>
             </div>
             <div class="form-row">
@@ -1177,6 +1177,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.16.1"></script>
+  <script type="module" src="app.js?v=3.16.2"></script>
 </body>
 </html>

@@ -3673,6 +3673,34 @@ function setupEventListeners() {
 
 function empVal(v) { return (v == null ? '' : String(v)).trim(); }
 
+// Employee record fields that hold a date. Stored internally as ISO
+// (yyyy-mm-dd) so the table sorts chronologically, but shown and entered
+// as dd-mm-yyyy everywhere in the UI.
+const EMPLOYEE_DATE_FIELDS = ['dob', 'joinDate'];
+
+// ISO (yyyy-mm-dd) -> dd-mm-yyyy for display. Passes through anything that
+// isn't a recognisable date.
+function toDisplayDate(v) {
+  const s = empVal(v);
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  return s;
+}
+
+// dd-mm-yyyy (or dd/mm/yyyy) -> ISO yyyy-mm-dd for storage. Accepts a value
+// that is already ISO. Returns '' for blank; returns null if it looks like a
+// date but the day/month are out of range.
+function toIsoDate(v) {
+  const s = empVal(v);
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+  if (!m) return null;
+  const d = +m[1], mo = +m[2], y = +m[3];
+  if (d < 1 || d > 31 || mo < 1 || mo > 12) return null;
+  return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
 // Draft parsed from an import, awaiting the user pressing "Import".
 let employeeImportDraft = null;
 
@@ -3846,9 +3874,9 @@ function renderEmployeeDatabase() {
       <td>${escapeHtml(r.officeSpace)}</td>
       <td>${escapeHtml(r.phone)}</td>
       <td>${escapeHtml(r.workEmail)}</td>
-      <td>${escapeHtml(r.dob)}</td>
+      <td>${escapeHtml(toDisplayDate(r.dob))}</td>
       <td>${escapeHtml(r.bloodGroup)}</td>
-      <td>${escapeHtml(r.joinDate)}</td>
+      <td>${escapeHtml(toDisplayDate(r.joinDate))}</td>
       <td style="color:${statusColor}; font-weight:600;">${escapeHtml(r.status)}</td>
       <td>${cv}</td>
       <td class="emp-actions-cell">
@@ -3897,7 +3925,7 @@ function openEmployeeModal(recordId = null) {
     if (deleteBtn) deleteBtn.style.display = 'block';
     EMPLOYEE_FIELD_DEFS.forEach(({ key }) => {
       const el = document.getElementById('emp-form-' + key);
-      if (el) el.value = empVal(rec[key]);
+      if (el) el.value = EMPLOYEE_DATE_FIELDS.includes(key) ? toDisplayDate(rec[key]) : empVal(rec[key]);
     });
   } else {
     title.textContent = 'Add Employee';
@@ -3920,6 +3948,18 @@ async function handleEmployeeFormSubmit(e) {
     const el = document.getElementById('emp-form-' + key);
     data[key] = el ? empVal(el.value) : '';
   });
+
+  // Dates are entered as dd-mm-yyyy; store them as ISO for correct sorting.
+  for (const key of EMPLOYEE_DATE_FIELDS) {
+    if (!data[key]) continue;
+    const iso = toIsoDate(data[key]);
+    if (iso === null) {
+      const label = (EMPLOYEE_FIELD_DEFS.find(f => f.key === key) || {}).label || key;
+      showToast(`${label} must be in dd-mm-yyyy format`, 'error');
+      return;
+    }
+    data[key] = iso;
+  }
 
   const missing = EMPLOYEE_REQUIRED_FIELDS.filter(k => !data[k]);
   if (missing.length) {
@@ -3993,7 +4033,7 @@ function renderEmployeeDetail(rec) {
   if (titleEl) titleEl.textContent = `${empVal(rec.fullName)} — ${empVal(rec.employeeId)}`;
   if (!body) return;
   body.innerHTML = EMPLOYEE_FIELD_DEFS.map(({ key, label }) => {
-    let val = empVal(rec[key]) || '—';
+    let val = (EMPLOYEE_DATE_FIELDS.includes(key) ? toDisplayDate(rec[key]) : empVal(rec[key])) || '—';
     if (key === 'cvLink' && empVal(rec.cvLink)) {
       val = `<a href="${escapeHtml(rec.cvLink)}" target="_blank" rel="noopener" style="color:#60a5fa;">Open CV</a>`;
     } else {
@@ -4047,7 +4087,9 @@ function exportEmployeeCsv() {
   if (!rows.length) { showToast('Nothing to export', 'info'); return; }
   const headers = EMPLOYEE_FIELD_DEFS.map(f => f.label);
   const lines = [headers.map(csvEscape).join(',')];
-  rows.forEach(r => lines.push(EMPLOYEE_FIELD_DEFS.map(f => csvEscape(r[f.key])).join(',')));
+  rows.forEach(r => lines.push(EMPLOYEE_FIELD_DEFS.map(f =>
+    csvEscape(EMPLOYEE_DATE_FIELDS.includes(f.key) ? toDisplayDate(r[f.key]) : r[f.key])
+  ).join(',')));
   const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -4152,6 +4194,12 @@ async function commitEmployeeImport() {
 
   let ok = 0, fail = 0;
   for (const rec of employeeImportDraft) {
+    // Normalise date columns (dd-mm-yyyy / dd/mm/yyyy / ISO) to ISO storage.
+    for (const key of EMPLOYEE_DATE_FIELDS) {
+      if (rec[key] == null || rec[key] === '') continue;
+      const iso = toIsoDate(rec[key]);
+      if (iso) rec[key] = iso;
+    }
     const match = existingById[empVal(rec.employeeId).toLowerCase()];
     const id = match ? match.id : `emp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const record = {
