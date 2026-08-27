@@ -149,6 +149,14 @@
             </svg>
             Employee Database
           </a>
+          <a href="#" class="nav-item" id="nav-onboarding-link" data-view="onboarding" style="display: none; position: relative;">
+            <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+              <path d="M9 11l3 3 8-8"/>
+              <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>
+            </svg>
+            Onboarding
+            <span id="onboarding-badge" class="nav-badge" style="display: none;"></span>
+          </a>
         </nav>
       </div>
 
@@ -180,6 +188,7 @@
       <!-- View 1: Dashboard View -->
       <section id="dashboard-view" class="view-panel active">
         <span id="dashboard-priority-board-badge" class="priority-board-dashboard-badge" style="display:none;"></span>
+        <span id="dashboard-onboarding-badge" style="display:none; align-items:center; gap:6px; border-radius:9999px; padding:6px 16px; font-size:0.8rem; font-weight:600; margin-left:8px;"></span>
         <div class="dashboard-grid" id="dashboard-cards-grid">
           <!-- Dynamically Rendered Page Cards -->
         </div>
@@ -617,6 +626,43 @@
           </div>
         </section>
 
+        <!-- View: Onboarding Deliverables (ID Card / Mug / Bank Account) -->
+        <section id="onboarding-view" class="view-panel">
+          <div style="margin-bottom: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <span style="background: rgba(236, 72, 153, 0.12); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 9999px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600;">Employees: <strong id="onboarding-count-total">0</strong></span>
+            <span style="background: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 9999px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600;">Pending: <strong id="onboarding-count-pending">0</strong></span>
+            <span style="background: rgba(248, 113, 113, 0.12); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); border-radius: 9999px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600;">Overdue: <strong id="onboarding-count-overdue">0</strong></span>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 24px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="onboarding-search-input" placeholder="Search name, ID, designation..." class="search-input" style="flex: 2; min-width: 224px; height: 40px; padding: 0 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; font-size: 0.9rem; outline: none;">
+            <select id="onboarding-office-filter" class="filter-select" style="min-width: 144px; height: 40px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;"><option value="all">All Offices</option></select>
+            <select id="onboarding-status-filter" class="filter-select" style="min-width: 140px; height: 40px; padding: 0 12px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #e2e8f0; font-size: 0.9rem; cursor: pointer;">
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="overdue">Overdue</option>
+              <option value="complete">Complete</option>
+            </select>
+          </div>
+
+          <div class="tasks-table-container" style="max-height: calc(100vh - 300px); overflow: auto;">
+            <table class="tasks-table" style="width: 100%; border-collapse: collapse; white-space: nowrap;">
+              <thead>
+                <tr>
+                  <th class="sortable-th" data-sort="employeeId" style="text-align: left;">Emp ID <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="fullName" style="text-align: left;">Name <span class="sort-icon">↕</span></th>
+                  <th class="sortable-th" data-sort="joinDate" style="text-align: left;">Join Date <span class="sort-icon">↕</span></th>
+                  <th style="text-align: center;">ID Card</th>
+                  <th style="text-align: center;">Mug</th>
+                  <th style="text-align: center;">Bank Account</th>
+                  <th class="sortable-th" data-sort="status" style="text-align: left;">Status <span class="sort-icon">↕</span></th>
+                </tr>
+              </thead>
+              <tbody id="onboarding-list-body"></tbody>
+            </table>
+          </div>
+        </section>
+
       </main>
 
     <!-- Modal Form (Create / Edit Idea Board entry) -->
@@ -781,6 +827,22 @@
         <div class="modal-footer">
           <button type="button" class="btn-secondary modal-cancel" id="employee-import-modal-cancel-btn">Cancel</button>
           <button type="button" class="btn-primary" id="emp-import-commit-btn" disabled>Import</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Onboarding deliverables checklist for one employee -->
+    <div id="onboarding-detail-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="onboarding-detail-modal-title">
+      <div class="modal-content" style="max-width: 640px;">
+        <div class="modal-header">
+          <h3 id="onboarding-detail-modal-title">Onboarding</h3>
+          <button class="close-btn" id="onboarding-detail-modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="modal-body" id="onboarding-detail-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-primary" id="onboarding-detail-modal-done-btn">Done</button>
         </div>
       </div>
     </div>
@@ -1204,6 +1266,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.16.5"></script>
+  <script type="module" src="app.js?v=3.17.0"></script>
 </body>
 </html>

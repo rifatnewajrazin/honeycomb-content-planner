@@ -382,6 +382,81 @@ const EMPLOYEE_FIELD_DEFS = [
   { key: 'notes',                 label: 'Notes' }
 ];
 
+// ---- Onboarding Deliverables ----------------------------------------------
+// Formal deliverables every new employee should receive. Stored on the same
+// employee_records row under `deliverables` (no separate table). Each step is
+// either auto-derived from an existing record field or a manual checkbox;
+// some steps also carry an optional Google Drive link.
+const DELIVERABLE_DEFS = [
+  {
+    key: 'idCard', label: 'ID Card',
+    steps: [
+      { key: 'name',       label: 'Name',                 auto: r => !!empVal(r.fullName) },
+      { key: 'phone',      label: 'Phone Number',         auto: r => !!empVal(r.phone) },
+      { key: 'email',      label: 'Email Address',        auto: r => !!empVal(r.personalEmail) },
+      { key: 'dob',        label: 'Date of Birth',        auto: r => !!empVal(r.dob) },
+      { key: 'bloodGroup', label: 'Blood Group',          auto: r => !!empVal(r.bloodGroup) },
+      { key: 'photo',      label: 'Formal/Casual Photo',   link: true }
+    ]
+  },
+  {
+    key: 'mug', label: 'Mug',
+    steps: [
+      { key: 'nameCollection', label: 'Name Collection' },
+      { key: 'designFile',     label: 'Design File Preparation', link: true }
+    ]
+  },
+  {
+    key: 'bankAccount', label: 'Bank Account',
+    steps: [
+      { key: 'basicInfo',     label: 'Basic Information' },
+      { key: 'specialIdCard', label: 'Special Submittable ID Card Preparation', link: true }
+    ]
+  }
+];
+
+// Days after Join Date before an incomplete deliverable is flagged overdue.
+const ONBOARDING_OVERDUE_DAYS = 14;
+
+// Whether a single step is satisfied for a record (auto steps read the record;
+// manual steps read the stored deliverables object).
+function isDeliverableStepDone(rec, dKey, step) {
+  if (step.auto) return !!step.auto(rec);
+  return !!(rec && rec.deliverables && rec.deliverables[dKey] &&
+           rec.deliverables[dKey].steps && rec.deliverables[dKey].steps[step.key]);
+}
+
+function deliverableProgress(rec, def) {
+  const total = def.steps.length;
+  const done = def.steps.filter(s => isDeliverableStepDone(rec, def.key, s)).length;
+  return { done, total, complete: done === total };
+}
+
+function isEmployeeFullyOnboarded(rec) {
+  return DELIVERABLE_DEFS.every(def => deliverableProgress(rec, def).complete);
+}
+
+function deliverableLink(rec, dKey, stepKey) {
+  return empVal(rec && rec.deliverables && rec.deliverables[dKey] &&
+    rec.deliverables[dKey].links && rec.deliverables[dKey].links[stepKey]);
+}
+
+function deliverableDeliveredOn(rec, dKey) {
+  return empVal(rec && rec.deliverables && rec.deliverables[dKey] &&
+    rec.deliverables[dKey].deliveredOn);
+}
+
+// True when the employee still has an incomplete deliverable AND is more than
+// ONBOARDING_OVERDUE_DAYS past their Join Date. No Join Date => never overdue.
+function isEmployeeOnboardingOverdue(rec) {
+  if (isEmployeeFullyOnboarded(rec)) return false;
+  const jd = toIsoDate(rec.joinDate);
+  if (!jd || !/^\d{4}-\d{2}-\d{2}$/.test(jd)) return false;
+  const due = new Date(jd + 'T00:00:00');
+  due.setDate(due.getDate() + ONBOARDING_OVERDUE_DAYS);
+  return new Date() > due;
+}
+
 function isItemArchived(item) {
   return false;
 }
@@ -2012,7 +2087,14 @@ let state = {
   employeeBloodGroupFilter: 'all',
   employeeStatusFilter: 'all',
   employeeSortCol: 'fullName',
-  employeeSortDir: 'asc'
+  employeeSortDir: 'asc',
+  // Onboarding Deliverables view
+  onboardingSearchFilter: '',
+  onboardingOfficeFilter: 'all',
+  onboardingStatusFilter: 'all',
+  onboardingSortCol: 'fullName',
+  onboardingSortDir: 'asc',
+  viewingOnboardingId: null
 };
 
 // Initialize Application
@@ -2257,13 +2339,26 @@ function renderUserProfile() {
     }
   }
 
+  // Toggle Onboarding link in sidebar (same HR / admin gate as Employee Database)
+  const onboardingLink = document.getElementById('nav-onboarding-link');
+  if (onboardingLink) {
+    if (currentUser && canCurrentUserAccessEmployeeDb()) {
+      onboardingLink.style.display = 'flex';
+    } else {
+      onboardingLink.style.display = 'none';
+      if (state.currentView === 'onboarding') {
+        switchView('dashboard');
+      }
+    }
+  }
+
   // Board-only accounts (Orthee): restrict the sidebar (and any current view)
   // to just the Priority Board plus People & Roles — they don't get Task
   // Tracker, Idea Board, Analytics, Calendar, Content Links, etc.
   const boardOnly = currentUser && isCurrentUserBoardOnly();
   // Items already gated individually above (logs/kanban) keep whatever those
   // gates decided; People & Roles stays visible for board-only accounts too.
-  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link', 'nav-employee-db-link'];
+  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link', 'nav-employee-db-link', 'nav-onboarding-link'];
   document.querySelectorAll('.nav-item').forEach(item => {
     if (individuallyGatedIds.includes(item.id)) return;
     if (boardOnly && item.getAttribute('data-view') === 'team') {
@@ -2652,14 +2747,21 @@ function initData() {
       querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
       state.employeeRecords = loaded;
       if (state.currentView === 'employee-database') renderEmployeeDatabase();
+      if (state.currentView === 'onboarding') renderOnboarding();
+      updateOnboardingBadge();
       if (state.viewingEmployeeId) {
         const rec = state.employeeRecords.find(r => r.id === state.viewingEmployeeId);
         if (rec) renderEmployeeDetail(rec);
+      }
+      if (state.viewingOnboardingId) {
+        const rec = state.employeeRecords.find(r => r.id === state.viewingOnboardingId);
+        if (rec) renderOnboardingDetail(rec);
       }
     }, (error) => {
       console.error("Supabase employee_records sync error:", error);
       state.employeeRecords = state.employeeRecords || [];
       if (state.currentView === 'employee-database') renderEmployeeDatabase();
+      if (state.currentView === 'onboarding') renderOnboarding();
     });
   } catch(err) {
     console.warn("Supabase employee_records listener skipped:", err);
@@ -3660,6 +3762,7 @@ function setupEventListeners() {
   }
 
   setupEmployeeDatabaseControls();
+  setupOnboardingControls();
 }
 
 // ==========================================================================
@@ -4325,6 +4428,335 @@ function renderEmployeeDbLog() {
   </div>`).join('');
 }
 
+// ==========================================================================
+// Onboarding Deliverables Tracker
+//
+// Per-employee checklist of formal deliverables (ID Card / Mug / Bank
+// Account) stored on the employee_records row under `deliverables`. Same
+// HR/Admin gate as the Employee Database. Nav badge + dashboard pill work
+// like the Priority Board's.
+// ==========================================================================
+
+function blankDeliverables() {
+  const d = {};
+  DELIVERABLE_DEFS.forEach(def => {
+    d[def.key] = { steps: {}, links: {}, deliveredOn: null };
+    def.steps.forEach(s => {
+      if (!s.auto) d[def.key].steps[s.key] = false;
+      if (s.link) d[def.key].links[s.key] = '';
+    });
+  });
+  return d;
+}
+
+// A complete deliverables object for a record: blank scaffold overlaid with
+// whatever is already stored, so every expected key exists.
+function mergeDeliverables(rec) {
+  const base = blankDeliverables();
+  const cur = (rec && rec.deliverables) || {};
+  DELIVERABLE_DEFS.forEach(def => {
+    const c = cur[def.key] || {};
+    base[def.key].deliveredOn = c.deliveredOn || null;
+    Object.assign(base[def.key].steps, c.steps || {});
+    Object.assign(base[def.key].links, c.links || {});
+  });
+  return base;
+}
+
+// Auto-stamp / clear each deliverable's deliveredOn based on completion.
+function applyDeliveredDates(deliverables, rec) {
+  const today = new Date().toISOString().slice(0, 10);
+  DELIVERABLE_DEFS.forEach(def => {
+    const complete = def.steps.every(s => s.auto ? !!s.auto(rec) : !!deliverables[def.key].steps[s.key]);
+    if (complete && !deliverables[def.key].deliveredOn) deliverables[def.key].deliveredOn = today;
+    if (!complete) deliverables[def.key].deliveredOn = null;
+  });
+}
+
+function setupOnboardingControls() {
+  const q = (id) => document.getElementById(id);
+
+  const search = q('onboarding-search-input');
+  if (search) search.addEventListener('input', (e) => {
+    state.onboardingSearchFilter = e.target.value.toLowerCase();
+    renderOnboarding();
+  });
+  q('onboarding-office-filter')?.addEventListener('change', (e) => {
+    state.onboardingOfficeFilter = e.target.value; renderOnboarding();
+  });
+  q('onboarding-status-filter')?.addEventListener('change', (e) => {
+    state.onboardingStatusFilter = e.target.value; renderOnboarding();
+  });
+
+  document.querySelectorAll('#onboarding-view th.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.getAttribute('data-sort');
+      if (state.onboardingSortCol === col) {
+        state.onboardingSortDir = state.onboardingSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.onboardingSortCol = col;
+        state.onboardingSortDir = 'asc';
+      }
+      renderOnboarding();
+    });
+  });
+
+  q('onboarding-detail-modal-close-btn')?.addEventListener('click', closeOnboardingDetail);
+  q('onboarding-detail-modal-done-btn')?.addEventListener('click', closeOnboardingDetail);
+}
+
+function onboardingStatusOf(rec) {
+  if (isEmployeeFullyOnboarded(rec)) return 'complete';
+  return isEmployeeOnboardingOverdue(rec) ? 'overdue' : 'pending';
+}
+
+function getFilteredOnboardingRecords() {
+  let rows = [...(state.employeeRecords || [])];
+  const s = state.onboardingSearchFilter;
+  if (s) {
+    rows = rows.filter(r => ['employeeId', 'fullName', 'designation', 'department']
+      .some(k => empVal(r[k]).toLowerCase().includes(s)));
+  }
+  if (state.onboardingOfficeFilter !== 'all') {
+    rows = rows.filter(r => empVal(r.officeSpace).toLowerCase() === state.onboardingOfficeFilter.toLowerCase());
+  }
+  if (state.onboardingStatusFilter !== 'all') {
+    rows = rows.filter(r => onboardingStatusOf(r) === state.onboardingStatusFilter);
+  }
+
+  const col = state.onboardingSortCol || 'fullName';
+  const dir = state.onboardingSortDir === 'desc' ? -1 : 1;
+  rows.sort((a, b) => {
+    let av, bv;
+    if (col === 'status') { av = onboardingStatusOf(a); bv = onboardingStatusOf(b); }
+    else if (col === 'joinDate') { av = toIsoDate(a.joinDate) || ''; bv = toIsoDate(b.joinDate) || ''; }
+    else { av = empVal(a[col]); bv = empVal(b[col]); }
+    return String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' }) * dir;
+  });
+  return rows;
+}
+
+function populateOnboardingFilters() {
+  const el = document.getElementById('onboarding-office-filter');
+  if (!el) return;
+  const first = el.querySelector('option');
+  el.innerHTML = '';
+  if (first) el.appendChild(first);
+  DEFAULT_OFFICE_SPACES.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    if (state.onboardingOfficeFilter === o) opt.selected = true;
+    el.appendChild(opt);
+  });
+}
+
+function renderOnboarding() {
+  const tbody = document.getElementById('onboarding-list-body');
+  if (!tbody) return;
+  if (!canCurrentUserAccessEmployeeDb()) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>';
+    return;
+  }
+
+  populateOnboardingFilters();
+  const all = state.employeeRecords || [];
+  const rows = getFilteredOnboardingRecords();
+
+  const pending = all.filter(r => !isEmployeeFullyOnboarded(r));
+  const overdue = pending.filter(isEmployeeOnboardingOverdue);
+  const setText = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
+  setText('onboarding-count-total', String(all.length));
+  setText('onboarding-count-pending', String(pending.length));
+  setText('onboarding-count-overdue', String(overdue.length));
+
+  document.querySelectorAll('#onboarding-view th.sortable-th').forEach(th => {
+    const icon = th.querySelector('.sort-icon');
+    if (!icon) return;
+    icon.textContent = th.getAttribute('data-sort') === state.onboardingSortCol
+      ? (state.onboardingSortDir === 'asc' ? '↑' : '↓') : '↕';
+  });
+
+  if (!rows.length) {
+    const msg = all.length === 0 ? 'No employees yet — add them in the Employee Database.' : 'No employees match the current filters.';
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:32px; color:#64748b;">${msg}</td></tr>`;
+    return;
+  }
+
+  const cell = (rec, def) => {
+    const p = deliverableProgress(rec, def);
+    if (p.complete) return `<span style="color:#4ade80; font-weight:700;">✓</span>`;
+    const color = p.done === 0 && onboardingStatusOf(rec) === 'overdue' ? '#f87171' : '#fbbf24';
+    return `<span style="color:${color}; font-weight:600;">${p.done}/${p.total}</span>`;
+  };
+
+  tbody.innerHTML = rows.map(rec => {
+    const status = onboardingStatusOf(rec);
+    const statusMap = {
+      complete: ['#4ade80', 'Complete'],
+      overdue: ['#f87171', 'Overdue'],
+      pending: ['#fbbf24', 'Pending']
+    };
+    const [sc, sl] = statusMap[status];
+    const rowBg = status === 'overdue' ? 'background: rgba(248,113,113,0.06);' : '';
+    return `<tr data-onb-id="${escapeHtml(rec.id)}" style="cursor:pointer; ${rowBg}">
+      <td>${escapeHtml(rec.employeeId)}</td>
+      <td style="font-weight:600; color:#fff;">${escapeHtml(rec.fullName)}</td>
+      <td>${escapeHtml(toDisplayDate(rec.joinDate)) || '<span style="color:#475569;">—</span>'}</td>
+      <td style="text-align:center;">${cell(rec, DELIVERABLE_DEFS[0])}</td>
+      <td style="text-align:center;">${cell(rec, DELIVERABLE_DEFS[1])}</td>
+      <td style="text-align:center;">${cell(rec, DELIVERABLE_DEFS[2])}</td>
+      <td style="color:${sc}; font-weight:700;">${sl}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('tr[data-onb-id]').forEach(tr => {
+    tr.addEventListener('click', () => openOnboardingDetail(tr.getAttribute('data-onb-id')));
+  });
+}
+
+function updateOnboardingBadge() {
+  const recs = state.employeeRecords || [];
+  const pending = recs.filter(r => !isEmployeeFullyOnboarded(r));
+  const overdue = pending.filter(isEmployeeOnboardingOverdue);
+
+  const nav = document.getElementById('onboarding-badge');
+  if (nav) {
+    if (pending.length) { nav.textContent = pending.length; nav.style.display = 'flex'; }
+    else nav.style.display = 'none';
+  }
+  const dash = document.getElementById('dashboard-onboarding-badge');
+  if (dash) {
+    if (pending.length) {
+      dash.textContent = `${pending.length} employee${pending.length === 1 ? '' : 's'} with pending deliverables`
+        + (overdue.length ? ` · ${overdue.length} overdue` : '');
+      dash.style.display = 'inline-flex';
+      dash.style.background = overdue.length ? 'rgba(248,113,113,0.15)' : 'rgba(251,191,36,0.15)';
+      dash.style.color = overdue.length ? '#f87171' : '#fbbf24';
+      dash.style.border = `1px solid ${overdue.length ? 'rgba(248,113,113,0.3)' : 'rgba(251,191,36,0.3)'}`;
+    } else {
+      dash.style.display = 'none';
+    }
+  }
+}
+
+function openOnboardingDetail(recId) {
+  const rec = (state.employeeRecords || []).find(r => r.id === recId);
+  if (!rec) return;
+  state.viewingOnboardingId = recId;
+  renderOnboardingDetail(rec);
+  document.getElementById('onboarding-detail-modal')?.classList.add('active');
+}
+
+function closeOnboardingDetail() {
+  document.getElementById('onboarding-detail-modal')?.classList.remove('active');
+  state.viewingOnboardingId = null;
+}
+
+function renderOnboardingDetail(rec) {
+  const body = document.getElementById('onboarding-detail-body');
+  const titleEl = document.getElementById('onboarding-detail-modal-title');
+  if (titleEl) titleEl.textContent = `${empVal(rec.fullName)} — ${empVal(rec.employeeId)}`;
+  if (!body) return;
+
+  const canEdit = canCurrentUserAccessEmployeeDb();
+  const status = onboardingStatusOf(rec);
+  const statusColor = status === 'complete' ? '#4ade80' : (status === 'overdue' ? '#f87171' : '#fbbf24');
+  const jd = toDisplayDate(rec.joinDate);
+
+  let html = `<div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; font-size:0.82rem; color:#94a3b8;">
+    <span>Join date: <strong style="color:#e2e8f0;">${escapeHtml(jd) || '—'}</strong></span>
+    <span>Status: <strong style="color:${statusColor};">${status.charAt(0).toUpperCase() + status.slice(1)}</strong></span>
+    ${status === 'overdue' ? `<span style="color:#f87171;">Overdue (&gt;${ONBOARDING_OVERDUE_DAYS} days past join date)</span>` : ''}
+  </div>`;
+
+  DELIVERABLE_DEFS.forEach(def => {
+    const p = deliverableProgress(rec, def);
+    const deliveredOn = deliverableDeliveredOn(rec, def.key);
+    html += `<div style="border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px 16px; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <strong style="color:#fff; font-size:0.95rem;">${def.label}</strong>
+        <span style="font-size:0.8rem; color:${p.complete ? '#4ade80' : '#fbbf24'}; font-weight:700;">
+          ${p.complete ? `Delivered${deliveredOn ? ' · ' + escapeHtml(toDisplayDate(deliveredOn)) : ''}` : `${p.done}/${p.total}`}
+        </span>
+      </div>`;
+
+    def.steps.forEach(step => {
+      const done = isDeliverableStepDone(rec, def.key, step);
+      const auto = !!step.auto;
+      html += `<div style="display:flex; align-items:flex-start; gap:10px; padding:6px 0;">
+        <input type="checkbox" ${done ? 'checked' : ''} ${(auto || !canEdit) ? 'disabled' : ''}
+          data-onb-step="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+          style="width:16px; height:16px; margin-top:2px; accent-color: var(--honey-gold); flex:none;">
+        <div style="flex:1; min-width:0;">
+          <span style="color:#e2e8f0; font-size:0.88rem;">${escapeHtml(step.label)}</span>
+          ${auto ? `<span style="color:#64748b; font-size:0.75rem;"> — from record</span>` : ''}
+          ${step.link ? `<div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
+            <input type="url" placeholder="Paste Google Drive link (optional)"
+              data-onb-link="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+              value="${escapeHtml(deliverableLink(rec, def.key, step.key))}"
+              ${canEdit ? '' : 'disabled'}
+              style="flex:1; min-width:0; height:32px; padding:0 10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff; font-size:0.8rem; outline:none;">
+            ${deliverableLink(rec, def.key, step.key) ? `<a href="${escapeHtml(deliverableLink(rec, def.key, step.key))}" target="_blank" rel="noopener" style="color:#60a5fa; font-size:0.8rem; white-space:nowrap;">Open</a>` : ''}
+          </div>` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  body.innerHTML = html;
+
+  body.querySelectorAll('input[data-onb-step]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const [dKey, stepKey] = cb.getAttribute('data-onb-step').split('|');
+      setOnboardingStep(rec.id, dKey, stepKey, cb.checked);
+    });
+  });
+  body.querySelectorAll('input[data-onb-link]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const [dKey, stepKey] = inp.getAttribute('data-onb-link').split('|');
+      setOnboardingLink(rec.id, dKey, stepKey, inp.value);
+    });
+  });
+}
+
+async function setOnboardingStep(empId, dKey, stepKey, checked) {
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  const rec = (state.employeeRecords || []).find(r => r.id === empId);
+  if (!rec) return;
+  const deliverables = mergeDeliverables(rec);
+  deliverables[dKey].steps[stepKey] = !!checked;
+  applyDeliveredDates(deliverables, rec);
+  const updated = { ...rec, deliverables, updatedBy: localStorage.getItem('hc_logged_in_user') || 'System', updatedAt: new Date().toISOString() };
+  try {
+    await setDoc(doc(db, "employee_records", empId), updated);
+    const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
+    const step = def.steps.find(s => s.key === stepKey);
+    logEmployeeDbActivity(`${checked ? 'ticked' : 'unticked'} "${def.label} › ${step.label}" for ${rec.fullName} (${rec.employeeId})`);
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to save' + errSuffix(err), 'error');
+  }
+}
+
+async function setOnboardingLink(empId, dKey, stepKey, url) {
+  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  const rec = (state.employeeRecords || []).find(r => r.id === empId);
+  if (!rec) return;
+  const deliverables = mergeDeliverables(rec);
+  deliverables[dKey].links[stepKey] = empVal(url);
+  const updated = { ...rec, deliverables, updatedBy: localStorage.getItem('hc_logged_in_user') || 'System', updatedAt: new Date().toISOString() };
+  try {
+    await setDoc(doc(db, "employee_records", empId), updated);
+    const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
+    const step = def.steps.find(s => s.key === stepKey);
+    logEmployeeDbActivity(`updated link for "${def.label} › ${step.label}" — ${rec.fullName} (${rec.employeeId})`);
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to save link' + errSuffix(err), 'error');
+  }
+}
+
 function openMobileSidebar() {
   document.getElementById('sidebar')?.classList.add('mobile-open');
   document.getElementById('sidebar-backdrop')?.classList.add('active');
@@ -4344,8 +4776,8 @@ function switchView(viewName) {
   if (viewName !== 'priority-board' && viewName !== 'team' && isCurrentUserBoardOnly()) {
     viewName = 'priority-board';
   }
-  // Employee Database is HR/admin only — bounce anyone else to the dashboard.
-  if (viewName === 'employee-database' && !canCurrentUserAccessEmployeeDb()) {
+  // Employee Database and Onboarding are HR/admin only — bounce anyone else.
+  if ((viewName === 'employee-database' || viewName === 'onboarding') && !canCurrentUserAccessEmployeeDb()) {
     viewName = 'dashboard';
   }
 
@@ -4363,7 +4795,8 @@ function switchView(viewName) {
     'priority-board': ['Priority Board', 'DTF/Vinyl and sublimation print-prep requests, flagged by slot and job type'],
     team: ['People & Roles', 'Team roster, roles, and login permissions'],
     logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)'],
-    'employee-database': ['Employee Database', 'HR directory — employee records, contact details, and seating (HR & Admins only)']
+    'employee-database': ['Employee Database', 'HR directory — employee records, contact details, and seating (HR & Admins only)'],
+    'onboarding': ['Onboarding', 'Formal deliverables for every employee — ID Card, Mug, Bank Account']
   };
   const headerTitleEl = document.querySelector('.header-title');
   if (headerTitleEl && VIEW_HEADERS[viewName]) {
@@ -4394,7 +4827,7 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board' || viewName === 'employee-database') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board' || viewName === 'employee-database' || viewName === 'onboarding') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
@@ -4415,6 +4848,7 @@ function switchView(viewName) {
   else if (viewName === 'calendar') renderCalendar();
   else if (viewName === 'logs') renderLogs();
   else if (viewName === 'employee-database') renderEmployeeDatabase();
+  else if (viewName === 'onboarding') renderOnboarding();
 
   // Scroll main back to top
   document.querySelector('.main-content').scrollTop = 0;
@@ -4459,6 +4893,8 @@ function refreshViews() {
   try { renderIdeaBoard(); } catch(e) { console.error("renderIdeaBoard error:", e); }
   try { renderPriorityBoard(); } catch(e) { console.error("renderPriorityBoard error:", e); }
   try { renderEmployeeDatabase(); } catch(e) { console.error("renderEmployeeDatabase error:", e); }
+  try { renderOnboarding(); } catch(e) { console.error("renderOnboarding error:", e); }
+  try { updateOnboardingBadge(); } catch(e) { console.error("updateOnboardingBadge error:", e); }
   try { updatePublishingQueueBadge(); } catch(e) { console.error("updatePublishingQueueBadge error:", e); }
   try { updatePriorityBoardBadge(); } catch(e) { console.error("updatePriorityBoardBadge error:", e); }
 }
