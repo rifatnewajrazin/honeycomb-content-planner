@@ -1412,10 +1412,27 @@ button.posted-badge {
   color: #94a3b8;
   cursor: pointer;
   transition: var(--transition-fast);
+  /* Give the hit area a real 40px touch target (icon stays visually small) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  margin: -8px -8px -8px 0;
+  border-radius: 8px;
+  flex: none;
 }
 
 .close-btn:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.close-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .close-btn svg {
