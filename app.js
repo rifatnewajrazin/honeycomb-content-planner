@@ -343,6 +343,14 @@ function canCurrentUserAccessEmployeeDb() {
   return !!(person && (person.canAccessEmployeeDb || person.access === 'admin'));
 }
 
+// Gate for the Onboarding Deliverables view. Anyone with Employee Database
+// (HR) access has it automatically; the canAccessOnboarding flag grants it
+// to people who don't need the full HR directory. Admins always have it.
+function canCurrentUserAccessOnboarding() {
+  const person = getCurrentUserPerson();
+  return !!(person && (person.canAccessOnboarding || person.canAccessEmployeeDb || person.access === 'admin'));
+}
+
 // The three physical office spaces employees can be seated in. Rename here
 // in one place if the offices ever change.
 const DEFAULT_OFFICE_SPACES = ['HQ', 'DC1', 'DC2', 'DC3', 'DC4', 'Not Specific'];
@@ -418,8 +426,17 @@ const DELIVERABLE_DEFS = [
 // Days after Join Date before an incomplete deliverable is flagged overdue.
 const ONBOARDING_OVERDUE_DAYS = 14;
 
+// A manual step can be marked "Not required" (N/A) for a given employee.
+// Auto steps (from the record) can't be N/A.
+function isDeliverableStepNA(rec, dKey, step) {
+  if (step.auto) return false;
+  return !!(rec && rec.deliverables && rec.deliverables[dKey] &&
+           rec.deliverables[dKey].na && rec.deliverables[dKey].na[step.key]);
+}
+
 // Whether a single step is satisfied for a record (auto steps read the record;
-// manual steps read the stored deliverables object).
+// manual steps read the stored deliverables object). An N/A step doesn't count
+// as "done" but it's excluded from the progress total.
 function isDeliverableStepDone(rec, dKey, step) {
   if (step.auto) return !!step.auto(rec);
   return !!(rec && rec.deliverables && rec.deliverables[dKey] &&
@@ -427,9 +444,10 @@ function isDeliverableStepDone(rec, dKey, step) {
 }
 
 function deliverableProgress(rec, def) {
-  const total = def.steps.length;
-  const done = def.steps.filter(s => isDeliverableStepDone(rec, def.key, s)).length;
-  return { done, total, complete: done === total };
+  const required = def.steps.filter(s => !isDeliverableStepNA(rec, def.key, s));
+  const done = required.filter(s => isDeliverableStepDone(rec, def.key, s)).length;
+  const total = required.length;
+  return { done, total, complete: done === total, allNA: total === 0 };
 }
 
 function isEmployeeFullyOnboarded(rec) {
@@ -2339,10 +2357,10 @@ function renderUserProfile() {
     }
   }
 
-  // Toggle Onboarding link in sidebar (same HR / admin gate as Employee Database)
+  // Toggle Onboarding link in sidebar (HR access, the Onboarding flag, or admin)
   const onboardingLink = document.getElementById('nav-onboarding-link');
   if (onboardingLink) {
-    if (currentUser && canCurrentUserAccessEmployeeDb()) {
+    if (currentUser && canCurrentUserAccessOnboarding()) {
       onboardingLink.style.display = 'flex';
     } else {
       onboardingLink.style.display = 'none';
@@ -4448,7 +4466,7 @@ function renderEmployeeDbLog() {
 function blankDeliverables() {
   const d = {};
   DELIVERABLE_DEFS.forEach(def => {
-    d[def.key] = { steps: {}, links: {}, deliveredOn: null };
+    d[def.key] = { steps: {}, links: {}, na: {}, deliveredOn: null };
     def.steps.forEach(s => {
       if (!s.auto) d[def.key].steps[s.key] = false;
       if (s.link) d[def.key].links[s.key] = '';
@@ -4467,15 +4485,23 @@ function mergeDeliverables(rec) {
     base[def.key].deliveredOn = c.deliveredOn || null;
     Object.assign(base[def.key].steps, c.steps || {});
     Object.assign(base[def.key].links, c.links || {});
+    Object.assign(base[def.key].na, c.na || {});
   });
   return base;
 }
 
 // Auto-stamp / clear each deliverable's deliveredOn based on completion.
+// A step marked N/A counts as satisfied for the completion check.
 function applyDeliveredDates(deliverables, rec) {
   const today = new Date().toISOString().slice(0, 10);
   DELIVERABLE_DEFS.forEach(def => {
-    const complete = def.steps.every(s => s.auto ? !!s.auto(rec) : !!deliverables[def.key].steps[s.key]);
+    const na = deliverables[def.key].na || {};
+    const anyRequired = def.steps.some(s => s.auto || !na[s.key]);
+    const complete = anyRequired && def.steps.every(s => {
+      if (s.auto) return !!s.auto(rec);
+      if (na[s.key]) return true;
+      return !!deliverables[def.key].steps[s.key];
+    });
     if (complete && !deliverables[def.key].deliveredOn) deliverables[def.key].deliveredOn = today;
     if (!complete) deliverables[def.key].deliveredOn = null;
   });
@@ -4561,7 +4587,7 @@ function populateOnboardingFilters() {
 function renderOnboarding() {
   const tbody = document.getElementById('onboarding-list-body');
   if (!tbody) return;
-  if (!canCurrentUserAccessEmployeeDb()) {
+  if (!canCurrentUserAccessOnboarding()) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>';
     return;
   }
@@ -4592,6 +4618,7 @@ function renderOnboarding() {
 
   const cell = (rec, def) => {
     const p = deliverableProgress(rec, def);
+    if (p.allNA) return `<span style="color:#64748b; font-weight:600;">N/A</span>`;
     if (p.complete) return `<span style="color:#4ade80; font-weight:700;">✓</span>`;
     const color = p.done === 0 && onboardingStatusOf(rec) === 'overdue' ? '#f87171' : '#fbbf24';
     return `<span style="color:${color}; font-weight:600;">${p.done}/${p.total}</span>`;
@@ -4666,7 +4693,7 @@ function renderOnboardingDetail(rec) {
   if (titleEl) titleEl.textContent = `${empVal(rec.fullName)} — ${empVal(rec.employeeId)}`;
   if (!body) return;
 
-  const canEdit = canCurrentUserAccessEmployeeDb();
+  const canEdit = canCurrentUserAccessOnboarding();
   const status = onboardingStatusOf(rec);
   const statusColor = status === 'complete' ? '#4ade80' : (status === 'overdue' ? '#f87171' : '#fbbf24');
   const jd = toDisplayDate(rec.joinDate);
@@ -4677,31 +4704,35 @@ function renderOnboardingDetail(rec) {
     ${status === 'overdue' ? `<span style="color:#f87171;">Overdue (&gt;${ONBOARDING_OVERDUE_DAYS} days past join date)</span>` : ''}
   </div>`;
   if (canEdit) {
-    html += `<div style="margin-bottom:16px; font-size:0.78rem; color:#64748b;">Tick to mark a step done. Untick any step to undo it — if that step had completed the deliverable, its delivered date clears too. "From record" steps follow the employee's data automatically.</div>`;
+    html += `<div style="margin-bottom:16px; font-size:0.78rem; color:#64748b;">Tick to mark a step done, untick to undo it. Use <strong>N/A</strong> to mark a step this person doesn't need — it's then left out of the progress count. "From record" steps follow the employee's data automatically.</div>`;
   }
 
   DELIVERABLE_DEFS.forEach(def => {
     const p = deliverableProgress(rec, def);
     const deliveredOn = deliverableDeliveredOn(rec, def.key);
+    const headRight = p.allNA
+      ? `<span style="font-size:0.8rem; color:#64748b; font-weight:700;">Not required</span>`
+      : `<span style="font-size:0.8rem; color:${p.complete ? '#4ade80' : '#fbbf24'}; font-weight:700;">${p.complete ? `Delivered${deliveredOn ? ' · ' + escapeHtml(toDisplayDate(deliveredOn)) : ''}` : `${p.done}/${p.total}`}</span>`;
     html += `<div style="border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px 16px; margin-bottom:12px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <strong style="color:#fff; font-size:0.95rem;">${def.label}</strong>
-        <span style="font-size:0.8rem; color:${p.complete ? '#4ade80' : '#fbbf24'}; font-weight:700;">
-          ${p.complete ? `Delivered${deliveredOn ? ' · ' + escapeHtml(toDisplayDate(deliveredOn)) : ''}` : `${p.done}/${p.total}`}
-        </span>
+        ${headRight}
       </div>`;
 
     def.steps.forEach(step => {
-      const done = isDeliverableStepDone(rec, def.key, step);
       const auto = !!step.auto;
+      const na = isDeliverableStepNA(rec, def.key, step);
+      const done = !na && isDeliverableStepDone(rec, def.key, step);
+      const labelStyle = na ? 'color:#64748b; font-size:0.88rem; text-decoration:line-through;' : 'color:#e2e8f0; font-size:0.88rem;';
       html += `<div style="display:flex; align-items:flex-start; gap:10px; padding:6px 0;">
-        <input type="checkbox" ${done ? 'checked' : ''} ${(auto || !canEdit) ? 'disabled' : ''}
+        <input type="checkbox" ${done ? 'checked' : ''} ${(auto || !canEdit || na) ? 'disabled' : ''}
           data-onb-step="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
           style="width:16px; height:16px; margin-top:2px; accent-color: var(--honey-gold); flex:none;">
         <div style="flex:1; min-width:0;">
-          <span style="color:#e2e8f0; font-size:0.88rem;">${escapeHtml(step.label)}</span>
+          <span style="${labelStyle}">${escapeHtml(step.label)}</span>
           ${auto ? `<span style="color:#64748b; font-size:0.75rem;"> — from record</span>` : ''}
-          ${step.link ? `<div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
+          ${na ? `<span style="color:#64748b; font-size:0.75rem;"> — not required</span>` : ''}
+          ${(step.link && !na) ? `<div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
             <input type="url" placeholder="Paste Google Drive link (optional)"
               data-onb-link="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
               value="${escapeHtml(deliverableLink(rec, def.key, step.key))}"
@@ -4710,6 +4741,10 @@ function renderOnboardingDetail(rec) {
             ${deliverableLink(rec, def.key, step.key) ? `<a href="${escapeHtml(deliverableLink(rec, def.key, step.key))}" target="_blank" rel="noopener" style="color:#60a5fa; font-size:0.8rem; white-space:nowrap;">Open</a>` : ''}
           </div>` : ''}
         </div>
+        ${(!auto && canEdit) ? `<button type="button" data-onb-na="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+          style="flex:none; height:24px; padding:0 10px; font-size:0.72rem; font-weight:600; border-radius:6px; cursor:pointer;
+          background:${na ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.05)'}; color:${na ? '#38bdf8' : '#94a3b8'};
+          border:1px solid ${na ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.12)'};">${na ? 'Required' : 'N/A'}</button>` : ''}
       </div>`;
     });
     html += `</div>`;
@@ -4727,6 +4762,12 @@ function renderOnboardingDetail(rec) {
     inp.addEventListener('change', () => {
       const [dKey, stepKey] = inp.getAttribute('data-onb-link').split('|');
       setOnboardingLink(rec.id, dKey, stepKey, inp.value);
+    });
+  });
+  body.querySelectorAll('button[data-onb-na]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const [dKey, stepKey] = btn.getAttribute('data-onb-na').split('|');
+      setOnboardingStepNA(rec.id, dKey, stepKey, !isDeliverableStepNA(rec, dKey, DELIVERABLE_DEFS.find(d => d.key === dKey).steps.find(s => s.key === stepKey)));
     });
   });
 }
@@ -4772,7 +4813,7 @@ async function flushOnboardingWrite(empId) {
 }
 
 function setOnboardingStep(empId, dKey, stepKey, checked) {
-  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  if (!canCurrentUserAccessOnboarding()) { showToast('Access denied', 'error'); return; }
   const rec = (state.employeeRecords || []).find(r => r.id === empId);
   if (!rec) return;
   const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
@@ -4796,8 +4837,35 @@ function setOnboardingStep(empId, dKey, stepKey, checked) {
   if (state.viewingOnboardingId === empId) renderOnboardingDetail(rec);
 }
 
+function setOnboardingStepNA(empId, dKey, stepKey, na) {
+  if (!canCurrentUserAccessOnboarding()) { showToast('Access denied', 'error'); return; }
+  const rec = (state.employeeRecords || []).find(r => r.id === empId);
+  if (!rec) return;
+  const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
+  const step = def.steps.find(s => s.key === stepKey);
+
+  const deliverables = mergeDeliverables(rec);
+  if (na) {
+    deliverables[dKey].na[stepKey] = true;
+    deliverables[dKey].steps[stepKey] = false; // can't be both done and N/A
+  } else {
+    delete deliverables[dKey].na[stepKey];
+  }
+  applyDeliveredDates(deliverables, rec);
+  rec.deliverables = deliverables;
+
+  _onbDirtyIds.add(empId);
+  scheduleOnboardingWrite(empId);
+  logEmployeeDbActivity(`${na ? 'marked not required' : 'marked required again'}: "${def.label} › ${step.label}" for ${rec.fullName} (${rec.employeeId})`);
+  showToast(`${na ? 'Not required' : 'Required again'}: ${def.label} › ${step.label}`, 'info');
+
+  updateOnboardingBadge();
+  if (state.currentView === 'onboarding') renderOnboarding();
+  if (state.viewingOnboardingId === empId) renderOnboardingDetail(rec);
+}
+
 function setOnboardingLink(empId, dKey, stepKey, url) {
-  if (!canCurrentUserAccessEmployeeDb()) { showToast('Access denied', 'error'); return; }
+  if (!canCurrentUserAccessOnboarding()) { showToast('Access denied', 'error'); return; }
   const rec = (state.employeeRecords || []).find(r => r.id === empId);
   if (!rec) return;
   const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
@@ -4833,7 +4901,10 @@ function switchView(viewName) {
     viewName = 'priority-board';
   }
   // Employee Database and Onboarding are HR/admin only — bounce anyone else.
-  if ((viewName === 'employee-database' || viewName === 'onboarding') && !canCurrentUserAccessEmployeeDb()) {
+  if (viewName === 'employee-database' && !canCurrentUserAccessEmployeeDb()) {
+    viewName = 'dashboard';
+  }
+  if (viewName === 'onboarding' && !canCurrentUserAccessOnboarding()) {
     viewName = 'dashboard';
   }
 
@@ -7123,6 +7194,7 @@ function renderTeam() {
     if (p.isAssigner) roleTagsHtml += `<span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.15); margin-right: 4px;">Assigner</span>`;
     if (p.canPlanContent) roleTagsHtml += `<span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.15); margin-right: 4px;">Ideator</span>`;
     if (p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.15); margin-right: 4px;">Employee DB</span>`;
+    if (p.canAccessOnboarding && !p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); margin-right: 4px;">Onboarding</span>`;
     if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
 
     // Access tags
@@ -7211,6 +7283,8 @@ function openPersonModal(personId = null) {
       document.getElementById('person-role-plan-content').checked = !!person.canPlanContent;
       const empDbCb = document.getElementById('person-role-employee-db');
       if (empDbCb) empDbCb.checked = !!person.canAccessEmployeeDb;
+      const onbCb = document.getElementById('person-role-onboarding');
+      if (onbCb) onbCb.checked = !!person.canAccessOnboarding;
     }
   } else {
     modalTitle.textContent = 'Add New Person';
@@ -7241,6 +7315,8 @@ async function handlePersonFormSubmit(e) {
   const canPlanContent = document.getElementById('person-role-plan-content').checked;
   const empDbCb = document.getElementById('person-role-employee-db');
   const canAccessEmployeeDb = empDbCb ? empDbCb.checked : false;
+  const onbCb = document.getElementById('person-role-onboarding');
+  const canAccessOnboarding = onbCb ? onbCb.checked : false;
 
   if (!name || !role) {
     showToast('Please fill out all required fields', 'error');
@@ -7262,7 +7338,8 @@ async function handlePersonFormSubmit(e) {
     isDesigner,
     isAssigner,
     canPlanContent,
-    canAccessEmployeeDb
+    canAccessEmployeeDb,
+    canAccessOnboarding
   };
 
   try {
