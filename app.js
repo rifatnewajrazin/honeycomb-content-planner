@@ -3678,26 +3678,47 @@ function empVal(v) { return (v == null ? '' : String(v)).trim(); }
 // as dd-mm-yyyy everywhere in the UI.
 const EMPLOYEE_DATE_FIELDS = ['dob', 'joinDate'];
 
-// ISO (yyyy-mm-dd) -> dd-mm-yyyy for display. Passes through anything that
-// isn't a recognisable date.
+const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_LOOKUP = (() => {
+  const map = {};
+  ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+    .forEach((name, i) => { map[name] = i + 1; map[name.slice(0, 3)] = i + 1; });
+  return map;
+})();
+
+// ISO (yyyy-mm-dd) -> "07 Apr 1995" for read-only display. Passes through
+// anything that isn't a recognisable date.
 function toDisplayDate(v) {
   const s = empVal(v);
-  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[3]} ${MONTH_ABBR[+m[2] - 1] || m[2]} ${m[1]}`;
+  return s;
+}
+
+// ISO -> dd-mm-yyyy for pre-filling the numeric form field.
+function toInputDate(v) {
+  const s = empVal(v);
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (m) return `${m[3]}-${m[2]}-${m[1]}`;
   return s;
 }
 
-// dd-mm-yyyy (or dd/mm/yyyy) -> ISO yyyy-mm-dd for storage. Accepts a value
-// that is already ISO. Returns '' for blank; returns null if it looks like a
-// date but the day/month are out of range.
+// Any of: dd-mm-yyyy, dd/mm/yyyy, "07 Apr 1995", "7 April 1995", or ISO
+// -> ISO yyyy-mm-dd for storage. Returns '' for blank; null if it looks
+// like a date but day/month are out of range or unparseable.
 function toIsoDate(v) {
   const s = empVal(v);
   if (!s) return '';
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  const m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
-  if (!m) return null;
-  const d = +m[1], mo = +m[2], y = +m[3];
-  if (d < 1 || d > 31 || mo < 1 || mo > 12) return null;
+  let d, mo, y;
+  let m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+  if (m) { d = +m[1]; mo = +m[2]; y = +m[3]; }
+  else {
+    m = s.match(/^(\d{1,2})[-/\s]+([A-Za-z]+)[-/\s]+(\d{4})$/);
+    if (!m) return null;
+    d = +m[1]; mo = MONTH_LOOKUP[m[2].toLowerCase()]; y = +m[3];
+  }
+  if (!mo || d < 1 || d > 31 || mo < 1 || mo > 12) return null;
   return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 
@@ -3955,7 +3976,7 @@ async function handleEmployeeFormSubmit(e) {
     const iso = toIsoDate(data[key]);
     if (iso === null) {
       const label = (EMPLOYEE_FIELD_DEFS.find(f => f.key === key) || {}).label || key;
-      showToast(`${label} must be in dd-mm-yyyy format`, 'error');
+      showToast(`${label}: use a date like "07 Apr 1995" or 07-04-1995`, 'error');
       return;
     }
     data[key] = iso;
