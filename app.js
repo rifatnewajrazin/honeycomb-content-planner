@@ -4724,27 +4724,28 @@ function renderOnboardingDetail(rec) {
       const na = isDeliverableStepNA(rec, def.key, step);
       const done = !na && isDeliverableStepDone(rec, def.key, step);
       const labelStyle = na ? 'color:#64748b; font-size:0.88rem; text-decoration:line-through;' : 'color:#e2e8f0; font-size:0.88rem;';
-      html += `<div style="display:flex; align-items:flex-start; gap:10px; padding:6px 0;">
-        <input type="checkbox" ${done ? 'checked' : ''} ${(auto || !canEdit || na) ? 'disabled' : ''}
-          data-onb-step="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
-          style="width:16px; height:16px; margin-top:2px; accent-color: var(--honey-gold); flex:none;">
-        <div style="flex:1; min-width:0;">
-          <span style="${labelStyle}">${escapeHtml(step.label)}</span>
-          ${auto ? `<span style="color:#64748b; font-size:0.75rem;"> — from record</span>` : ''}
-          ${na ? `<span style="color:#64748b; font-size:0.75rem;"> — not required</span>` : ''}
-          ${(step.link && !na) ? `<div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
-            <input type="url" placeholder="Paste Google Drive link (optional)"
-              data-onb-link="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
-              value="${escapeHtml(deliverableLink(rec, def.key, step.key))}"
-              ${canEdit ? '' : 'disabled'}
-              style="flex:1; min-width:0; height:32px; padding:0 10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff; font-size:0.8rem; outline:none;">
-            ${deliverableLink(rec, def.key, step.key) ? `<a href="${escapeHtml(deliverableLink(rec, def.key, step.key))}" target="_blank" rel="noopener" style="color:#60a5fa; font-size:0.8rem; white-space:nowrap;">Open</a>` : ''}
-          </div>` : ''}
+      const rowTappable = !auto && canEdit && !na;
+      html += `<div style="padding:8px 0; border-top:1px solid rgba(255,255,255,0.04);">
+        <div style="display:flex; align-items:center; gap:10px; min-height:36px;">
+          <label style="display:flex; align-items:center; gap:12px; flex:1; min-width:0; ${rowTappable ? 'cursor:pointer;' : ''}">
+            <input type="checkbox" ${done ? 'checked' : ''} ${(auto || !canEdit || na) ? 'disabled' : ''}
+              data-onb-step="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+              style="width:18px; height:18px; accent-color: var(--honey-gold); flex:none;">
+            <span style="${labelStyle}">${escapeHtml(step.label)}${auto ? `<span style="color:#64748b; font-size:0.75rem;"> — from record</span>` : ''}${na ? `<span style="color:#64748b; font-size:0.75rem;"> — not required</span>` : ''}</span>
+          </label>
+          ${(!auto && canEdit) ? `<button type="button" data-onb-na="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+            style="flex:none; height:32px; min-width:52px; padding:0 12px; font-size:0.75rem; font-weight:600; border-radius:6px; cursor:pointer;
+            background:${na ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.05)'}; color:${na ? '#38bdf8' : '#94a3b8'};
+            border:1px solid ${na ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.12)'};">${na ? 'Required' : 'N/A'}</button>` : ''}
         </div>
-        ${(!auto && canEdit) ? `<button type="button" data-onb-na="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
-          style="flex:none; height:24px; padding:0 10px; font-size:0.72rem; font-weight:600; border-radius:6px; cursor:pointer;
-          background:${na ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.05)'}; color:${na ? '#38bdf8' : '#94a3b8'};
-          border:1px solid ${na ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.12)'};">${na ? 'Required' : 'N/A'}</button>` : ''}
+        ${(step.link && !na) ? `<div style="margin:8px 0 0 30px; display:flex; gap:8px; align-items:center;">
+          <input type="url" placeholder="Paste Google Drive link (optional)"
+            data-onb-link="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+            value="${escapeHtml(deliverableLink(rec, def.key, step.key))}"
+            ${canEdit ? '' : 'disabled'}
+            style="flex:1; min-width:0; height:38px; padding:0 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff; font-size:0.82rem; outline:none;">
+          ${deliverableLink(rec, def.key, step.key) ? `<a href="${escapeHtml(deliverableLink(rec, def.key, step.key))}" target="_blank" rel="noopener" style="color:#60a5fa; font-size:0.82rem; white-space:nowrap;">Open</a>` : ''}
+        </div>` : ''}
       </div>`;
     });
     html += `</div>`;
