@@ -3686,12 +3686,17 @@ const MONTH_LOOKUP = (() => {
   return map;
 })();
 
-// ISO (yyyy-mm-dd) -> "07 Apr 1995" for read-only display. Passes through
-// anything that isn't a recognisable date.
+// Any stored date form -> "07 Apr 1995" for read-only display. Legacy
+// records hold assorted strings ("2/9/2007", "15-05-2001", …) so coerce
+// through toIsoDate first (day-first). Passes through anything unparseable.
 function toDisplayDate(v) {
   const s = empVal(v);
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return `${m[3]} ${MONTH_ABBR[+m[2] - 1] || m[2]} ${m[1]}`;
+  if (!s) return s;
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : toIsoDate(s);
+  if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const p = iso.split('-');
+    return `${p[2]} ${MONTH_ABBR[+p[1] - 1] || p[1]} ${p[0]}`;
+  }
   return s;
 }
 
@@ -3724,6 +3729,30 @@ function toIsoDate(v) {
 
 // Draft parsed from an import, awaiting the user pressing "Import".
 let employeeImportDraft = null;
+
+// One-time self-heal: legacy imported records stored dates as raw strings
+// ("2/9/2007", "15-05-2001", …). Rewrite any non-ISO dob/joinDate to ISO
+// (day-first) so display and column sorting are consistent. Runs once per
+// session, only writing rows that actually change.
+let _employeeDatesNormalized = false;
+async function normalizeEmployeeDates() {
+  if (_employeeDatesNormalized || !db) return;
+  _employeeDatesNormalized = true;
+  for (const rec of (state.employeeRecords || [])) {
+    let changed = false;
+    const patch = { ...rec };
+    for (const key of EMPLOYEE_DATE_FIELDS) {
+      const cur = empVal(rec[key]);
+      if (!cur || /^\d{4}-\d{2}-\d{2}$/.test(cur)) continue;
+      const iso = toIsoDate(cur);
+      if (iso && iso !== cur) { patch[key] = iso; changed = true; }
+    }
+    if (changed) {
+      try { await setDoc(doc(db, "employee_records", rec.id), patch); }
+      catch (e) { console.warn('employee date normalize failed for', rec.id, e); }
+    }
+  }
+}
 
 function setupEmployeeDatabaseControls() {
   const q = (id) => document.getElementById(id);
@@ -3861,6 +3890,8 @@ function renderEmployeeDatabase() {
   const toolbar = ['employee-db-new-btn', 'employee-db-import-btn', 'employee-db-export-btn'];
   toolbar.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = canView ? 'inline-flex' : 'none'; });
   if (!canView) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>'; return; }
+
+  if ((state.employeeRecords || []).length) normalizeEmployeeDates();
 
   populateEmployeeFilterDropdowns();
   const rows = getFilteredEmployeeRecords();
