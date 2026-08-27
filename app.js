@@ -345,7 +345,7 @@ function canCurrentUserAccessEmployeeDb() {
 
 // The three physical office spaces employees can be seated in. Rename here
 // in one place if the offices ever change.
-const DEFAULT_OFFICE_SPACES = ['HQ1', 'Warehouse 2', 'HQ2'];
+const DEFAULT_OFFICE_SPACES = ['HQ1', 'Warehouse 2', 'HQ2', 'Not Specific'];
 
 // Blood group options for the Employee Database dropdown.
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -353,13 +353,10 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 // Employee record status options.
 const EMPLOYEE_STATUSES = ['Active', 'Inactive'];
 
-// Field keys on an employee record that are required when adding/editing.
-// Everything except cvLink and notes is mandatory.
+// Field keys required when adding/editing an employee. Everything else is
+// optional for now (per HR — only the essentials are enforced).
 const EMPLOYEE_REQUIRED_FIELDS = [
-  'employeeId', 'fullName', 'designation', 'department', 'officeSpace',
-  'deskSeat', 'phone', 'workEmail', 'personalEmail', 'dob', 'bloodGroup',
-  'status', 'joinDate', 'emergencyContactName', 'emergencyContactPhone',
-  'address', 'nationalId'
+  'employeeId', 'fullName', 'designation', 'phone', 'personalEmail', 'dob', 'bloodGroup'
 ];
 
 // Human-readable labels + CSV header names for every employee record field,
@@ -373,7 +370,7 @@ const EMPLOYEE_FIELD_DEFS = [
   { key: 'deskSeat',              label: 'Desk / Seat' },
   { key: 'phone',                 label: 'Phone' },
   { key: 'workEmail',             label: 'Work Email' },
-  { key: 'personalEmail',         label: 'Personal Email' },
+  { key: 'personalEmail',         label: 'Email' },
   { key: 'dob',                   label: 'Date of Birth' },
   { key: 'bloodGroup',            label: 'Blood Group' },
   { key: 'status',                label: 'Status' },
