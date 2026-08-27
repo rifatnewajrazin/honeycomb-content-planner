@@ -12,6 +12,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="style.css?v=3.14.1">
   <style>
+    /* Employee Database toolbar — uniform, symmetric buttons on the 4-point grid */
+    #employee-database-view .db-toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    #employee-database-view .db-toolbar > button {
+      display: inline-flex; align-items: center; justify-content: center;
+      height: 40px; padding: 0 16px;
+      border-radius: 8px !important; font-size: 0.85rem; line-height: 1; margin: 0;
+    }
     /* Employee Database table — tighter rows, single-line cells, aligned actions */
     #employee-database-view .tasks-table th,
     #employee-database-view .tasks-table td { padding: 10px 14px; vertical-align: middle; white-space: nowrap; }
@@ -548,11 +555,11 @@
             <span style="background: rgba(236, 72, 153, 0.12); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 9999px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600;">
               Total Employees: <strong id="employee-db-total-count">0</strong>
             </span>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-              <button type="button" class="btn-secondary" id="employee-db-log-toggle-btn" style="height: 40px; padding: 0 16px;">View Change Log</button>
-              <button type="button" class="btn-secondary" id="employee-db-import-btn" style="height: 40px; padding: 0 16px;">Import</button>
-              <button type="button" class="btn-secondary" id="employee-db-export-btn" style="height: 40px; padding: 0 16px;">Export CSV</button>
-              <button type="button" class="btn-primary" id="employee-db-new-btn" style="height: 40px; padding: 0 16px;">+ Add Employee</button>
+            <div class="db-toolbar">
+              <button type="button" class="btn-secondary" id="employee-db-log-toggle-btn">View Change Log</button>
+              <button type="button" class="btn-secondary" id="employee-db-import-btn">Import</button>
+              <button type="button" class="btn-secondary" id="employee-db-export-btn">Export CSV</button>
+              <button type="button" class="btn-primary" id="employee-db-new-btn">+ Add Employee</button>
             </div>
           </div>
 
