@@ -2562,7 +2562,7 @@ function initData() {
           const t = docSnap.data();
           if (!t.taskType) {
             t.taskType = 'general';
-            try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
+            setDoc(doc(db, "tasks", docSnap.id), t).catch(() => {});
           }
 
           // One-time migration: the old flat `isPosted: boolean` field can't
@@ -2578,7 +2578,7 @@ function initData() {
               ? { sub: wasPosted, parent: wasPosted }
               : { main: wasPosted };
             delete t.isPosted;
-            try { setDoc(doc(db, "tasks", docSnap.id), t); } catch(e){}
+            setDoc(doc(db, "tasks", docSnap.id), t).catch(() => {});
           }
 
           const designerPerson = findTeamMember(t.designer);
@@ -2643,9 +2643,17 @@ function initData() {
             if (data.canManagePriorityNotes === undefined && defaultMatch.canManagePriorityNotes) patch.canManagePriorityNotes = true;
             if (defaultMatch.id === 'person-6' && !data.canLogin && defaultMatch.canLogin) patch.canLogin = true;
             if (data.authEmail === undefined && defaultMatch.authEmail) patch.authEmail = defaultMatch.authEmail;
+            // Recover flags/aliases that older person-edits (pre-merge-fix) could
+            // have wiped. Only fills values the stored doc has no opinion on —
+            // never overrides an explicit true/false an admin set.
+            if (data.canMarkPosted === undefined && defaultMatch.canMarkPosted) patch.canMarkPosted = true;
+            if (data.isDesigner === undefined && defaultMatch.isDesigner) patch.isDesigner = true;
+            if (data.isAssigner === undefined && defaultMatch.isAssigner) patch.isAssigner = true;
+            if (data.canPlanContent === undefined && defaultMatch.canPlanContent) patch.canPlanContent = true;
+            if ((!Array.isArray(data.aliases) || data.aliases.length === 0) && Array.isArray(defaultMatch.aliases) && defaultMatch.aliases.length) patch.aliases = defaultMatch.aliases.slice();
             if (Object.keys(patch).length > 0) {
               Object.assign(data, patch);
-              try { setDoc(doc(db, "team", docSnap.id), data); } catch (e) {}
+              setDoc(doc(db, "team", docSnap.id), data).catch(() => {});
             }
           }
 
@@ -7334,7 +7342,15 @@ async function handlePersonFormSubmit(e) {
   const initial = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   const personId = state.editingPersonId || `person-${Date.now()}`;
+
+  // The Supabase setDoc() shim does a FULL document replace — the { merge: true }
+  // option it used to rely on under Firestore is ignored. So we merge here:
+  // start from the person's existing record and overlay only the fields this
+  // form owns. This preserves aliases, canMarkPosted, canAccessPriorityBoard,
+  // canManagePriorityNotes and any other flag the form has no input for.
+  const existingPerson = (state.team || []).find(p => p.id === personId) || {};
   const personData = {
+    ...existingPerson,
     id: personId,
     name,
     role,
@@ -7351,15 +7367,7 @@ async function handlePersonFormSubmit(e) {
   };
 
   try {
-    // Bug fix: this form has no field for canLogin, canMarkPosted, or aliases,
-    // but was using a plain setDoc() (full document replace) instead of merge.
-    // That meant editing ANY field on an existing person — even just their
-    // photo or password — silently wiped canLogin/canMarkPosted/aliases off
-    // their Firestore doc, since those keys were simply absent from personData.
-    // This is almost certainly why Md. Yasin Arafat dropped out of the login
-    // dropdown: a routine edit to his profile erased his canLogin flag.
-    // { merge: true } makes this only touch the fields the form actually owns.
-    await setDoc(doc(db, "team", personId), personData, { merge: true });
+    await setDoc(doc(db, "team", personId), personData);
     showToast(state.editingPersonId ? 'Person updated successfully' : 'Person added successfully', 'success');
     await logActivity(state.editingPersonId ? `updated team member "${name}"` : `added team member "${name}"`, db);
     closePersonModal();
