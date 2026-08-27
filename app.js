@@ -420,6 +420,13 @@ const DELIVERABLE_DEFS = [
       { key: 'basicInfo',     label: 'Basic Information' },
       { key: 'specialIdCard', label: 'Special Submittable ID Card Preparation', link: true }
     ]
+  },
+  {
+    key: 'royaltyCard', label: 'Royalty Card',
+    steps: [
+      { key: 'nameCollection', label: 'Name Collection' },
+      { key: 'designFile',     label: 'Design File Preparation', link: true }
+    ]
   }
 ];
 
@@ -4588,7 +4595,7 @@ function renderOnboarding() {
   const tbody = document.getElementById('onboarding-list-body');
   if (!tbody) return;
   if (!canCurrentUserAccessOnboarding()) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>';
     return;
   }
 
@@ -4612,7 +4619,7 @@ function renderOnboarding() {
 
   if (!rows.length) {
     const msg = all.length === 0 ? 'No employees yet — add them in the Employee Database.' : 'No employees match the current filters.';
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:32px; color:#64748b;">${msg}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">${msg}</td></tr>`;
     return;
   }
 
@@ -4637,9 +4644,7 @@ function renderOnboarding() {
       <td>${escapeHtml(rec.employeeId)}</td>
       <td style="font-weight:600; color:#fff;">${escapeHtml(rec.fullName)}</td>
       <td>${escapeHtml(toDisplayDate(rec.joinDate)) || '<span style="color:#475569;">—</span>'}</td>
-      <td style="text-align:center;">${cell(rec, DELIVERABLE_DEFS[0])}</td>
-      <td style="text-align:center;">${cell(rec, DELIVERABLE_DEFS[1])}</td>
-      <td style="text-align:center;">${cell(rec, DELIVERABLE_DEFS[2])}</td>
+      ${DELIVERABLE_DEFS.map(def => `<td style="text-align:center;">${cell(rec, def)}</td>`).join('')}
       <td style="color:${sc}; font-weight:700;">${sl}</td>
     </tr>`;
   }).join('');
@@ -7424,7 +7429,7 @@ function renderIdeaBoard() {
   }
 
   if (ideas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 32px; color: #64748b;">No ideas yet${canEdit ? ' — click "New Idea" to plan something ahead.' : '.'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 32px; color: #64748b;">No ideas yet${canEdit ? ' — click "New Idea" to plan something ahead.' : '.'}</td></tr>`;
     return;
   }
 
