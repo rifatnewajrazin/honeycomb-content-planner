@@ -345,7 +345,7 @@ function canCurrentUserAccessEmployeeDb() {
 
 // The three physical office spaces employees can be seated in. Rename here
 // in one place if the offices ever change.
-const DEFAULT_OFFICE_SPACES = ['HQ1', 'Warehouse 2', 'HQ2', 'Not Specific'];
+const DEFAULT_OFFICE_SPACES = ['HQ', 'DC1', 'DC2', 'DC3', 'DC4', 'Not Specific'];
 
 // Blood group options for the Employee Database dropdown.
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -367,7 +367,6 @@ const EMPLOYEE_FIELD_DEFS = [
   { key: 'designation',           label: 'Designation' },
   { key: 'department',            label: 'Department' },
   { key: 'officeSpace',           label: 'Office Space' },
-  { key: 'deskSeat',              label: 'Desk / Seat' },
   { key: 'phone',                 label: 'Phone' },
   { key: 'workEmail',             label: 'Work Email' },
   { key: 'personalEmail',         label: 'Email' },
@@ -3812,7 +3811,7 @@ function renderEmployeeDatabase() {
   const canView = canCurrentUserAccessEmployeeDb();
   const toolbar = ['employee-db-new-btn', 'employee-db-import-btn', 'employee-db-export-btn'];
   toolbar.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = canView ? 'inline-flex' : 'none'; });
-  if (!canView) { tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>'; return; }
+  if (!canView) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>'; return; }
 
   populateEmployeeFilterDropdowns();
   const rows = getFilteredEmployeeRecords();
@@ -3830,7 +3829,7 @@ function renderEmployeeDatabase() {
     const empty = (state.employeeRecords || []).length === 0
       ? 'No employees yet. Use "+ Add Employee" or "Import".'
       : 'No employees match the current filters.';
-    tbody.innerHTML = `<tr><td colspan="14" style="text-align:center; padding:32px; color:#64748b;">${empty}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; padding:32px; color:#64748b;">${empty}</td></tr>`;
     return;
   }
 
@@ -3845,7 +3844,6 @@ function renderEmployeeDatabase() {
       <td>${escapeHtml(r.designation)}</td>
       <td>${escapeHtml(r.department)}</td>
       <td>${escapeHtml(r.officeSpace)}</td>
-      <td>${escapeHtml(r.deskSeat)}</td>
       <td>${escapeHtml(r.phone)}</td>
       <td>${escapeHtml(r.workEmail)}</td>
       <td>${escapeHtml(r.dob)}</td>
