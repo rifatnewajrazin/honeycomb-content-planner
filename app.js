@@ -2897,10 +2897,12 @@ function initData() {
         if (_lvDirtyIds.has(local.id)) merged.push(local);
       });
       state.leaveRecords = merged;
+      state.leaveStorageMissing = false;
       if (state.currentView === 'leave') renderLeave();
       updateLeaveBadge();
     }, (error) => {
       console.error("Supabase leave_records sync error:", error);
+      noteLeaveStorageError(error);
       state.leaveRecords = state.leaveRecords || [];
       if (state.currentView === 'leave') renderLeave();
     });
@@ -2917,6 +2919,7 @@ function initData() {
       updateLeaveBadge();
     }, (error) => {
       console.error("Supabase leave_holidays sync error:", error);
+      noteLeaveStorageError(error);
     });
   } catch(err) {
     console.warn("Supabase leave_holidays listener skipped:", err);
@@ -2930,6 +2933,7 @@ function initData() {
       if (state.currentView === 'leave') renderLeave();
     }, (error) => {
       console.error("Supabase leave_policy sync error:", error);
+      noteLeaveStorageError(error);
     });
   } catch(err) {
     console.warn("Supabase leave_policy listener skipped:", err);
@@ -2944,6 +2948,7 @@ function initData() {
       if (state.currentView === 'leave') renderLeaveLog();
     }, (error) => {
       console.error("Supabase leave_log sync error:", error);
+      noteLeaveStorageError(error);
     });
   } catch(err) {
     console.warn("Supabase leave_log listener skipped:", err);
@@ -5349,6 +5354,35 @@ const _lvDirtyIds = new Set();
 
 function leaveRecordId(empRecordId, dateIso) { return `${empRecordId}__${dateIso}`; }
 
+// PostgREST reports a table that doesn't exist as PGRST205 / "schema cache".
+// For this view that means one thing only: the leave_* tables from
+// supabase_migration.sql haven't been created yet.
+function isMissingLeaveTableError(err) {
+  const msg = String((err && (err.message || err.msg)) || '');
+  return (err && err.code === 'PGRST205') || /schema cache/i.test(msg);
+}
+
+// Raised by the sync listeners and by any failed write. Flips the view into
+// a "needs setup" state so the user gets one clear instruction instead of a
+// cryptic PostgREST string on every single click.
+function noteLeaveStorageError(err) {
+  if (!isMissingLeaveTableError(err)) return false;
+  if (!state.leaveStorageMissing) {
+    state.leaveStorageMissing = true;
+    if (state.currentView === 'leave') renderLeave();
+  }
+  return true;
+}
+
+function leaveWriteFailed(err, what) {
+  if (isMissingLeaveTableError(err)) {
+    noteLeaveStorageError(err);
+    showToast('Leave storage isn\'t set up yet — run supabase_migration.sql in Supabase', 'error');
+    return;
+  }
+  showToast(`Failed to ${what}` + errSuffix(err), 'error');
+}
+
 async function logLeaveActivity(actionText) {
   const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
   const entry = {
@@ -5394,7 +5428,7 @@ async function setLeaveDay(empRecordId, dateIso, patch, opts) {
       state.leaveRecords = (state.leaveRecords || []).filter(r => r.id !== id).concat([existing]);
       _lvDirtyIds.delete(id);
       if (!silent) renderLeave();
-      showToast('Failed to clear leave' + errSuffix(err), 'error');
+      leaveWriteFailed(err, 'clear leave');
       return false;
     }
   }
@@ -5436,7 +5470,7 @@ async function setLeaveDay(empRecordId, dateIso, patch, opts) {
     state.leaveRecords = others.concat(existing ? [existing] : []);
     _lvDirtyIds.delete(id);
     if (!silent) renderLeave();
-    showToast('Failed to save leave' + errSuffix(err), 'error');
+    leaveWriteFailed(err, 'save leave');
     return false;
   }
 }
@@ -5508,7 +5542,8 @@ async function saveLeaveHolidayRange(name, startIso, endIso, type) {
   while (cur <= end && guard++ < 60) {
     const iso = lvIso(cur);
     const entry = { id: `hol-${iso}`, date: iso, name: empVal(name), type: type || 'public' };
-    try { await setDoc(doc(db, "leave_holidays", entry.id), entry); count++; } catch (err) { console.error(err); }
+    try { await setDoc(doc(db, "leave_holidays", entry.id), entry); count++; }
+    catch (err) { console.error(err); if (isMissingLeaveTableError(err)) { leaveWriteFailed(err, 'save holiday'); return; } }
     cur.setDate(cur.getDate() + 1);
   }
   await logLeaveActivity(`added holiday "${name}" (${count} day${count === 1 ? '' : 's'} from ${toDisplayDate(startIso)})`);
@@ -5524,7 +5559,7 @@ async function deleteLeaveHoliday(id) {
     await deleteDoc(doc(db, "leave_holidays", id));
     await logLeaveActivity(`removed holiday "${h.name}" on ${toDisplayDate(h.date)}`);
     showToast('Holiday removed', 'info');
-  } catch (err) { console.error(err); showToast('Failed to remove holiday' + errSuffix(err), 'error'); }
+  } catch (err) { console.error(err); leaveWriteFailed(err, 'remove holiday'); }
 }
 
 // Seeds only the fixed-date national holidays. Eid, Ashura, Shab-e-Barat and
@@ -5554,7 +5589,7 @@ async function saveLeavePolicy(year, patch) {
     await setDoc(doc(db, "leave_policy", String(year)), merged);
     await logLeaveActivity(`updated ${year} leave policy`);
     showToast('Policy saved', 'success');
-  } catch (err) { console.error(err); showToast('Failed to save policy' + errSuffix(err), 'error'); }
+  } catch (err) { console.error(err); leaveWriteFailed(err, 'save policy'); }
 }
 
 // ---- Rendering ------------------------------------------------------------
@@ -5580,6 +5615,7 @@ function leaveEmptyState(msg) {
 
 function renderLeave() {
   if (state.currentView !== 'leave') return;
+  renderLeaveSetupBanner();
   refreshLeaveFilterOptions();
   const tab = state.leaveTab || 'grid';
   document.querySelectorAll('#leave-view .leave-tab').forEach(b => {
@@ -5592,6 +5628,22 @@ function renderLeave() {
   else if (tab === 'balances') renderLeaveBalances();
   else if (tab === 'person') renderLeavePerson();
   else if (tab === 'calendar') renderLeaveCalendar();
+}
+
+// Shown until the leave_* tables exist. Everything else in the view still
+// renders (employees load from the Employee Database), so without this the
+// only clue is a PostgREST error on the first click.
+function renderLeaveSetupBanner() {
+  const el = document.getElementById('leave-setup-banner');
+  if (!el) return;
+  if (!state.leaveStorageMissing) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = `
+    <h4>Leave storage isn't set up yet</h4>
+    <p>The four <code>leave_*</code> tables don't exist in Supabase, so nothing can be saved.
+    Open your Supabase project &rarr; <strong>SQL Editor</strong> &rarr; <strong>New query</strong>,
+    paste the contents of <code>supabase_migration.sql</code> from the repo, and run it.
+    It is safe to run more than once. Reload this page afterwards.</p>`;
 }
 
 function renderLeaveLegend() {

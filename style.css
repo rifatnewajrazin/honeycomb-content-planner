@@ -3763,3 +3763,29 @@ table.leave-grid th.lv-total-head {
   gap: 12px;
   margin-top: 24px;
 }
+
+/* Shown until the leave_* tables exist in Supabase. */
+.lv-setup-banner {
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  border-radius: 6px;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.32);
+}
+.lv-setup-banner h4 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: #fbbf24;
+}
+.lv-setup-banner p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+.lv-setup-banner code {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.82rem;
+}

@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3.21.0">
+  <link rel="stylesheet" href="style.css?v=3.21.1">
   <style>
     /* Date field: word-month display text with a native calendar picker layered on top */
     .date-field { position: relative; }
@@ -676,6 +676,7 @@
 
         <!-- View: Leave (HR) — month grid, balances, per-person year, calendar & policy -->
         <section id="leave-view" class="view-panel">
+          <div id="leave-setup-banner" class="lv-setup-banner" style="display: none;"></div>
           <div class="leave-tabs" role="tablist">
             <button type="button" class="leave-tab active" data-leave-tab="grid" role="tab">Month Grid</button>
             <button type="button" class="leave-tab" data-leave-tab="balances" role="tab">Balances</button>
@@ -1522,6 +1523,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.21.0"></script>
+  <script type="module" src="app.js?v=3.21.1"></script>
 </body>
 </html>
