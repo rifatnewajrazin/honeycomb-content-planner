@@ -2890,13 +2890,7 @@ function initData() {
     onSnapshot(collection(db, "leave_records"), (querySnapshot) => {
       const loaded = [];
       querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
-      // Don't let a stale realtime frame revert a cell that was just clicked
-      // but whose write hasn't round-tripped yet.
-      const merged = loaded.filter(r => !_lvDirtyIds.has(r.id)).map(lvNormalizeRecord);
-      (state.leaveRecords || []).forEach(local => {
-        if (_lvDirtyIds.has(local.id)) merged.push(local);
-      });
-      state.leaveRecords = merged;
+      state.leaveRecords = lvApplyLocalOverlay(loaded.map(lvNormalizeRecord));
       state.leaveStorageMissing = false;
       if (state.currentView === 'leave') renderLeave();
       updateLeaveBadge();
@@ -2943,7 +2937,10 @@ function initData() {
     onSnapshot(collection(db, "leave_log"), (querySnapshot) => {
       const loaded = [];
       querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
-      state.leaveLog = loaded.sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
+      const byId = new Map(loaded.map(l => [l.id, l]));
+      (state.leaveLog || []).forEach(l => { if (!byId.has(l.id)) byId.set(l.id, l); });
+      state.leaveLog = Array.from(byId.values())
+        .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
       if (state.leaveLog.length > 200) state.leaveLog = state.leaveLog.slice(0, 200);
       if (state.currentView === 'leave') renderLeaveLog();
     }, (error) => {
@@ -5346,11 +5343,42 @@ function leaveMonthTotals(ledger, year, month) {
 
 // ---- Writes ---------------------------------------------------------------
 
-// Guards the realtime listener from reverting a cell that was just toggled
-// locally but whose write hasn't round-tripped yet. Each leave day is its own
-// row, so unlike the Onboarding deliverables there's no read-modify-write of a
-// shared record to lose — this only covers the echo of our own write.
-const _lvDirtyIds = new Set();
+// Every leave day this client has successfully written or deleted, held until
+// a server snapshot actually reflects it.
+//
+// This exists because the sync layer rebuilds state.leaveRecords wholesale from
+// its own cache on every emit. If that cache is stale or empty — the page was
+// opened before the tables existed, so the realtime channel never subscribed
+// and never learned about rows inserted since — then a single emit replaces
+// everything on screen with nothing. Clearing one day wiped the whole grid
+// that way: the rows were still in the database, the UI just threw them away.
+//
+// An entry is dropped only once the server agrees with it (or after TTL, so a
+// write that never lands can't shadow the truth forever).
+const _lvLocal = new Map();   // id -> { record: object | null, at: ms }
+const LV_LOCAL_TTL = 120000;
+
+function lvRememberLocal(id, record) { _lvLocal.set(id, { record, at: Date.now() }); }
+function lvForgetLocal(id) { _lvLocal.delete(id); }
+
+// Lays this client's confirmed writes over a server snapshot.
+function lvApplyLocalOverlay(loaded) {
+  const now = Date.now();
+  const byId = new Map(loaded.map(r => [r.id, r]));
+  _lvLocal.forEach((entry, id) => {
+    if (now - entry.at > LV_LOCAL_TTL) { _lvLocal.delete(id); return; }
+    if (entry.record === null) {
+      // Deleted here. Keep it hidden until the snapshot stops returning it.
+      if (byId.has(id)) byId.delete(id);
+      else _lvLocal.delete(id);
+    } else {
+      const server = byId.get(id);
+      if (server && server.updatedAt === entry.record.updatedAt) _lvLocal.delete(id);
+      else byId.set(id, entry.record);
+    }
+  });
+  return Array.from(byId.values());
+}
 
 function leaveRecordId(empRecordId, dateIso) { return `${empRecordId}__${dateIso}`; }
 
@@ -5391,7 +5419,14 @@ async function logLeaveActivity(actionText) {
     action: actionText,
     timestamp: new Date().toISOString()
   };
-  try { await setDoc(doc(db, "leave_log", entry.id), entry); }
+  try {
+    await setDoc(doc(db, "leave_log", entry.id), entry);
+    // Show it straight away. The log list is rebuilt from the sync layer's
+    // cache, which only learns about new rows via realtime — so without this
+    // the panel reads "No changes logged yet" until the next page load.
+    state.leaveLog = [entry].concat((state.leaveLog || []).filter(l => l.id !== entry.id)).slice(0, 200);
+    if (state.currentView === 'leave') renderLeaveLog();
+  }
   catch (err) { console.warn('leave_log write failed:', err); }
 }
 
@@ -5410,15 +5445,13 @@ async function setLeaveDay(empRecordId, dateIso, patch, opts) {
   const nowIso = new Date().toISOString();
   const silent = opts && opts.silent;
 
-  _lvDirtyIds.add(id);
-  setTimeout(() => _lvDirtyIds.delete(id), 4000);
-
   if (!am && !pm) {
-    if (!existing) { _lvDirtyIds.delete(id); return true; }
+    if (!existing) return true;
     state.leaveRecords = (state.leaveRecords || []).filter(r => r.id !== id);
     if (!silent) renderLeave();
     try {
       await deleteDoc(doc(db, "leave_records", id));
+      lvRememberLocal(id, null);
       if (!silent) await logLeaveActivity(`cleared leave for ${emp.fullName} on ${toDisplayDate(dateIso)}`);
       return true;
     } catch (err) {
@@ -5426,7 +5459,7 @@ async function setLeaveDay(empRecordId, dateIso, patch, opts) {
       // Put the row back. A leave day that silently vanished from HR's screen
       // but still exists in the database is worse than an error message.
       state.leaveRecords = (state.leaveRecords || []).filter(r => r.id !== id).concat([existing]);
-      _lvDirtyIds.delete(id);
+      lvForgetLocal(id);
       if (!silent) renderLeave();
       leaveWriteFailed(err, 'clear leave');
       return false;
@@ -5459,6 +5492,7 @@ async function setLeaveDay(empRecordId, dateIso, patch, opts) {
 
   try {
     await setDoc(doc(db, "leave_records", id), record);
+    lvRememberLocal(id, record);
     if (!silent) {
       await logLeaveActivity(`set ${lvCellCode(am, pm)} for ${emp.fullName} on ${toDisplayDate(dateIso)}`);
     }
@@ -5468,7 +5502,7 @@ async function setLeaveDay(empRecordId, dateIso, patch, opts) {
     // Roll the optimistic update back so the grid never shows a leave day
     // that was never actually saved.
     state.leaveRecords = others.concat(existing ? [existing] : []);
-    _lvDirtyIds.delete(id);
+    lvForgetLocal(id);
     if (!silent) renderLeave();
     leaveWriteFailed(err, 'save leave');
     return false;
