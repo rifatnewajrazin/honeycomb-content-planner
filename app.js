@@ -364,6 +364,15 @@ function canCurrentUserAccessOnboarding() {
   return !!(person && (person.canAccessOnboarding || person.canAccessEmployeeDb || person.access === 'admin'));
 }
 
+// Gate for the Leave view. Deliberately NOT inherited from
+// canAccessEmployeeDb the way Onboarding is: maintaining the employee
+// directory and handling people's leave records are different duties, and
+// leave history is the more sensitive of the two. Explicit flag, or admin.
+function canCurrentUserAccessLeave() {
+  const person = getCurrentUserPerson();
+  return !!(person && (person.canAccessLeave || person.access === 'admin'));
+}
+
 // The three physical office spaces employees can be seated in. Rename here
 // in one place if the offices ever change.
 const DEFAULT_OFFICE_SPACES = ['HQ', 'DC1', 'DC2', 'DC3', 'DC4', 'Not Specific'];
@@ -2133,7 +2142,29 @@ let state = {
   onboardingStatusFilter: 'all',
   onboardingSortCol: 'fullName',
   onboardingSortDir: 'asc',
-  viewingOnboardingId: null
+  viewingOnboardingId: null,
+  // Leave (HR) — its own tables, its own slice, never touches `team`.
+  leaveRecords: [],
+  leaveHolidays: [],
+  leavePolicies: [],
+  leaveLog: [],
+  leaveTab: 'grid',
+  leaveYear: new Date().getFullYear(),
+  leaveMonth: new Date().getMonth() + 1,
+  leaveBalYear: new Date().getFullYear(),
+  leavePersonYear: new Date().getFullYear(),
+  leaveCalYear: new Date().getFullYear(),
+  leavePersonId: null,
+  leaveSearchFilter: '',
+  leaveTypeFilter: 'all',
+  leaveOfficeFilter: 'all',
+  leaveStatusFilter: 'all',
+  leaveActiveFilter: 'active',
+  leaveBalSearch: '',
+  leaveBalOfficeFilter: 'all',
+  leaveBalStatusFilter: 'all',
+  leaveBalSortCol: 'fullName',
+  leaveBalSortDir: 'asc'
 };
 
 // Initialize Application
@@ -2391,13 +2422,26 @@ function renderUserProfile() {
     }
   }
 
+  // Toggle Leave link in sidebar (explicit Leave flag, or admin)
+  const leaveLink = document.getElementById('nav-leave-link');
+  if (leaveLink) {
+    if (currentUser && canCurrentUserAccessLeave()) {
+      leaveLink.style.display = 'flex';
+    } else {
+      leaveLink.style.display = 'none';
+      if (state.currentView === 'leave') {
+        switchView('dashboard');
+      }
+    }
+  }
+
   // Board-only accounts (Orthee): restrict the sidebar (and any current view)
   // to just the Priority Board plus People & Roles — they don't get Task
   // Tracker, Idea Board, Analytics, Calendar, Content Links, etc.
   const boardOnly = currentUser && isCurrentUserBoardOnly();
   // Items already gated individually above (logs/kanban) keep whatever those
   // gates decided; People & Roles stays visible for board-only accounts too.
-  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link', 'nav-employee-db-link', 'nav-onboarding-link'];
+  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link', 'nav-employee-db-link', 'nav-onboarding-link', 'nav-leave-link'];
   document.querySelectorAll('.nav-item').forEach(item => {
     if (individuallyGatedIds.includes(item.id)) return;
     if (boardOnly && item.getAttribute('data-view') === 'team') {
@@ -2803,7 +2847,9 @@ function initData() {
       state.employeeRecords = loaded;
       if (state.currentView === 'employee-database') renderEmployeeDatabase();
       if (state.currentView === 'onboarding') renderOnboarding();
+      if (state.currentView === 'leave') renderLeave();
       updateOnboardingBadge();
+      updateLeaveBadge();
       if (state.viewingEmployeeId) {
         const rec = state.employeeRecords.find(r => r.id === state.viewingEmployeeId);
         if (rec) renderEmployeeDetail(rec);
@@ -2836,6 +2882,71 @@ function initData() {
     });
   } catch(err) {
     console.warn("Supabase employee_db_log listener skipped:", err);
+  }
+
+  // Leave Management. Four small collections, all authenticated-read only.
+  // An empty set is the normal starting state — there is no seed data.
+  try {
+    onSnapshot(collection(db, "leave_records"), (querySnapshot) => {
+      const loaded = [];
+      querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
+      // Don't let a stale realtime frame revert a cell that was just clicked
+      // but whose write hasn't round-tripped yet.
+      const merged = loaded.filter(r => !_lvDirtyIds.has(r.id)).map(lvNormalizeRecord);
+      (state.leaveRecords || []).forEach(local => {
+        if (_lvDirtyIds.has(local.id)) merged.push(local);
+      });
+      state.leaveRecords = merged;
+      if (state.currentView === 'leave') renderLeave();
+      updateLeaveBadge();
+    }, (error) => {
+      console.error("Supabase leave_records sync error:", error);
+      state.leaveRecords = state.leaveRecords || [];
+      if (state.currentView === 'leave') renderLeave();
+    });
+  } catch(err) {
+    console.warn("Supabase leave_records listener skipped:", err);
+  }
+
+  try {
+    onSnapshot(collection(db, "leave_holidays"), (querySnapshot) => {
+      const loaded = [];
+      querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
+      state.leaveHolidays = loaded;
+      if (state.currentView === 'leave') renderLeave();
+      updateLeaveBadge();
+    }, (error) => {
+      console.error("Supabase leave_holidays sync error:", error);
+    });
+  } catch(err) {
+    console.warn("Supabase leave_holidays listener skipped:", err);
+  }
+
+  try {
+    onSnapshot(collection(db, "leave_policy"), (querySnapshot) => {
+      const loaded = [];
+      querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
+      state.leavePolicies = loaded;
+      if (state.currentView === 'leave') renderLeave();
+    }, (error) => {
+      console.error("Supabase leave_policy sync error:", error);
+    });
+  } catch(err) {
+    console.warn("Supabase leave_policy listener skipped:", err);
+  }
+
+  try {
+    onSnapshot(collection(db, "leave_log"), (querySnapshot) => {
+      const loaded = [];
+      querySnapshot.forEach((docSnap) => { loaded.push(docSnap.data()); });
+      state.leaveLog = loaded.sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
+      if (state.leaveLog.length > 200) state.leaveLog = state.leaveLog.slice(0, 200);
+      if (state.currentView === 'leave') renderLeaveLog();
+    }, (error) => {
+      console.error("Supabase leave_log sync error:", error);
+    });
+  } catch(err) {
+    console.warn("Supabase leave_log listener skipped:", err);
   }
 }
 
@@ -3826,6 +3937,7 @@ function setupEventListeners() {
 
   setupEmployeeDatabaseControls();
   setupOnboardingControls();
+  setupLeaveControls();
 }
 
 // ==========================================================================
@@ -4928,6 +5040,1650 @@ function closeMobileSidebar() {
   document.getElementById('sidebar-backdrop')?.classList.remove('active');
 }
 
+// ===========================================================================
+// Leave Management (HR)
+// ---------------------------------------------------------------------------
+// Fully isolated from the content planner: its own Supabase tables
+// (leave_records / leave_holidays / leave_policy / leave_log), its own state
+// slice, and it never touches state.team or state.tasks. Employees come from
+// the Employee Database (state.employeeRecords) — that's the HR source of
+// truth and it already carries joinDate, which pro-rating needs.
+//
+// There is deliberately NO salary or payroll anything in here. "Paid" and
+// "Unpaid" are labels on a leave day meaning inside or outside entitlement,
+// nothing more.
+// ===========================================================================
+
+// Leave types. Adding new codes later (Maternity, Compassionate, TOIL) is an
+// edit to this array — records store the single-letter slot value, never a
+// composed code like "L1", so no data migration is needed.
+const LV_VACATION = 'VL';
+const LV_SICK = 'SL';
+const LV_WFH = 'WFH';
+
+const LEAVE_TYPES = [
+  { key: LV_VACATION, label: 'Vacation Leave', short: 'Vacation', bucket: 'vacation', color: '#38bdf8' },
+  { key: LV_SICK,     label: 'Sickness Leave', short: 'Sickness', bucket: 'sick',     color: '#f472b6' },
+  { key: LV_WFH,      label: 'Work From Home', short: 'WFH',      bucket: 'vacation', color: '#fbbf24' }
+];
+
+// The single-letter codes this view originally shipped with (and the ones the
+// old Google Sheet used). Rows written before the rename are normalised to the
+// canonical code as they load, so totals, buckets and the WFH override all
+// behave identically for old and new data. The row in the database self-heals
+// the next time that day is edited.
+const LEAVE_LEGACY_CODES = { L: LV_VACATION, S: LV_SICK, W: LV_WFH };
+
+function lvNormalizeCode(code) {
+  const c = empVal(code);
+  return LEAVE_LEGACY_CODES[c] || c;
+}
+
+function lvNormalizeRecord(r) {
+  const am = lvNormalizeCode(r.am);
+  const pm = lvNormalizeCode(r.pm);
+  return (am === empVal(r.am) && pm === empVal(r.pm)) ? r : { ...r, am, pm };
+}
+
+const LEAVE_BUCKETS = [
+  { key: 'vacation', label: 'Vacation' },
+  { key: 'sick',     label: 'Sick' }
+];
+
+// Defaults for a leave year. Every one of these is editable in the
+// Calendar & Policy tab and stored per year in leave_policy — nothing here
+// is hardcoded policy, it's just what a brand-new year starts as.
+const DEFAULT_LEAVE_POLICY = {
+  vacationDays: 18,
+  sickDays: 12,
+  blackoutMonths: [10, 11, 12],   // Oct / Nov / Dec rush period
+  blackoutApplies: [LV_VACATION, LV_SICK, LV_WFH],
+  blackoutBurnsBalance: true,
+  weekendDays: [5],               // 0=Sun … 5=Fri, 6=Sat — Friday only
+  prorateJoiners: true,
+  wfhConsumesVacation: true
+};
+
+// Fixed-date Bangladesh national holidays only. Eid, Ashura, Shab-e-Barat,
+// Durga Puja and the other lunar/luni-solar dates move every year and are
+// set by government gazette — seeding a guess would silently miscount leave,
+// so those are left for HR to enter from the official calendar.
+const BD_FIXED_HOLIDAYS = [
+  { md: '02-21', name: 'Shaheed Day & International Mother Language Day' },
+  { md: '03-26', name: 'Independence Day' },
+  { md: '04-14', name: 'Pahela Baishakh (Bengali New Year)' },
+  { md: '05-01', name: 'May Day' },
+  { md: '12-16', name: 'Victory Day' },
+  { md: '12-25', name: 'Christmas Day' }
+];
+
+const LEAVE_MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+const LEAVE_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// ---- Small date helpers ---------------------------------------------------
+
+function lvIso(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function lvParse(iso) { return new Date(iso + 'T00:00:00'); }
+function lvDaysInMonth(year, month) { return new Date(year, month, 0).getDate(); }
+function lvToday() { return lvIso(new Date()); }
+
+// 1.5 -> "1.5", 2 -> "2". Half days are real, so never round them away.
+function lvDays(n) {
+  const v = Math.round(n * 2) / 2;
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+}
+function lvRoundHalf(n) { return Math.round(n * 2) / 2; }
+
+function lvTypeDef(code) {
+  const key = LEAVE_LEGACY_CODES[code] || code;
+  return LEAVE_TYPES.find(t => t.key === key) || null;
+}
+
+// Composed display code for a cell: L / L1 / L2, or "LS" for a day split
+// across two different types (vacation morning + sick afternoon).
+function lvCellCode(am, pm) {
+  if (am && pm) return am === pm ? am : `${am}1+${pm}2`;
+  if (am) return `${am}1`;
+  if (pm) return `${pm}2`;
+  return '';
+}
+
+// Grid-cell markup. A mixed day gets one label per half so both codes stay
+// readable at cell size; everything else is a single centred label.
+function lvCellHtml(am, pm) {
+  if (am && pm && am !== pm) {
+    const cAm = lvTypeDef(am), cPm = lvTypeDef(pm);
+    return `<span class="lv-split">` +
+      `<i style="color:${cAm ? cAm.color : '#e2e8f0'};">${escapeHtml(am)}</i>` +
+      `<i style="color:${cPm ? cPm.color : '#e2e8f0'};">${escapeHtml(pm)}</i></span>`;
+  }
+  return escapeHtml(lvCellCode(am, pm));
+}
+
+function lvCellTitle(am, pm) {
+  const name = c => { const d = lvTypeDef(c); return d ? d.label : c; };
+  if (am && pm && am === pm) return `${name(am)} — full day`;
+  const parts = [];
+  if (am) parts.push(`${name(am)} — morning`);
+  if (pm) parts.push(`${name(pm)} — afternoon`);
+  return parts.join(' / ');
+}
+
+// ---- Policy & holidays ----------------------------------------------------
+
+function getLeavePolicy(year) {
+  const stored = (state.leavePolicies || []).find(p => String(p.id) === String(year));
+  return { ...DEFAULT_LEAVE_POLICY, ...(stored || {}), id: String(year) };
+}
+
+function leaveHolidayFor(dateIso) {
+  return (state.leaveHolidays || []).find(h => h.date === dateIso) || null;
+}
+function isLeaveHoliday(dateIso) { return !!leaveHolidayFor(dateIso); }
+
+function isLeaveWeekend(dateIso, policy) {
+  return (policy.weekendDays || []).includes(lvParse(dateIso).getDay());
+}
+
+// A day only consumes balance if it's an actual working day.
+function isLeaveWorkingDay(dateIso, policy) {
+  return !isLeaveWeekend(dateIso, policy) && !isLeaveHoliday(dateIso);
+}
+
+// Which balance a half-slot draws from, or null if it draws from none.
+// WFH is the configurable one: HR sets the general rule in the policy panel
+// and can override it on an individual entry.
+function leaveSlotBucket(code, rec, policy) {
+  if (code === LV_WFH) {
+    const override = rec ? rec.wfhCounts : undefined;
+    const consumes = override === true ? true
+                   : override === false ? false
+                   : !!policy.wfhConsumesVacation;
+    return consumes ? 'vacation' : null;
+  }
+  const def = lvTypeDef(code);
+  return def ? def.bucket : null;
+}
+
+// ---- Entitlement ----------------------------------------------------------
+
+// Someone who joins mid-year is entitled from their joining month through
+// December, pro-rated. Joining month counts as a whole month.
+function leaveEntitlement(empRec, year, policy) {
+  const full = { vacation: policy.vacationDays, sick: policy.sickDays };
+  if (!policy.prorateJoiners) return full;
+  const jd = toIsoDate(empRec && empRec.joinDate);
+  if (!jd || !/^\d{4}-\d{2}-\d{2}$/.test(jd)) return full;
+  const jy = +jd.slice(0, 4);
+  const jm = +jd.slice(5, 7);
+  if (jy > year) return { vacation: 0, sick: 0 };
+  if (jy < year) return full;
+  const months = 12 - jm + 1;
+  return {
+    vacation: lvRoundHalf(policy.vacationDays * months / 12),
+    sick: lvRoundHalf(policy.sickDays * months / 12)
+  };
+}
+
+// ---- The engine -----------------------------------------------------------
+
+// Replays one employee's entire leave year in date order and classifies every
+// half-day as paid or unpaid.
+//
+// This is recomputed on every render and deliberately never stored. If HR
+// deletes a leave day in March, every day after it has to be able to shift
+// from unpaid back to paid — a flag written onto the record at entry time
+// could never do that, and would drift out of sync the first time anyone
+// corrected a mistake.
+function computeLeaveLedger(empRecordId, year) {
+  const policy = getLeavePolicy(year);
+  const empRec = (state.employeeRecords || []).find(r => r.id === empRecordId);
+  const entitlement = leaveEntitlement(empRec, year, policy);
+
+  const used = { vacation: 0, sick: 0 };
+  const paidBy = { vacation: 0, sick: 0 };
+  const unpaidBy = { vacation: 0, sick: 0 };
+  const byCode = {};
+  const slots = [];
+  const byDate = {};
+  let paidDays = 0, unpaidDays = 0, blackoutDays = 0, absenceDays = 0, wfhDays = 0, skippedDays = 0;
+
+  const records = (state.leaveRecords || [])
+    .filter(r => r.empRecordId === empRecordId && String(r.date || '').slice(0, 4) === String(year))
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
+  records.forEach(r => {
+    const working = isLeaveWorkingDay(r.date, policy);
+    const month = +String(r.date).slice(5, 7);
+    const inBlackoutMonth = (policy.blackoutMonths || []).includes(month);
+
+    ['am', 'pm'].forEach(slot => {
+      const code = empVal(r[slot]);
+      if (!code || !lvTypeDef(code)) return;
+
+      // A leave day recorded on a weekend or holiday costs nothing. Kept
+      // visible in the grid but excluded from every total.
+      if (!working) {
+        skippedDays += 0.5;
+        const entry = { date: r.date, slot, code, bucket: null, classification: 'skipped', reason: isLeaveHoliday(r.date) ? 'holiday' : 'weekend' };
+        slots.push(entry);
+        byDate[r.date] = byDate[r.date] || {};
+        byDate[r.date][slot] = entry;
+        return;
+      }
+
+      const bucket = leaveSlotBucket(code, r, policy);
+      byCode[code] = (byCode[code] || 0) + 0.5;
+      if (code === LV_WFH) wfhDays += 0.5; else absenceDays += 0.5;
+
+      let classification, reason = '';
+      if (!bucket) {
+        // WFH that HR has decided doesn't consume leave — worked time.
+        classification = 'paid';
+        reason = 'does not consume leave';
+      } else if (inBlackoutMonth && (policy.blackoutApplies || []).includes(code)) {
+        classification = 'unpaid';
+        reason = 'blackout month';
+        blackoutDays += 0.5;
+        if (policy.blackoutBurnsBalance) used[bucket] += 0.5;
+      } else if (used[bucket] + 0.5 <= entitlement[bucket]) {
+        classification = 'paid';
+        used[bucket] += 0.5;
+      } else {
+        classification = 'unpaid';
+        reason = 'entitlement exhausted';
+        used[bucket] += 0.5;
+      }
+
+      if (classification === 'paid') { paidDays += 0.5; if (bucket) paidBy[bucket] += 0.5; }
+      else { unpaidDays += 0.5; if (bucket) unpaidBy[bucket] += 0.5; }
+
+      const entry = { date: r.date, slot, code, bucket, classification, reason, note: empVal(r.note) };
+      slots.push(entry);
+      byDate[r.date] = byDate[r.date] || {};
+      byDate[r.date][slot] = entry;
+    });
+  });
+
+  return {
+    year, policy, entitlement,
+    used,
+    remaining: {
+      vacation: Math.max(0, lvRoundHalf(entitlement.vacation - used.vacation)),
+      sick: Math.max(0, lvRoundHalf(entitlement.sick - used.sick))
+    },
+    excess: {
+      vacation: Math.max(0, lvRoundHalf(used.vacation - entitlement.vacation)),
+      sick: Math.max(0, lvRoundHalf(used.sick - entitlement.sick))
+    },
+    paidBy, unpaidBy, byCode, slots, byDate,
+    paidDays, unpaidDays, blackoutDays, absenceDays, wfhDays, skippedDays
+  };
+}
+
+// Month slice of a ledger, for the grid's right-hand totals columns.
+function leaveMonthTotals(ledger, year, month) {
+  const prefix = `${year}-${String(month).padStart(2, '0')}`;
+  const t = { absence: 0, vacation: 0, sick: 0, wfh: 0, unpaid: 0, paid: 0 };
+  ledger.slots.forEach(s => {
+    if (!String(s.date).startsWith(prefix)) return;
+    if (s.classification === 'skipped') return;
+    if (s.code === LV_WFH) t.wfh += 0.5; else t.absence += 0.5;
+    if (s.code === LV_VACATION) t.vacation += 0.5;
+    if (s.code === LV_SICK) t.sick += 0.5;
+    if (s.classification === 'unpaid') t.unpaid += 0.5; else t.paid += 0.5;
+  });
+  return t;
+}
+
+// ---- Writes ---------------------------------------------------------------
+
+// Guards the realtime listener from reverting a cell that was just toggled
+// locally but whose write hasn't round-tripped yet. Each leave day is its own
+// row, so unlike the Onboarding deliverables there's no read-modify-write of a
+// shared record to lose — this only covers the echo of our own write.
+const _lvDirtyIds = new Set();
+
+function leaveRecordId(empRecordId, dateIso) { return `${empRecordId}__${dateIso}`; }
+
+async function logLeaveActivity(actionText) {
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const entry = {
+    id: `lvlog-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    user: currentUser,
+    action: actionText,
+    timestamp: new Date().toISOString()
+  };
+  try { await setDoc(doc(db, "leave_log", entry.id), entry); }
+  catch (err) { console.warn('leave_log write failed:', err); }
+}
+
+// Writes (or clears) one day for one employee. Passing both slots null
+// deletes the row rather than leaving an empty record behind.
+async function setLeaveDay(empRecordId, dateIso, patch, opts) {
+  if (!canCurrentUserAccessLeave()) { showToast('Access denied', 'error'); return false; }
+  const emp = (state.employeeRecords || []).find(r => r.id === empRecordId);
+  if (!emp) { showToast('Employee not found', 'error'); return false; }
+
+  const id = leaveRecordId(empRecordId, dateIso);
+  const existing = (state.leaveRecords || []).find(r => r.id === id);
+  const am = patch.am === undefined ? (existing ? empVal(existing.am) : '') : empVal(patch.am);
+  const pm = patch.pm === undefined ? (existing ? empVal(existing.pm) : '') : empVal(patch.pm);
+  const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
+  const nowIso = new Date().toISOString();
+  const silent = opts && opts.silent;
+
+  _lvDirtyIds.add(id);
+  setTimeout(() => _lvDirtyIds.delete(id), 4000);
+
+  if (!am && !pm) {
+    if (!existing) { _lvDirtyIds.delete(id); return true; }
+    state.leaveRecords = (state.leaveRecords || []).filter(r => r.id !== id);
+    if (!silent) renderLeave();
+    try {
+      await deleteDoc(doc(db, "leave_records", id));
+      if (!silent) await logLeaveActivity(`cleared leave for ${emp.fullName} on ${toDisplayDate(dateIso)}`);
+      return true;
+    } catch (err) {
+      console.error(err);
+      // Put the row back. A leave day that silently vanished from HR's screen
+      // but still exists in the database is worse than an error message.
+      state.leaveRecords = (state.leaveRecords || []).filter(r => r.id !== id).concat([existing]);
+      _lvDirtyIds.delete(id);
+      if (!silent) renderLeave();
+      showToast('Failed to clear leave' + errSuffix(err), 'error');
+      return false;
+    }
+  }
+
+  const record = {
+    ...(existing || {}),
+    id,
+    empRecordId,
+    employeeId: empVal(emp.employeeId),
+    date: dateIso,
+    am, pm,
+    note: patch.note === undefined ? (existing ? empVal(existing.note) : '') : empVal(patch.note),
+    createdBy: existing ? existing.createdBy : currentUser,
+    createdAt: existing ? existing.createdAt : nowIso,
+    updatedBy: currentUser,
+    updatedAt: nowIso
+  };
+  // Only WFH carries the per-entry balance override; keep other rows clean.
+  if (am === LV_WFH || pm === LV_WFH) {
+    if (patch.wfhCounts !== undefined) record.wfhCounts = patch.wfhCounts;
+  } else {
+    delete record.wfhCounts;
+  }
+
+  const others = (state.leaveRecords || []).filter(r => r.id !== id);
+  state.leaveRecords = others.concat([record]);
+  if (!silent) renderLeave();
+
+  try {
+    await setDoc(doc(db, "leave_records", id), record);
+    if (!silent) {
+      await logLeaveActivity(`set ${lvCellCode(am, pm)} for ${emp.fullName} on ${toDisplayDate(dateIso)}`);
+    }
+    return true;
+  } catch (err) {
+    console.error(err);
+    // Roll the optimistic update back so the grid never shows a leave day
+    // that was never actually saved.
+    state.leaveRecords = others.concat(existing ? [existing] : []);
+    _lvDirtyIds.delete(id);
+    if (!silent) renderLeave();
+    showToast('Failed to save leave' + errSuffix(err), 'error');
+    return false;
+  }
+}
+
+// Every working day in a date range, with weekends and holidays already
+// dropped. Used by both the range preview and the save.
+function leaveWorkingDaysInRange(startIso, endIso, policy) {
+  const out = [];
+  if (!startIso || !endIso || endIso < startIso) return out;
+  const cur = lvParse(startIso);
+  const end = lvParse(endIso);
+  let guard = 0;
+  while (cur <= end && guard++ < 800) {
+    const iso = lvIso(cur);
+    if (isLeaveWorkingDay(iso, policy)) out.push(iso);
+    cur.setDate(cur.getDate() + 1);
+  }
+  return out;
+}
+
+async function saveLeaveRange(empRecordId, startIso, endIso, code, duration, note, wfhCounts) {
+  const policy = getLeavePolicy(+startIso.slice(0, 4));
+  const days = leaveWorkingDaysInRange(startIso, endIso, policy);
+  if (!days.length) { showToast('That range has no working days', 'error'); return; }
+  const emp = (state.employeeRecords || []).find(r => r.id === empRecordId);
+
+  let ok = 0;
+  for (const iso of days) {
+    const patch = { note, wfhCounts };
+    if (duration === 'full') { patch.am = code; patch.pm = code; }
+    else if (duration === 'am') { patch.am = code; patch.pm = ''; }
+    else { patch.am = ''; patch.pm = code; }
+    const done = await setLeaveDay(empRecordId, iso, patch, { silent: true });
+    if (done) ok++;
+  }
+
+  const label = duration === 'full' ? 'full day' : duration === 'am' ? 'morning' : 'afternoon';
+  await logLeaveActivity(
+    `recorded ${lvTypeDef(code).label} (${label}) for ${emp ? emp.fullName : empRecordId} — ` +
+    `${toDisplayDate(startIso)}${startIso !== endIso ? ` to ${toDisplayDate(endIso)}` : ''}, ${ok} working day${ok === 1 ? '' : 's'}`
+  );
+  showToast(`${ok} day${ok === 1 ? '' : 's'} recorded`, 'success');
+  renderLeave();
+}
+
+async function clearLeaveRange(empRecordId, startIso, endIso) {
+  const policy = getLeavePolicy(+startIso.slice(0, 4));
+  const days = leaveWorkingDaysInRange(startIso, endIso, policy);
+  const emp = (state.employeeRecords || []).find(r => r.id === empRecordId);
+  let ok = 0;
+  for (const iso of days) {
+    const id = leaveRecordId(empRecordId, iso);
+    if (!(state.leaveRecords || []).some(r => r.id === id)) continue;
+    const done = await setLeaveDay(empRecordId, iso, { am: '', pm: '' }, { silent: true });
+    if (done) ok++;
+  }
+  await logLeaveActivity(`cleared ${ok} leave day${ok === 1 ? '' : 's'} for ${emp ? emp.fullName : empRecordId}`);
+  showToast(ok ? `${ok} day${ok === 1 ? '' : 's'} cleared` : 'Nothing to clear', ok ? 'info' : 'error');
+  renderLeave();
+}
+
+// ---- Holidays -------------------------------------------------------------
+
+async function saveLeaveHolidayRange(name, startIso, endIso, type) {
+  if (!canCurrentUserAccessLeave()) { showToast('Access denied', 'error'); return; }
+  const cur = lvParse(startIso);
+  const end = lvParse(endIso);
+  let count = 0, guard = 0;
+  while (cur <= end && guard++ < 60) {
+    const iso = lvIso(cur);
+    const entry = { id: `hol-${iso}`, date: iso, name: empVal(name), type: type || 'public' };
+    try { await setDoc(doc(db, "leave_holidays", entry.id), entry); count++; } catch (err) { console.error(err); }
+    cur.setDate(cur.getDate() + 1);
+  }
+  await logLeaveActivity(`added holiday "${name}" (${count} day${count === 1 ? '' : 's'} from ${toDisplayDate(startIso)})`);
+  showToast(`Holiday saved (${count} day${count === 1 ? '' : 's'})`, 'success');
+}
+
+async function deleteLeaveHoliday(id) {
+  if (!canCurrentUserAccessLeave()) { showToast('Access denied', 'error'); return; }
+  const h = (state.leaveHolidays || []).find(x => x.id === id);
+  if (!h) return;
+  if (!confirm(`Remove holiday "${h.name}" on ${toDisplayDate(h.date)}?`)) return;
+  try {
+    await deleteDoc(doc(db, "leave_holidays", id));
+    await logLeaveActivity(`removed holiday "${h.name}" on ${toDisplayDate(h.date)}`);
+    showToast('Holiday removed', 'info');
+  } catch (err) { console.error(err); showToast('Failed to remove holiday' + errSuffix(err), 'error'); }
+}
+
+// Seeds only the fixed-date national holidays. Eid, Ashura, Shab-e-Barat and
+// Durga Puja shift every year on the government gazette, and seeding a guess
+// would silently miscount leave — HR enters those by hand.
+async function seedBangladeshHolidays(year) {
+  if (!canCurrentUserAccessLeave()) { showToast('Access denied', 'error'); return; }
+  let added = 0, skipped = 0;
+  for (const h of BD_FIXED_HOLIDAYS) {
+    const iso = `${year}-${h.md}`;
+    if (isLeaveHoliday(iso)) { skipped++; continue; }
+    try {
+      await setDoc(doc(db, "leave_holidays", `hol-${iso}`), { id: `hol-${iso}`, date: iso, name: h.name, type: 'public' });
+      added++;
+    } catch (err) { console.error(err); }
+  }
+  await logLeaveActivity(`loaded ${added} fixed-date Bangladesh holidays for ${year}`);
+  showToast(`${added} added${skipped ? `, ${skipped} already there` : ''}. Add Eid, Ashura and Durga Puja manually — those dates move each year.`, 'success');
+}
+
+// ---- Policy ---------------------------------------------------------------
+
+async function saveLeavePolicy(year, patch) {
+  if (!canCurrentUserAccessLeave()) { showToast('Access denied', 'error'); return; }
+  const merged = { ...getLeavePolicy(year), ...patch, id: String(year) };
+  try {
+    await setDoc(doc(db, "leave_policy", String(year)), merged);
+    await logLeaveActivity(`updated ${year} leave policy`);
+    showToast('Policy saved', 'success');
+  } catch (err) { console.error(err); showToast('Failed to save policy' + errSuffix(err), 'error'); }
+}
+
+// ---- Rendering ------------------------------------------------------------
+
+function lvAlpha(hex, alpha) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Employees eligible for the Leave view, honouring the active/former filter.
+// Leave keys off the Employee Database because that's HR's source of truth and
+// it's the only list carrying joinDate.
+function leaveEmployees(includeInactive) {
+  return (state.employeeRecords || [])
+    .filter(r => includeInactive || empVal(r.status).toLowerCase() !== 'inactive')
+    .sort((a, b) => empVal(a.fullName).localeCompare(empVal(b.fullName)));
+}
+
+function leaveEmptyState(msg) {
+  return `<div class="lv-empty">${escapeHtml(msg)}</div>`;
+}
+
+function renderLeave() {
+  if (state.currentView !== 'leave') return;
+  refreshLeaveFilterOptions();
+  const tab = state.leaveTab || 'grid';
+  document.querySelectorAll('#leave-view .leave-tab').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-leave-tab') === tab);
+  });
+  document.querySelectorAll('#leave-view .leave-tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === `leave-tab-${tab}`);
+  });
+  if (tab === 'grid') renderLeaveGrid();
+  else if (tab === 'balances') renderLeaveBalances();
+  else if (tab === 'person') renderLeavePerson();
+  else if (tab === 'calendar') renderLeaveCalendar();
+}
+
+function renderLeaveLegend() {
+  const el = document.getElementById('leave-legend');
+  if (!el) return;
+  const items = [];
+  LEAVE_TYPES.forEach(t => {
+    items.push(`<span class="leave-legend-item"><span class="leave-legend-swatch" style="background:${t.color};">${escapeHtml(t.key)}</span>${escapeHtml(t.label)} (full)</span>`);
+    items.push(`<span class="leave-legend-item"><span class="leave-legend-swatch" style="background:linear-gradient(to bottom, ${t.color} 0 50%, ${lvAlpha(t.color, 0.2)} 50% 100%);">${escapeHtml(t.key)}1</span>Morning &nbsp;<span class="leave-legend-swatch" style="background:linear-gradient(to bottom, ${lvAlpha(t.color, 0.2)} 0 50%, ${t.color} 50% 100%);">${escapeHtml(t.key)}2</span>Afternoon</span>`);
+  });
+  items.push(`<span class="leave-legend-item"><span class="leave-legend-swatch" style="background:rgba(255,255,255,0.12); position:relative;"><span style="position:absolute;left:2px;right:2px;bottom:2px;height:2px;background:#ef4444;border-radius:1px;"></span></span>Unpaid day</span>`);
+  items.push(`<span class="leave-legend-item"><span class="leave-legend-swatch" style="background:rgba(52,211,153,0.35);"></span>Holiday</span>`);
+  items.push(`<span class="leave-legend-item"><span class="leave-legend-swatch" style="background:rgba(255,255,255,0.12);"></span>Weekend</span>`);
+  el.innerHTML = items.join('');
+}
+
+// ---- Tab: Month Grid ------------------------------------------------------
+
+function renderLeaveGrid() {
+  const wrap = document.getElementById('leave-grid-wrap');
+  if (!wrap) return;
+
+  const year = state.leaveYear;
+  const month = state.leaveMonth;
+  const policy = getLeavePolicy(year);
+  const label = document.getElementById('leave-month-label');
+  if (label) label.textContent = `${LEAVE_MONTH_NAMES[month - 1]} ${year}`;
+
+  renderLeaveLegend();
+  renderLeaveLog();
+
+  const all = leaveEmployees(state.leaveActiveFilter === 'all');
+  if (!all.length) {
+    wrap.innerHTML = leaveEmptyState('No employees yet. Add people in the Employee Database first — leave records attach to those records.');
+    return;
+  }
+
+  const search = empVal(state.leaveSearchFilter).toLowerCase();
+  const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
+  const rows = [];
+
+  all.forEach(emp => {
+    if (search && !(`${empVal(emp.fullName)} ${empVal(emp.employeeId)}`.toLowerCase().includes(search))) return;
+    if (state.leaveOfficeFilter !== 'all' && empVal(emp.officeSpace) !== state.leaveOfficeFilter) return;
+    const ledger = computeLeaveLedger(emp.id, year);
+    const totals = leaveMonthTotals(ledger, year, month);
+    const tookLeave = totals.absence + totals.wfh > 0;
+
+    if (state.leaveStatusFilter === 'hasleave' && !tookLeave) return;
+    if (state.leaveStatusFilter === 'noleave' && tookLeave) return;
+    if (state.leaveStatusFilter === 'unpaid' && totals.unpaid <= 0) return;
+    if (state.leaveStatusFilter === 'exhausted' && ledger.excess.vacation <= 0 && ledger.excess.sick <= 0) return;
+    if (state.leaveTypeFilter !== 'all') {
+      const hasType = ledger.slots.some(s => String(s.date).startsWith(monthPrefix) && s.code === state.leaveTypeFilter);
+      if (!hasType) return;
+    }
+    rows.push({ emp, ledger, totals });
+  });
+
+  const days = lvDaysInMonth(year, month);
+  const today = lvToday();
+
+  let head1 = `<tr><th class="lv-name-col" rowspan="2">Employee</th>`;
+  let head2 = `<tr>`;
+  for (let d = 1; d <= days; d++) {
+    const iso = `${monthPrefix}-${String(d).padStart(2, '0')}`;
+    const hol = leaveHolidayFor(iso);
+    const wknd = isLeaveWeekend(iso, policy);
+    const cls = hol ? 'lv-holiday' : wknd ? 'lv-weekend' : '';
+    const title = hol ? ` title="${escapeHtml(hol.name)}"` : '';
+    head1 += `<th class="lv-day-head ${cls}"${title}>${LEAVE_DOW[lvParse(iso).getDay()].charAt(0)}</th>`;
+    head2 += `<th class="lv-day-head ${cls}"${title}>${d}</th>`;
+  }
+  head1 += `<th class="lv-total-head lv-t1" rowspan="2" title="Days genuinely not worked — excludes WFH and holidays">Absence</th>`;
+  head1 += `<th class="lv-total-head lv-t2" rowspan="2">Vacation</th>`;
+  head1 += `<th class="lv-total-head lv-t3" rowspan="2">Sick</th>`;
+  head1 += `<th class="lv-total-head lv-t4" rowspan="2">WFH</th>`;
+  head1 += `<th class="lv-total-head lv-t5" rowspan="2" title="Days outside entitlement or falling in a blackout month">Unpaid</th>`;
+  head1 += `</tr>`;
+  head2 += `</tr>`;
+
+  const body = rows.map(({ emp, ledger, totals }) => {
+    let tds = `<td class="lv-name-col" title="${escapeHtml(empVal(emp.designation))}">${escapeHtml(empVal(emp.fullName))}<span class="lv-name-id">${escapeHtml(empVal(emp.employeeId))}</span></td>`;
+    for (let d = 1; d <= days; d++) {
+      const iso = `${monthPrefix}-${String(d).padStart(2, '0')}`;
+      const hol = leaveHolidayFor(iso);
+      const wknd = isLeaveWeekend(iso, policy);
+      const slotInfo = ledger.byDate[iso] || {};
+      const am = slotInfo.am ? slotInfo.am.code : '';
+      const pm = slotInfo.pm ? slotInfo.pm.code : '';
+      const unpaid = (slotInfo.am && slotInfo.am.classification === 'unpaid') ||
+                     (slotInfo.pm && slotInfo.pm.classification === 'unpaid');
+
+      const classes = ['lv-cell'];
+      if (hol) classes.push('lv-holiday');
+      else if (wknd) classes.push('lv-weekend');
+      // A code recorded on a weekend or holiday costs nothing, so it must not
+      // look like one that did.
+      if ((am || pm) && (hol || wknd)) classes.push('lv-skipped');
+      if (unpaid) classes.push('lv-unpaid');
+      if (iso === today) classes.push('lv-today');
+
+      let style = '', text = '', title = '';
+      if (am || pm) {
+        const cAm = am ? lvTypeDef(am).color : null;
+        const cPm = pm ? lvTypeDef(pm).color : null;
+        if (am && pm && am === pm) {
+          style = `background:${lvAlpha(cAm, 0.22)};color:${cAm};`;
+        } else if (am && pm) {
+          style = `background:linear-gradient(to bottom, ${lvAlpha(cAm, 0.22)} 0 50%, ${lvAlpha(cPm, 0.22)} 50% 100%);color:#e2e8f0;`;
+        } else if (am) {
+          style = `background:linear-gradient(to bottom, ${lvAlpha(cAm, 0.22)} 0 50%, transparent 50% 100%);color:${cAm};`;
+        } else {
+          style = `background:linear-gradient(to bottom, transparent 0 50%, ${lvAlpha(cPm, 0.22)} 50% 100%);color:${cPm};`;
+        }
+        text = lvCellHtml(am, pm);
+        title = lvCellTitle(am, pm);
+        if (unpaid) title += ' — unpaid';
+        if (hol) title += ` (on holiday: ${hol.name} — not counted)`;
+        else if (wknd) title += ' (on weekend — not counted)';
+      } else if (hol) {
+        title = hol.name;
+      }
+
+      const clickable = !hol && !wknd;
+      tds += `<td class="${classes.join(' ')}"${style ? ` style="${style}"` : ''}` +
+             `${title ? ` title="${escapeHtml(title)}"` : ''}` +
+             `${clickable ? ` data-lv-emp="${escapeHtml(emp.id)}" data-lv-date="${iso}"` : ''}>${text}</td>`;
+    }
+    tds += `<td class="lv-total lv-t1">${totals.absence ? lvDays(totals.absence) : ''}</td>`;
+    tds += `<td class="lv-total lv-t2">${totals.vacation ? lvDays(totals.vacation) : ''}</td>`;
+    tds += `<td class="lv-total lv-t3">${totals.sick ? lvDays(totals.sick) : ''}</td>`;
+    tds += `<td class="lv-total lv-t4">${totals.wfh ? lvDays(totals.wfh) : ''}</td>`;
+    tds += `<td class="lv-total lv-t5 lv-total-unpaid">${totals.unpaid ? lvDays(totals.unpaid) : ''}</td>`;
+    return `<tr>${tds}</tr>`;
+  }).join('');
+
+  if (!rows.length) {
+    wrap.innerHTML = leaveEmptyState('No employees match these filters.');
+    return;
+  }
+
+  wrap.innerHTML = `<table class="leave-grid"><thead>${head1}${head2}</thead><tbody>${body}</tbody></table>`;
+}
+
+// ---- Tab: Balances --------------------------------------------------------
+
+function leaveBalanceRows(year, opts) {
+  const search = empVal(opts.search).toLowerCase();
+  return leaveEmployees(true)
+    .filter(emp => empVal(emp.status).toLowerCase() !== 'inactive')
+    .filter(emp => !search || `${empVal(emp.fullName)} ${empVal(emp.employeeId)}`.toLowerCase().includes(search))
+    .filter(emp => opts.office === 'all' || empVal(emp.officeSpace) === opts.office)
+    .map(emp => {
+      const l = computeLeaveLedger(emp.id, year);
+      return {
+        emp, ledger: l,
+        fullName: empVal(emp.fullName),
+        employeeId: empVal(emp.employeeId),
+        vacUsed: l.used.vacation, vacLeft: l.remaining.vacation,
+        sickUsed: l.used.sick, sickLeft: l.remaining.sick,
+        wfh: l.wfhDays, unpaid: l.unpaidDays
+      };
+    })
+    .filter(r => {
+      if (opts.status === 'unpaid') return r.unpaid > 0;
+      if (opts.status === 'exhausted') return r.ledger.excess.vacation > 0 || r.ledger.excess.sick > 0;
+      if (opts.status === 'low') return r.vacLeft < 3 || r.sickLeft < 3;
+      if (opts.status === 'noleave') return r.vacUsed === 0 && r.sickUsed === 0 && r.wfh === 0;
+      return true;
+    });
+}
+
+function renderLeaveBalances() {
+  const body = document.getElementById('leave-balances-body');
+  if (!body) return;
+  const year = state.leaveBalYear;
+  const lbl = document.getElementById('leave-bal-year-label');
+  if (lbl) lbl.textContent = String(year);
+
+  const rows = leaveBalanceRows(year, {
+    search: state.leaveBalSearch,
+    office: state.leaveBalOfficeFilter,
+    status: state.leaveBalStatusFilter
+  });
+
+  const col = state.leaveBalSortCol || 'fullName';
+  const dir = state.leaveBalSortDir === 'desc' ? -1 : 1;
+  rows.sort((a, b) => {
+    const x = a[col], y = b[col];
+    if (typeof x === 'number' && typeof y === 'number') return (x - y) * dir;
+    return String(x).localeCompare(String(y)) * dir;
+  });
+
+  document.querySelectorAll('#leave-tab-balances th.sortable-th').forEach(th => {
+    const icon = th.querySelector('.sort-icon');
+    if (icon) icon.textContent = th.getAttribute('data-lbsort') === col ? (dir === 1 ? '↑' : '↓') : '↕';
+  });
+
+  // Headline stats across everyone shown.
+  const stats = rows.reduce((a, r) => {
+    a.vacUsed += r.vacUsed; a.sickUsed += r.sickUsed; a.wfh += r.wfh; a.unpaid += r.unpaid;
+    if (r.ledger.excess.vacation > 0 || r.ledger.excess.sick > 0) a.over++;
+    return a;
+  }, { vacUsed: 0, sickUsed: 0, wfh: 0, unpaid: 0, over: 0 });
+
+  const statsEl = document.getElementById('leave-balances-stats');
+  if (statsEl) {
+    statsEl.innerHTML = [
+      { v: rows.length, l: 'Employees' },
+      { v: lvDays(stats.vacUsed), l: 'Vacation days used' },
+      { v: lvDays(stats.sickUsed), l: 'Sick days used' },
+      { v: lvDays(stats.wfh), l: 'WFH days' },
+      { v: lvDays(stats.unpaid), l: 'Unpaid days' },
+      { v: stats.over, l: 'Over entitlement' }
+    ].map(s => `<div class="leave-stat"><div class="lv-stat-val">${escapeHtml(String(s.v))}</div><div class="lv-stat-label">${escapeHtml(s.l)}</div></div>`).join('');
+  }
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="10">${leaveEmptyState('No employees match these filters.')}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(r => {
+    const ent = r.ledger.entitlement;
+    const bar = (used, total, color) => {
+      const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
+      return `<div class="lv-bar"><span style="width:${pct}%;background:${used > total ? '#ef4444' : color};"></span></div>`;
+    };
+    let status = '<span style="color:#34d399;">On track</span>';
+    if (r.ledger.excess.vacation > 0 || r.ledger.excess.sick > 0) status = '<span style="color:#f87171;">Over entitlement</span>';
+    else if (r.unpaid > 0) status = '<span style="color:#fbbf24;">Has unpaid days</span>';
+    else if (r.vacLeft < 3 || r.sickLeft < 3) status = '<span style="color:#fbbf24;">Low balance</span>';
+
+    return `<tr>
+      <td style="color:#e2e8f0;">${escapeHtml(r.fullName)}</td>
+      <td style="color:#94a3b8;">${escapeHtml(r.employeeId)}</td>
+      <td style="color:#94a3b8;">${escapeHtml(empVal(r.emp.officeSpace))}</td>
+      <td style="text-align:right;">${lvDays(r.vacUsed)} <span style="color:#64748b;">/ ${lvDays(ent.vacation)}</span>${bar(r.vacUsed, ent.vacation, '#38bdf8')}</td>
+      <td style="text-align:right; color:${r.vacLeft < 3 ? '#fbbf24' : '#e2e8f0'};">${lvDays(r.vacLeft)}</td>
+      <td style="text-align:right;">${lvDays(r.sickUsed)} <span style="color:#64748b;">/ ${lvDays(ent.sick)}</span>${bar(r.sickUsed, ent.sick, '#f472b6')}</td>
+      <td style="text-align:right; color:${r.sickLeft < 3 ? '#fbbf24' : '#e2e8f0'};">${lvDays(r.sickLeft)}</td>
+      <td style="text-align:right; color:#fbbf24;">${lvDays(r.wfh)}</td>
+      <td style="text-align:right; color:${r.unpaid > 0 ? '#f87171' : '#64748b'};">${lvDays(r.unpaid)}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- Tab: Person year view ------------------------------------------------
+
+function renderLeavePerson() {
+  const body = document.getElementById('leave-person-body');
+  const sel = document.getElementById('leave-person-select');
+  if (!body || !sel) return;
+
+  const year = state.leavePersonYear;
+  const lbl = document.getElementById('leave-person-year-label');
+  if (lbl) lbl.textContent = String(year);
+
+  const emps = leaveEmployees(true);
+  if (!emps.length) {
+    sel.innerHTML = '<option value="">No employees</option>';
+    body.innerHTML = leaveEmptyState('No employees yet. Add people in the Employee Database first.');
+    return;
+  }
+  if (!state.leavePersonId || !emps.some(e => e.id === state.leavePersonId)) {
+    state.leavePersonId = emps[0].id;
+  }
+  sel.innerHTML = emps.map(e =>
+    `<option value="${escapeHtml(e.id)}"${e.id === state.leavePersonId ? ' selected' : ''}>${escapeHtml(empVal(e.fullName))}${empVal(e.employeeId) ? ` (${escapeHtml(empVal(e.employeeId))})` : ''}</option>`
+  ).join('');
+
+  const emp = emps.find(e => e.id === state.leavePersonId);
+  const l = computeLeaveLedger(emp.id, year);
+  const policy = l.policy;
+
+  const stats = `<div class="leave-stat-row">
+    <div class="leave-stat"><div class="lv-stat-val">${lvDays(l.remaining.vacation)}</div><div class="lv-stat-label">Vacation left of ${lvDays(l.entitlement.vacation)}</div></div>
+    <div class="leave-stat"><div class="lv-stat-val">${lvDays(l.remaining.sick)}</div><div class="lv-stat-label">Sick left of ${lvDays(l.entitlement.sick)}</div></div>
+    <div class="leave-stat"><div class="lv-stat-val">${lvDays(l.wfhDays)}</div><div class="lv-stat-label">WFH days</div></div>
+    <div class="leave-stat"><div class="lv-stat-val">${lvDays(l.absenceDays)}</div><div class="lv-stat-label">Days not worked</div></div>
+    <div class="leave-stat"><div class="lv-stat-val" style="color:${l.unpaidDays > 0 ? '#f87171' : '#fff'};">${lvDays(l.unpaidDays)}</div><div class="lv-stat-label">Unpaid days</div></div>
+  </div>`;
+
+  const joinNote = (() => {
+    const jd = toIsoDate(emp.joinDate);
+    if (jd && /^\d{4}-\d{2}-\d{2}$/.test(jd) && +jd.slice(0, 4) === year && policy.prorateJoiners) {
+      const months = 12 - (+jd.slice(5, 7)) + 1;
+      return `<p class="lv-panel-hint">Joined ${toDisplayDate(jd)} — entitlement pro-rated over ${months} month${months === 1 ? '' : 's'} of ${year}.</p>`;
+    }
+    return '';
+  })();
+
+  // Twelve mini-calendars for the year.
+  let months = '';
+  for (let m = 1; m <= 12; m++) {
+    const days = lvDaysInMonth(year, m);
+    const first = lvParse(`${year}-${String(m).padStart(2, '0')}-01`).getDay();
+    let cells = LEAVE_DOW.map(d => `<div class="lv-mini-cell lv-mini-head">${d.charAt(0)}</div>`).join('');
+    for (let i = 0; i < first; i++) cells += '<div class="lv-mini-cell lv-mini-empty"></div>';
+    for (let d = 1; d <= days; d++) {
+      const iso = `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const info = l.byDate[iso] || {};
+      const am = info.am ? info.am.code : '';
+      const pm = info.pm ? info.pm.code : '';
+      const hol = leaveHolidayFor(iso);
+      const wknd = isLeaveWeekend(iso, policy);
+      let style = '', title = `${toDisplayDate(iso)}`, cls = 'lv-mini-cell';
+      if (am || pm) {
+        const cAm = am ? lvTypeDef(am).color : null;
+        const cPm = pm ? lvTypeDef(pm).color : null;
+        if (am && pm && am === pm) style = `background:${lvAlpha(cAm, 0.35)};color:${cAm};`;
+        else if (am && pm) style = `background:linear-gradient(to bottom, ${lvAlpha(cAm, 0.35)} 0 50%, ${lvAlpha(cPm, 0.35)} 50% 100%);color:#e2e8f0;`;
+        else if (am) style = `background:linear-gradient(to bottom, ${lvAlpha(cAm, 0.35)} 0 50%, rgba(255,255,255,0.03) 50% 100%);color:${cAm};`;
+        else style = `background:linear-gradient(to bottom, rgba(255,255,255,0.03) 0 50%, ${lvAlpha(cPm, 0.35)} 50% 100%);color:${cPm};`;
+        title += ` — ${lvCellTitle(am, pm)}`;
+        const skipped = (info.am || info.pm || {}).classification === 'skipped';
+        const isUnpaid = (info.am && info.am.classification === 'unpaid') || (info.pm && info.pm.classification === 'unpaid');
+        if (skipped) { cls += ' lv-skipped'; title += hol ? ` (${hol.name} — not counted)` : ' (weekend — not counted)'; }
+        else if (isUnpaid) { style += 'box-shadow: inset 0 -2px 0 0 #ef4444;'; title += ' — unpaid'; }
+      } else if (hol) {
+        style = 'background:rgba(52,211,153,0.18);color:#34d399;';
+        title += ` — ${hol.name}`;
+      } else if (wknd) {
+        style = 'background:rgba(255,255,255,0.06);';
+        title += ' — weekend';
+      }
+      cells += `<div class="${cls}" style="${style}" title="${escapeHtml(title)}">${d}</div>`;
+    }
+    months += `<div class="lv-month-card"><h5>${LEAVE_MONTH_NAMES[m - 1]}</h5><div class="lv-mini">${cells}</div></div>`;
+  }
+
+  // The ledger itself — one line per half-day, in the order the engine
+  // classified them. This is the answer to "why is this day unpaid?".
+  const ledgerRows = l.slots.length ? l.slots.map(s => {
+    const def = lvTypeDef(s.code);
+    const cls = s.classification;
+    const colour = cls === 'unpaid' ? '#f87171' : cls === 'skipped' ? '#64748b' : '#34d399';
+    const word = cls === 'skipped' ? `Not counted (${s.reason})` : cls === 'unpaid' ? `Unpaid — ${s.reason}` : 'Paid';
+    return `<tr>
+      <td style="color:#e2e8f0;">${escapeHtml(toDisplayDate(s.date))}</td>
+      <td style="color:#94a3b8;">${escapeHtml(LEAVE_DOW[lvParse(s.date).getDay()])}</td>
+      <td style="color:${def ? def.color : '#e2e8f0'};">${escapeHtml(def ? def.label : s.code)}</td>
+      <td style="color:#94a3b8;">${s.slot === 'am' ? 'Morning' : 'Afternoon'}</td>
+      <td style="text-align:right; color:#cbd5e1;">${s.classification === 'skipped' ? '0' : '0.5'}</td>
+      <td style="color:${colour};">${escapeHtml(word)}</td>
+      <td style="color:#64748b;">${escapeHtml(empVal(s.note))}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7">${leaveEmptyState(`No leave recorded for ${escapeHtml(empVal(emp.fullName))} in ${year}.`)}</td></tr>`;
+
+  body.innerHTML = stats + joinNote + `<div class="lv-year-grid">${months}</div>` +
+    `<div class="lv-panel"><h4>Leave ledger — ${escapeHtml(empVal(emp.fullName))}, ${year}</h4>
+      <p class="lv-panel-hint">Every half-day in the order it was counted. Paid or unpaid is recalculated from scratch each time this loads, so correcting an earlier day automatically reclassifies the ones after it.</p>
+      <div class="tasks-table-container" style="max-height: 420px; overflow: auto;">
+        <table class="tasks-table" style="width:100%; border-collapse:collapse; white-space:nowrap;">
+          <thead><tr>
+            <th style="text-align:left;">Date</th><th style="text-align:left;">Day</th>
+            <th style="text-align:left;">Type</th><th style="text-align:left;">Half</th>
+            <th style="text-align:right;">Days</th><th style="text-align:left;">Counted as</th>
+            <th style="text-align:left;">Note</th>
+          </tr></thead>
+          <tbody>${ledgerRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ---- Tab: Calendar & Policy ----------------------------------------------
+
+function renderLeaveCalendar() {
+  const polEl = document.getElementById('leave-policy-panel');
+  const holEl = document.getElementById('leave-holidays-panel');
+  if (!polEl || !holEl) return;
+
+  const year = state.leaveCalYear;
+  const lbl = document.getElementById('leave-cal-year-label');
+  if (lbl) lbl.textContent = String(year);
+  const p = getLeavePolicy(year);
+
+  const monthChecks = LEAVE_MONTH_NAMES.map((m, i) =>
+    `<label class="lv-check"><input type="checkbox" data-lv-blackout-month="${i + 1}"${(p.blackoutMonths || []).includes(i + 1) ? ' checked' : ''}>${m.slice(0, 3)}</label>`
+  ).join('');
+
+  const typeChecks = LEAVE_TYPES.map(t =>
+    `<label class="lv-check"><input type="checkbox" data-lv-blackout-type="${t.key}"${(p.blackoutApplies || []).includes(t.key) ? ' checked' : ''}>${escapeHtml(t.label)}</label>`
+  ).join('');
+
+  const dowChecks = LEAVE_DOW.map((d, i) =>
+    `<label class="lv-check"><input type="checkbox" data-lv-weekend-day="${i}"${(p.weekendDays || []).includes(i) ? ' checked' : ''}>${d}</label>`
+  ).join('');
+
+  polEl.innerHTML = `<div class="lv-panel">
+    <h4>Leave policy — ${year}</h4>
+    <p class="lv-panel-hint">Applies to this leave year only. Every year gets its own settings, so changing next year's entitlement never rewrites this year's history. No salary or payroll values are stored anywhere — "unpaid" here only means a day that fell outside entitlement.</p>
+    <div class="lv-policy-grid">
+      <div class="lv-field"><label for="lv-pol-vac">Vacation days per year</label><input type="number" id="lv-pol-vac" min="0" max="365" step="0.5" value="${p.vacationDays}"></div>
+      <div class="lv-field"><label for="lv-pol-sick">Sick days per year</label><input type="number" id="lv-pol-sick" min="0" max="365" step="0.5" value="${p.sickDays}"></div>
+    </div>
+
+    <div class="lv-field" style="margin-top:24px;"><label>Weekend (non-working days)</label><div class="lv-check-row">${dowChecks}</div></div>
+    <div class="lv-field" style="margin-top:16px;"><label>Blackout months — leave taken here is unpaid</label><div class="lv-check-row">${monthChecks}</div></div>
+    <div class="lv-field" style="margin-top:16px;"><label>Blackout applies to</label><div class="lv-check-row">${typeChecks}</div></div>
+
+    <div class="lv-check-row" style="margin-top:24px;">
+      <label class="lv-check"><input type="checkbox" id="lv-pol-burns"${p.blackoutBurnsBalance ? ' checked' : ''}>Blackout days also deduct from the balance</label>
+      <label class="lv-check"><input type="checkbox" id="lv-pol-prorate"${p.prorateJoiners ? ' checked' : ''}>Pro-rate entitlement for mid-year joiners</label>
+      <label class="lv-check"><input type="checkbox" id="lv-pol-wfh"${p.wfhConsumesVacation ? ' checked' : ''}>Work From Home consumes the vacation balance by default</label>
+    </div>
+    <p class="lv-panel-hint" style="margin:16px 0 0;">The WFH setting is the default for new entries. Any individual WFH day can be flagged differently when it's entered.</p>
+
+    <div style="margin-top:24px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-primary" id="lv-pol-save">Save Policy</button>
+    </div>
+  </div>`;
+
+  const holidays = (state.leaveHolidays || [])
+    .filter(h => String(h.date).slice(0, 4) === String(year))
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
+  const holRows = holidays.length ? holidays.map(h => `<tr>
+      <td style="color:#e2e8f0;">${escapeHtml(toDisplayDate(h.date))}</td>
+      <td style="color:#94a3b8;">${escapeHtml(LEAVE_DOW[lvParse(h.date).getDay()])}</td>
+      <td style="color:#e2e8f0;">${escapeHtml(empVal(h.name))}</td>
+      <td style="color:#94a3b8;">${h.type === 'company' ? 'Company closure' : 'Public holiday'}</td>
+      <td style="text-align:right;"><button type="button" class="btn-secondary" data-lv-del-holiday="${escapeHtml(h.id)}" style="height:32px; padding:0 12px; font-size:0.76rem;">Remove</button></td>
+    </tr>`).join('')
+    : `<tr><td colspan="5">${leaveEmptyState(`No holidays set for ${year}. Leave taken on an unlisted holiday will still consume balance.`)}</td></tr>`;
+
+  holEl.innerHTML = `<div class="lv-panel">
+    <h4>Holidays &amp; company closures — ${year}</h4>
+    <p class="lv-panel-hint">Days listed here never consume leave balance, and a leave range entered across them skips them automatically. "Load Bangladesh Holidays" adds the fixed-date national holidays only — Eid, Ashura, Shab-e-Barat and Durga Puja move every year on the government gazette, so add those by hand rather than trusting a guess.</p>
+    <div class="tasks-table-container" style="max-height: 420px; overflow:auto;">
+      <table class="tasks-table" style="width:100%; border-collapse:collapse; white-space:nowrap;">
+        <thead><tr>
+          <th style="text-align:left;">Date</th><th style="text-align:left;">Day</th>
+          <th style="text-align:left;">Name</th><th style="text-align:left;">Type</th>
+          <th style="text-align:right;">Actions</th>
+        </tr></thead>
+        <tbody>${holRows}</tbody>
+      </table>
+    </div>
+    <div class="lv-panel-actions">
+      <button type="button" class="btn-secondary" id="leave-seed-holidays-btn">Load Bangladesh Holidays</button>
+      <button type="button" class="btn-secondary" id="leave-add-holiday-btn">+ Add Holiday</button>
+    </div>
+  </div>`;
+}
+
+// ---- Change log & badge ---------------------------------------------------
+
+function renderLeaveLog() {
+  const list = document.getElementById('leave-log-list');
+  if (!list) return;
+  const logs = state.leaveLog || [];
+  if (!logs.length) { list.innerHTML = '<div style="color:#64748b; padding:12px;">No changes logged yet.</div>'; return; }
+  list.innerHTML = logs.map(l => `<div style="padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.83rem;">
+    <span style="color:#e2e8f0;">${escapeHtml(empVal(l.user))}</span>
+    <span style="color:#cbd5e1;"> ${escapeHtml(empVal(l.action))}</span>
+    <span style="color:#64748b; float:right;">${escapeHtml(String(l.timestamp || '').replace('T', ' ').slice(0, 16))}</span>
+  </div>`).join('');
+}
+
+// Sidebar badge + dashboard pill: how many people are out today. Only ever
+// rendered for someone who holds Leave access.
+function updateLeaveBadge() {
+  const badge = document.getElementById('leave-badge');
+  const pill = document.getElementById('dashboard-leave-badge');
+  if (!badge && !pill) return;
+  if (!canCurrentUserAccessLeave()) {
+    if (badge) badge.style.display = 'none';
+    if (pill) pill.style.display = 'none';
+    return;
+  }
+  const today = lvToday();
+  const policy = getLeavePolicy(+today.slice(0, 4));
+  let count = 0;
+  if (isLeaveWorkingDay(today, policy)) {
+    const ids = new Set(leaveEmployees(false).map(e => e.id));
+    count = (state.leaveRecords || []).filter(r =>
+      r.date === today && ids.has(r.empRecordId) && (empVal(r.am) || empVal(r.pm))
+    ).length;
+  }
+  if (badge) {
+    badge.textContent = String(count);
+    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+  }
+  if (pill) {
+    pill.textContent = `${count} out today`;
+    pill.style.display = count > 0 ? 'inline-flex' : 'none';
+  }
+}
+
+// ---- Cell popover ---------------------------------------------------------
+
+function closeLeavePopover() {
+  const el = document.getElementById('leave-popover');
+  if (el) el.remove();
+}
+
+function openLeavePopover(cellEl, empRecordId, dateIso) {
+  closeLeavePopover();
+  if (!canCurrentUserAccessLeave()) return;
+  const emp = (state.employeeRecords || []).find(r => r.id === empRecordId);
+  if (!emp) return;
+  const rec = (state.leaveRecords || []).find(r => r.id === leaveRecordId(empRecordId, dateIso));
+  const am = rec ? empVal(rec.am) : '';
+  const pm = rec ? empVal(rec.pm) : '';
+  const policy = getLeavePolicy(+dateIso.slice(0, 4));
+  const hasWfh = am === LV_WFH || pm === LV_WFH;
+  const wfhCounts = rec && rec.wfhCounts !== undefined ? rec.wfhCounts : !!policy.wfhConsumesVacation;
+
+  const row = (slot, label, active) => `
+    <div class="lv-pop-label">${label}</div>
+    <div class="lv-pop-row">${LEAVE_TYPES.map(t =>
+      `<button type="button" class="lv-pop-btn${active === t.key ? ' active' : ''}" data-lv-set="${slot}" data-lv-code="${t.key}" title="${escapeHtml(t.label)}">${t.key}</button>`
+    ).join('')}</div>`;
+
+  const el = document.createElement('div');
+  el.id = 'leave-popover';
+  el.className = 'leave-popover';
+  el.innerHTML = `
+    <h4>${escapeHtml(empVal(emp.fullName))}</h4>
+    <p class="lv-pop-date">${escapeHtml(toDisplayDate(dateIso))} · ${escapeHtml(LEAVE_DOW[lvParse(dateIso).getDay()])}</p>
+    ${row('full', 'Full day', am && pm && am === pm ? am : '')}
+    ${row('am', 'Morning', am)}
+    ${row('pm', 'Afternoon', pm)}
+    ${hasWfh ? `<label class="lv-check" style="margin-top:12px; font-size:0.74rem;">
+      <input type="checkbox" id="lv-pop-wfh"${wfhCounts ? ' checked' : ''}>Counts against vacation</label>` : ''}
+    ${(am || pm) ? '<button type="button" class="lv-pop-clear" data-lv-clear="1">Clear this day</button>' : ''}
+  `;
+  document.body.appendChild(el);
+
+  const r = cellEl.getBoundingClientRect();
+  const w = el.offsetWidth, h = el.offsetHeight;
+  let left = r.left + r.width / 2 - w / 2;
+  let top = r.bottom + 8;
+  left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+  if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+
+  el.querySelectorAll('[data-lv-set]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const slot = btn.getAttribute('data-lv-set');
+      const code = btn.getAttribute('data-lv-code');
+      closeLeavePopover();
+      const patch = { wfhCounts: code === LV_WFH ? wfhCounts : undefined };
+      if (slot === 'full') {
+        // Clicking the already-set full day toggles it off.
+        const already = am === code && pm === code;
+        patch.am = already ? '' : code;
+        patch.pm = already ? '' : code;
+      } else if (slot === 'am') {
+        patch.am = am === code ? '' : code;
+      } else {
+        patch.pm = pm === code ? '' : code;
+      }
+      await setLeaveDay(empRecordId, dateIso, patch);
+      updateLeaveBadge();
+    });
+  });
+
+  const wfhCb = el.querySelector('#lv-pop-wfh');
+  if (wfhCb) wfhCb.addEventListener('change', async () => {
+    await setLeaveDay(empRecordId, dateIso, { wfhCounts: wfhCb.checked });
+    closeLeavePopover();
+  });
+
+  const clearBtn = el.querySelector('[data-lv-clear]');
+  if (clearBtn) clearBtn.addEventListener('click', async () => {
+    closeLeavePopover();
+    await setLeaveDay(empRecordId, dateIso, { am: '', pm: '' });
+    updateLeaveBadge();
+  });
+}
+
+// ---- Entry modal ----------------------------------------------------------
+
+function openLeaveEntryModal(prefill) {
+  if (!canCurrentUserAccessLeave()) { showToast('Access denied', 'error'); return; }
+  const modal = document.getElementById('leave-entry-modal');
+  if (!modal) return;
+  const q = (id) => document.getElementById(id);
+
+  const emps = leaveEmployees(true);
+  if (!emps.length) { showToast('Add employees in the Employee Database first', 'error'); return; }
+  q('leave-entry-employee').innerHTML = emps.map(e =>
+    `<option value="${escapeHtml(e.id)}">${escapeHtml(empVal(e.fullName))}${empVal(e.employeeId) ? ` (${escapeHtml(empVal(e.employeeId))})` : ''}</option>`
+  ).join('');
+  q('leave-entry-type').innerHTML = LEAVE_TYPES.map(t =>
+    `<option value="${t.key}">${escapeHtml(t.label)} (${t.key})</option>`
+  ).join('');
+
+  const p = prefill || {};
+  const defaultDate = p.date || lvToday();
+  q('leave-entry-employee').value = p.empRecordId || emps[0].id;
+  q('leave-entry-start').value = defaultDate;
+  q('leave-entry-end').value = defaultDate;
+  q('leave-entry-multi').checked = false;
+  q('leave-entry-end-group').style.display = 'none';
+  q('leave-entry-type').value = p.code || LV_VACATION;
+  q('leave-entry-duration').value = p.duration || 'full';
+  q('leave-entry-note').value = '';
+  q('leave-entry-wfh-counts').checked = !!getLeavePolicy(+defaultDate.slice(0, 4)).wfhConsumesVacation;
+  q('leave-entry-delete-btn').style.display = 'inline-flex';
+
+  modal.classList.add('active');
+  updateLeaveEntryPreview();
+}
+
+function closeLeaveEntryModal() {
+  document.getElementById('leave-entry-modal')?.classList.remove('active');
+}
+
+// Live preview of exactly what will be written, including how many of the
+// days land as unpaid. Shown before saving so nothing is a surprise.
+function updateLeaveEntryPreview() {
+  const q = (id) => document.getElementById(id);
+  const box = q('leave-entry-preview');
+  if (!box) return;
+  const empRecordId = q('leave-entry-employee').value;
+  const start = q('leave-entry-start').value;
+  const end = leaveEntryEndDate();
+  const code = q('leave-entry-type').value;
+  const duration = q('leave-entry-duration').value;
+
+  const wfhGroup = q('leave-entry-wfh-group');
+  if (wfhGroup) {
+    wfhGroup.style.display = code === LV_WFH ? 'block' : 'none';
+    const hint = q('leave-entry-wfh-hint');
+    if (hint) {
+      hint.textContent = getLeavePolicy(+((start || lvToday()).slice(0, 4))).wfhConsumesVacation
+        ? 'Policy default for this year: WFH does consume vacation.'
+        : 'Policy default for this year: WFH does not consume vacation.';
+    }
+  }
+
+  if (!start || !end || end < start) { box.innerHTML = '<span class="lv-bad">Pick a valid date range.</span>'; return; }
+
+  const policy = getLeavePolicy(+start.slice(0, 4));
+  const days = leaveWorkingDaysInRange(start, end, policy);
+  if (!days.length) { box.innerHTML = '<span class="lv-bad">No working days in that range — it is all weekends and holidays.</span>'; return; }
+
+  const totalSpan = Math.round((lvParse(end) - lvParse(start)) / 86400000) + 1;
+  const skipped = totalSpan - days.length;
+  const per = duration === 'full' ? 1 : 0.5;
+  const requested = days.length * per;
+
+  // Dry-run the ledger with these days applied to see what lands unpaid.
+  const ledger = computeLeaveLedger(empRecordId, +start.slice(0, 4));
+  const bucket = leaveSlotBucket(code, { wfhCounts: q('leave-entry-wfh-counts').checked }, policy);
+  let used = bucket ? ledger.used[bucket] : 0;
+  const entitlement = bucket ? ledger.entitlement[bucket] : Infinity;
+  let paid = 0, unpaid = 0, blackout = 0;
+  days.forEach(iso => {
+    const inBlackout = (policy.blackoutMonths || []).includes(+iso.slice(5, 7)) && (policy.blackoutApplies || []).includes(code);
+    for (let i = 0; i < (duration === 'full' ? 2 : 1); i++) {
+      if (!bucket) { paid += 0.5; continue; }
+      if (inBlackout) { unpaid += 0.5; blackout += 0.5; if (policy.blackoutBurnsBalance) used += 0.5; }
+      else if (used + 0.5 <= entitlement) { paid += 0.5; used += 0.5; }
+      else { unpaid += 0.5; used += 0.5; }
+    }
+  });
+
+  const parts = [`<strong>${lvDays(requested)} day${requested === 1 ? '' : 's'}</strong> across ${days.length} working day${days.length === 1 ? '' : 's'}.`];
+  if (skipped > 0) parts.push(`<span class="lv-warn">${skipped} weekend/holiday day${skipped === 1 ? '' : 's'} skipped.</span>`);
+  if (!bucket) parts.push('Does not consume any balance.');
+  else {
+    parts.push(`${lvDays(paid)} paid, ${unpaid > 0 ? `<span class="lv-bad">${lvDays(unpaid)} unpaid</span>` : '0 unpaid'}.`);
+    if (blackout > 0) parts.push(`<span class="lv-warn">${lvDays(blackout)} fall in a blackout month.</span>`);
+    const left = Math.max(0, entitlement - used);
+    parts.push(`Balance after saving: <strong>${lvDays(left)}</strong> of ${lvDays(entitlement)} ${bucket} day${entitlement === 1 ? '' : 's'} left.`);
+  }
+  box.innerHTML = parts.join(' ');
+}
+
+// The end of the entry range: the start date unless the user ticked
+// "Spans more than one day". Keeps a single day — the common case — to one
+// field, and makes an inverted range impossible.
+function leaveEntryEndDate() {
+  const start = document.getElementById('leave-entry-start').value;
+  if (!document.getElementById('leave-entry-multi').checked) return start;
+  const end = document.getElementById('leave-entry-end').value;
+  return (!end || end < start) ? start : end;
+}
+
+function syncLeaveEntryMulti() {
+  const multi = document.getElementById('leave-entry-multi').checked;
+  const group = document.getElementById('leave-entry-end-group');
+  group.style.display = multi ? 'block' : 'none';
+  const start = document.getElementById('leave-entry-start');
+  const end = document.getElementById('leave-entry-end');
+  if (multi) {
+    end.min = start.value;
+    if (!end.value || end.value < start.value) end.value = start.value;
+  }
+  updateLeaveEntryPreview();
+}
+
+// ---- Holiday modal --------------------------------------------------------
+
+function openLeaveHolidayModal() {
+  if (!canCurrentUserAccessLeave()) { showToast('Access denied', 'error'); return; }
+  const modal = document.getElementById('leave-holiday-modal');
+  if (!modal) return;
+  // Default to today when it falls in the year being edited, otherwise the
+  // first of that year — beats making HR page back from 1 January every time.
+  const today = lvToday();
+  const d = today.slice(0, 4) === String(state.leaveCalYear) ? today : `${state.leaveCalYear}-01-01`;
+  document.getElementById('leave-holiday-name').value = '';
+  document.getElementById('leave-holiday-start').value = d;
+  document.getElementById('leave-holiday-end').value = d;
+  document.getElementById('leave-holiday-multi').checked = false;
+  document.getElementById('leave-holiday-end-group').style.display = 'none';
+  document.getElementById('leave-holiday-type').value = 'public';
+  modal.classList.add('active');
+}
+function closeLeaveHolidayModal() {
+  document.getElementById('leave-holiday-modal')?.classList.remove('active');
+}
+
+function leaveHolidayEndDate() {
+  const start = document.getElementById('leave-holiday-start').value;
+  if (!document.getElementById('leave-holiday-multi').checked) return start;
+  const end = document.getElementById('leave-holiday-end').value;
+  return (!end || end < start) ? start : end;
+}
+
+function syncLeaveHolidayMulti() {
+  const multi = document.getElementById('leave-holiday-multi').checked;
+  const group = document.getElementById('leave-holiday-end-group');
+  group.style.display = multi ? 'block' : 'none';
+  const start = document.getElementById('leave-holiday-start');
+  const end = document.getElementById('leave-holiday-end');
+  if (multi) {
+    end.min = start.value;
+    if (!end.value || end.value < start.value) end.value = start.value;
+  }
+}
+
+// ---- CSV export -----------------------------------------------------------
+
+function lvCsvCell(v) {
+  const s = v == null ? '' : String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function lvDownloadCsv(filename, rows) {
+  const csv = rows.map(r => r.map(lvCsvCell).join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Mirrors the shape of the Google Sheet HR already reads, so the export
+// stays familiar — but with the weekday row generated from the real calendar.
+function exportLeaveGridCsv() {
+  const year = state.leaveYear, month = state.leaveMonth;
+  const policy = getLeavePolicy(year);
+  const days = lvDaysInMonth(year, month);
+  const prefix = `${year}-${String(month).padStart(2, '0')}`;
+
+  const dayNums = [], dayNames = [];
+  for (let d = 1; d <= days; d++) {
+    const iso = `${prefix}-${String(d).padStart(2, '0')}`;
+    dayNums.push(d);
+    dayNames.push(LEAVE_DOW[lvParse(iso).getDay()]);
+  }
+  const totalCols = ['Total Absence Days', 'Total Vacation Leave Days', 'Total Sick Leave Days', 'Total Work from Home Days', 'Total Unpaid Days'];
+  const rows = [
+    [`Leave Management worksheet - ${LEAVE_MONTH_NAMES[month - 1]} ${year}`],
+    [],
+    ['Employee no', 'Name', ...dayNames, ...totalCols],
+    ['', '', ...dayNums, ...totalCols.map(() => '')]
+  ];
+
+  leaveEmployees(state.leaveActiveFilter === 'all').forEach((emp, i) => {
+    const ledger = computeLeaveLedger(emp.id, year);
+    const t = leaveMonthTotals(ledger, year, month);
+    const cells = [];
+    for (let d = 1; d <= days; d++) {
+      const iso = `${prefix}-${String(d).padStart(2, '0')}`;
+      const info = ledger.byDate[iso] || {};
+      cells.push(lvCellCode(info.am ? info.am.code : '', info.pm ? info.pm.code : ''));
+    }
+    rows.push([i + 1, empVal(emp.fullName), ...cells,
+      t.absence || 0, t.vacation || 0, t.sick || 0, t.wfh || 0, t.unpaid || 0]);
+  });
+
+  rows.push([]);
+  rows.push(['Absence type', 'Code']);
+  LEAVE_TYPES.forEach(t => {
+    rows.push([`${t.label} (Full Day)`, t.key]);
+    rows.push([`${t.label} (Morning)`, `${t.key}1`]);
+    rows.push([`${t.label} (Afternoon)`, `${t.key}2`]);
+  });
+  lvDownloadCsv(`leave-grid-${prefix}.csv`, rows);
+  showToast('Grid exported', 'success');
+}
+
+// The richer report: everything the sheet has, plus entitlement, remaining
+// balance and the paid/unpaid split it never tracked.
+function exportLeaveReportCsv() {
+  const year = state.leaveYear, month = state.leaveMonth;
+  const rows = [[
+    'Employee ID', 'Name', 'Designation', 'Department', 'Office', 'Join Date', 'Month',
+    'Vacation Full', 'Vacation Half', 'Sick Full', 'Sick Half', 'WFH Days',
+    'Total Absence Days', 'Vacation Used (month)', 'Sick Used (month)',
+    'Vacation Entitlement (year)', 'Vacation Used (year)', 'Vacation Remaining',
+    'Sick Entitlement (year)', 'Sick Used (year)', 'Sick Remaining',
+    'Paid Days (month)', 'Unpaid Days (month)', 'Blackout Days (month)'
+  ]];
+  const prefix = `${year}-${String(month).padStart(2, '0')}`;
+
+  leaveEmployees(state.leaveActiveFilter === 'all').forEach(emp => {
+    const l = computeLeaveLedger(emp.id, year);
+    const t = leaveMonthTotals(l, year, month);
+    const mSlots = l.slots.filter(s => String(s.date).startsWith(prefix) && s.classification !== 'skipped');
+    const countFull = code => {
+      const byDate = {};
+      mSlots.filter(s => s.code === code).forEach(s => { byDate[s.date] = (byDate[s.date] || 0) + 1; });
+      const full = Object.values(byDate).filter(n => n === 2).length;
+      const half = Object.values(byDate).filter(n => n === 1).length;
+      return { full, half };
+    };
+    const vac = countFull(LV_VACATION), sick = countFull(LV_SICK);
+    const blackout = mSlots.filter(s => s.reason === 'blackout month').length * 0.5;
+
+    rows.push([
+      empVal(emp.employeeId), empVal(emp.fullName), empVal(emp.designation),
+      empVal(emp.department), empVal(emp.officeSpace), toDisplayDate(emp.joinDate),
+      `${LEAVE_MONTH_NAMES[month - 1]} ${year}`,
+      vac.full, vac.half, sick.full, sick.half, t.wfh,
+      t.absence, t.vacation, t.sick,
+      l.entitlement.vacation, l.used.vacation, l.remaining.vacation,
+      l.entitlement.sick, l.used.sick, l.remaining.sick,
+      t.paid, t.unpaid, blackout
+    ]);
+  });
+  lvDownloadCsv(`leave-report-${prefix}.csv`, rows);
+  showToast('Report exported', 'success');
+}
+
+function exportLeaveBalancesCsv() {
+  const year = state.leaveBalYear;
+  const rows = [[
+    'Employee ID', 'Name', 'Office', 'Join Date',
+    'Vacation Entitlement', 'Vacation Used', 'Vacation Remaining',
+    'Sick Entitlement', 'Sick Used', 'Sick Remaining',
+    'WFH Days', 'Days Not Worked', 'Paid Days', 'Unpaid Days'
+  ]];
+  leaveBalanceRows(year, {
+    search: state.leaveBalSearch, office: state.leaveBalOfficeFilter, status: state.leaveBalStatusFilter
+  }).forEach(r => {
+    const l = r.ledger;
+    rows.push([
+      r.employeeId, r.fullName, empVal(r.emp.officeSpace), toDisplayDate(r.emp.joinDate),
+      l.entitlement.vacation, l.used.vacation, l.remaining.vacation,
+      l.entitlement.sick, l.used.sick, l.remaining.sick,
+      l.wfhDays, l.absenceDays, l.paidDays, l.unpaidDays
+    ]);
+  });
+  lvDownloadCsv(`leave-balances-${year}.csv`, rows);
+  showToast('Balances exported', 'success');
+}
+
+function exportLeavePersonCsv() {
+  const year = state.leavePersonYear;
+  const emp = (state.employeeRecords || []).find(e => e.id === state.leavePersonId);
+  if (!emp) { showToast('Pick an employee first', 'error'); return; }
+  const l = computeLeaveLedger(emp.id, year);
+  const rows = [['Date', 'Day', 'Type', 'Code', 'Half', 'Days', 'Counted as', 'Reason', 'Note']];
+  l.slots.forEach(s => {
+    const def = lvTypeDef(s.code);
+    rows.push([
+      s.date, LEAVE_DOW[lvParse(s.date).getDay()], def ? def.label : s.code, s.code,
+      s.slot === 'am' ? 'Morning' : 'Afternoon',
+      s.classification === 'skipped' ? 0 : 0.5,
+      s.classification === 'skipped' ? 'Not counted' : (s.classification === 'unpaid' ? 'Unpaid' : 'Paid'),
+      s.reason || '', empVal(s.note)
+    ]);
+  });
+  lvDownloadCsv(`leave-ledger-${empVal(emp.fullName).replace(/\s+/g, '-')}-${year}.csv`, rows);
+  showToast('Ledger exported', 'success');
+}
+
+// ---- Wiring ---------------------------------------------------------------
+
+// Office and leave-type dropdowns are built from live data so they never
+// drift from what's actually in the Employee Database.
+function refreshLeaveFilterOptions() {
+  const offices = Array.from(new Set(
+    (state.employeeRecords || []).map(r => empVal(r.officeSpace)).filter(Boolean)
+  )).sort();
+
+  [['leave-office-filter', 'leaveOfficeFilter'], ['leave-bal-office-filter', 'leaveBalOfficeFilter']].forEach(([id, key]) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = state[key] || 'all';
+    sel.innerHTML = '<option value="all">All Offices</option>' +
+      offices.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+    sel.value = offices.includes(cur) ? cur : 'all';
+    state[key] = sel.value;
+  });
+
+  const typeSel = document.getElementById('leave-type-filter');
+  if (typeSel && typeSel.options.length !== LEAVE_TYPES.length + 1) {
+    const cur = state.leaveTypeFilter || 'all';
+    typeSel.innerHTML = '<option value="all">All Leave Types</option>' +
+      LEAVE_TYPES.map(t => `<option value="${t.key}">${escapeHtml(t.label)}</option>`).join('');
+    typeSel.value = cur;
+  }
+}
+
+function setupLeaveControls() {
+  const q = (id) => document.getElementById(id);
+
+  // Tabs
+  document.querySelectorAll('#leave-view .leave-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.leaveTab = btn.getAttribute('data-leave-tab');
+      closeLeavePopover();
+      renderLeave();
+    });
+  });
+
+  // Month navigation
+  const shiftMonth = (delta) => {
+    let m = state.leaveMonth + delta, y = state.leaveYear;
+    if (m < 1) { m = 12; y--; } else if (m > 12) { m = 1; y++; }
+    state.leaveMonth = m; state.leaveYear = y;
+    closeLeavePopover();
+    renderLeave();
+  };
+  q('leave-prev-month')?.addEventListener('click', () => shiftMonth(-1));
+  q('leave-next-month')?.addEventListener('click', () => shiftMonth(1));
+  q('leave-today-btn')?.addEventListener('click', () => {
+    const now = new Date();
+    state.leaveYear = now.getFullYear();
+    state.leaveMonth = now.getMonth() + 1;
+    closeLeavePopover();
+    renderLeave();
+  });
+
+  // Year navigation on the other three tabs
+  const yearNav = (btnId, key, delta) => q(btnId)?.addEventListener('click', () => {
+    state[key] += delta; renderLeave();
+  });
+  yearNav('leave-bal-prev-year', 'leaveBalYear', -1);
+  yearNav('leave-bal-next-year', 'leaveBalYear', 1);
+  yearNav('leave-person-prev-year', 'leavePersonYear', -1);
+  yearNav('leave-person-next-year', 'leavePersonYear', 1);
+  yearNav('leave-cal-prev-year', 'leaveCalYear', -1);
+  yearNav('leave-cal-next-year', 'leaveCalYear', 1);
+
+  // Filters
+  q('leave-search-input')?.addEventListener('input', (e) => { state.leaveSearchFilter = e.target.value; renderLeave(); });
+  q('leave-bal-search')?.addEventListener('input', (e) => { state.leaveBalSearch = e.target.value; renderLeave(); });
+  Object.entries({
+    'leave-type-filter': 'leaveTypeFilter',
+    'leave-office-filter': 'leaveOfficeFilter',
+    'leave-status-filter': 'leaveStatusFilter',
+    'leave-active-filter': 'leaveActiveFilter',
+    'leave-bal-office-filter': 'leaveBalOfficeFilter',
+    'leave-bal-status-filter': 'leaveBalStatusFilter'
+  }).forEach(([id, key]) => {
+    q(id)?.addEventListener('change', (e) => { state[key] = e.target.value; renderLeave(); });
+  });
+
+  q('leave-person-select')?.addEventListener('change', (e) => { state.leavePersonId = e.target.value; renderLeave(); });
+
+  // Balances sorting
+  document.querySelectorAll('#leave-tab-balances th.sortable-th').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.getAttribute('data-lbsort');
+      if (state.leaveBalSortCol === col) {
+        state.leaveBalSortDir = state.leaveBalSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.leaveBalSortCol = col;
+        state.leaveBalSortDir = 'asc';
+      }
+      renderLeave();
+    });
+  });
+
+  // Grid cell clicks (delegated — the grid is rebuilt on every render)
+  q('leave-grid-wrap')?.addEventListener('click', (e) => {
+    const cell = e.target.closest('td[data-lv-date]');
+    if (!cell) { closeLeavePopover(); return; }
+    e.stopPropagation();
+    openLeavePopover(cell, cell.getAttribute('data-lv-emp'), cell.getAttribute('data-lv-date'));
+  });
+  document.addEventListener('click', (e) => {
+    const pop = document.getElementById('leave-popover');
+    if (pop && !pop.contains(e.target) && !e.target.closest('td[data-lv-date]')) closeLeavePopover();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLeavePopover(); });
+
+  // Change log
+  q('leave-log-toggle-btn')?.addEventListener('click', () => {
+    const panel = q('leave-log-panel');
+    if (!panel) return;
+    const showing = panel.style.display !== 'none';
+    panel.style.display = showing ? 'none' : 'block';
+    q('leave-log-toggle-btn').textContent = showing ? 'View Change Log' : 'Hide Change Log';
+    if (!showing) renderLeaveLog();
+  });
+
+  // Exports
+  q('leave-export-grid-btn')?.addEventListener('click', exportLeaveGridCsv);
+  q('leave-export-report-btn')?.addEventListener('click', exportLeaveReportCsv);
+  q('leave-export-balances-btn')?.addEventListener('click', exportLeaveBalancesCsv);
+  q('leave-export-person-btn')?.addEventListener('click', exportLeavePersonCsv);
+
+  // Entry modal
+  q('leave-add-btn')?.addEventListener('click', () => openLeaveEntryModal());
+  q('leave-entry-modal-close-btn')?.addEventListener('click', closeLeaveEntryModal);
+  q('leave-entry-cancel-btn')?.addEventListener('click', closeLeaveEntryModal);
+  ['leave-entry-employee', 'leave-entry-end', 'leave-entry-type', 'leave-entry-duration', 'leave-entry-wfh-counts']
+    .forEach(id => {
+      q(id)?.addEventListener('change', updateLeaveEntryPreview);
+      q(id)?.addEventListener('input', updateLeaveEntryPreview);
+    });
+  q('leave-entry-start')?.addEventListener('change', syncLeaveEntryMulti);
+  q('leave-entry-start')?.addEventListener('input', syncLeaveEntryMulti);
+  q('leave-entry-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const empRecordId = q('leave-entry-employee').value;
+    const start = q('leave-entry-start').value;
+    const end = leaveEntryEndDate();
+    if (!start) { showToast('Pick a date', 'error'); return; }
+    const code = q('leave-entry-type').value;
+    closeLeaveEntryModal();
+    await saveLeaveRange(empRecordId, start, end, code, q('leave-entry-duration').value,
+      q('leave-entry-note').value, code === LV_WFH ? q('leave-entry-wfh-counts').checked : undefined);
+    updateLeaveBadge();
+  });
+  q('leave-entry-delete-btn')?.addEventListener('click', async () => {
+    const empRecordId = q('leave-entry-employee').value;
+    const start = q('leave-entry-start').value;
+    const end = leaveEntryEndDate();
+    if (!start) { showToast('Pick a date', 'error'); return; }
+    if (!confirm(`Clear all leave for the selected employee between ${toDisplayDate(start)} and ${toDisplayDate(end)}?`)) return;
+    closeLeaveEntryModal();
+    await clearLeaveRange(empRecordId, start, end);
+    updateLeaveBadge();
+  });
+
+  // Holiday modal
+  q('leave-holiday-modal-close-btn')?.addEventListener('click', closeLeaveHolidayModal);
+  q('leave-holiday-multi')?.addEventListener('change', syncLeaveHolidayMulti);
+  q('leave-holiday-start')?.addEventListener('change', syncLeaveHolidayMulti);
+  q('leave-entry-multi')?.addEventListener('change', syncLeaveEntryMulti);
+  q('leave-holiday-cancel-btn')?.addEventListener('click', closeLeaveHolidayModal);
+  q('leave-holiday-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = empVal(q('leave-holiday-name').value);
+    const start = q('leave-holiday-start').value;
+    const end = leaveHolidayEndDate();
+    if (!name || !start) { showToast('Give the holiday a name and a date', 'error'); return; }
+    closeLeaveHolidayModal();
+    await saveLeaveHolidayRange(name, start, end, q('leave-holiday-type').value);
+  });
+
+  // Policy save + holiday delete (delegated — both panels are re-rendered)
+  q('leave-tab-calendar')?.addEventListener('click', (e) => {
+    const del = e.target.closest('[data-lv-del-holiday]');
+    if (del) { deleteLeaveHoliday(del.getAttribute('data-lv-del-holiday')); return; }
+    if (e.target.closest('#leave-add-holiday-btn')) { openLeaveHolidayModal(); return; }
+    if (e.target.closest('#leave-seed-holidays-btn')) { seedBangladeshHolidays(state.leaveCalYear); return; }
+    if (e.target.id !== 'lv-pol-save') return;
+    const num = (id, fallback) => {
+      const v = parseFloat((document.getElementById(id) || {}).value);
+      return Number.isFinite(v) && v >= 0 ? v : fallback;
+    };
+    const checked = (attr) => Array.from(document.querySelectorAll(`#leave-tab-calendar [${attr}]`))
+      .filter(c => c.checked).map(c => c.getAttribute(attr));
+    saveLeavePolicy(state.leaveCalYear, {
+      vacationDays: num('lv-pol-vac', DEFAULT_LEAVE_POLICY.vacationDays),
+      sickDays: num('lv-pol-sick', DEFAULT_LEAVE_POLICY.sickDays),
+      blackoutMonths: checked('data-lv-blackout-month').map(Number),
+      blackoutApplies: checked('data-lv-blackout-type'),
+      weekendDays: checked('data-lv-weekend-day').map(Number),
+      blackoutBurnsBalance: !!document.getElementById('lv-pol-burns')?.checked,
+      prorateJoiners: !!document.getElementById('lv-pol-prorate')?.checked,
+      wfhConsumesVacation: !!document.getElementById('lv-pol-wfh')?.checked
+    });
+  });
+}
+
 function switchView(viewName) {
   if (viewName === 'kanban' || viewName === 'analytics' || viewName === 'ideas') {
     viewName = 'dashboard';
@@ -4942,6 +6698,9 @@ function switchView(viewName) {
     viewName = 'dashboard';
   }
   if (viewName === 'onboarding' && !canCurrentUserAccessOnboarding()) {
+    viewName = 'dashboard';
+  }
+  if (viewName === 'leave' && !canCurrentUserAccessLeave()) {
     viewName = 'dashboard';
   }
 
@@ -4960,7 +6719,8 @@ function switchView(viewName) {
     team: ['People & Roles', 'Team roster, roles, and login permissions'],
     logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)'],
     'employee-database': ['Employee Database', 'HR directory — employee records, contact details, and seating (HR & Admins only)'],
-    'onboarding': ['Onboarding', 'Formal deliverables for every employee — ID Card, Mug, Bank Account']
+    'onboarding': ['Onboarding', 'Formal deliverables for every employee — ID Card, Mug, Bank Account'],
+    'leave': ['Leave', 'Vacation, sickness and work-from-home days, entitlements and balances (HR & Admins only)']
   };
   const headerTitleEl = document.querySelector('.header-title');
   if (headerTitleEl && VIEW_HEADERS[viewName]) {
@@ -4991,7 +6751,7 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board' || viewName === 'employee-database' || viewName === 'onboarding') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board' || viewName === 'employee-database' || viewName === 'onboarding' || viewName === 'leave') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
@@ -5013,6 +6773,7 @@ function switchView(viewName) {
   else if (viewName === 'logs') renderLogs();
   else if (viewName === 'employee-database') renderEmployeeDatabase();
   else if (viewName === 'onboarding') renderOnboarding();
+  else if (viewName === 'leave') renderLeave();
 
   // Scroll main back to top
   document.querySelector('.main-content').scrollTop = 0;
@@ -5058,7 +6819,9 @@ function refreshViews() {
   try { renderPriorityBoard(); } catch(e) { console.error("renderPriorityBoard error:", e); }
   try { renderEmployeeDatabase(); } catch(e) { console.error("renderEmployeeDatabase error:", e); }
   try { renderOnboarding(); } catch(e) { console.error("renderOnboarding error:", e); }
+  try { renderLeave(); } catch(e) { console.error("renderLeave error:", e); }
   try { updateOnboardingBadge(); } catch(e) { console.error("updateOnboardingBadge error:", e); }
+  try { updateLeaveBadge(); } catch(e) { console.error("updateLeaveBadge error:", e); }
   try { updatePublishingQueueBadge(); } catch(e) { console.error("updatePublishingQueueBadge error:", e); }
   try { updatePriorityBoardBadge(); } catch(e) { console.error("updatePriorityBoardBadge error:", e); }
 }
@@ -7278,6 +9041,7 @@ function renderTeam() {
     if (p.canPlanContent) roleTagsHtml += `<span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.15); margin-right: 4px;">Ideator</span>`;
     if (p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.15); margin-right: 4px;">Employee DB</span>`;
     if (p.canAccessOnboarding && !p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); margin-right: 4px;">Onboarding</span>`;
+    if (p.canAccessLeave) roleTagsHtml += `<span class="badge" style="background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.15); margin-right: 4px;">Leave</span>`;
     if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
 
     // Access tags
@@ -7368,6 +9132,8 @@ function openPersonModal(personId = null) {
       if (empDbCb) empDbCb.checked = !!person.canAccessEmployeeDb;
       const onbCb = document.getElementById('person-role-onboarding');
       if (onbCb) onbCb.checked = !!person.canAccessOnboarding;
+      const leaveCb = document.getElementById('person-role-leave');
+      if (leaveCb) leaveCb.checked = !!person.canAccessLeave;
     }
   } else {
     modalTitle.textContent = 'Add New Person';
@@ -7400,6 +9166,8 @@ async function handlePersonFormSubmit(e) {
   const canAccessEmployeeDb = empDbCb ? empDbCb.checked : false;
   const onbCb = document.getElementById('person-role-onboarding');
   const canAccessOnboarding = onbCb ? onbCb.checked : false;
+  const leaveCb = document.getElementById('person-role-leave');
+  const canAccessLeave = leaveCb ? leaveCb.checked : false;
 
   if (!name || !role) {
     showToast('Please fill out all required fields', 'error');
@@ -7430,7 +9198,8 @@ async function handlePersonFormSubmit(e) {
     isAssigner,
     canPlanContent,
     canAccessEmployeeDb,
-    canAccessOnboarding
+    canAccessOnboarding,
+    canAccessLeave
   };
 
   try {
