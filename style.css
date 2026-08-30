@@ -3789,3 +3789,22 @@ table.leave-grid th.lv-total-head {
   background: rgba(255, 255, 255, 0.08);
   font-size: 0.82rem;
 }
+
+/* Disabled toolbar buttons: muted, and obviously not clickable.
+   The base button style uses `transition: <duration>` with no property list,
+   which resolves to `all` — that left opacity stuck mid-interpolation when a
+   button toggled back to enabled. Transition only the colour properties so
+   the disabled state applies instantly and can't get stranded.
+   `pointer-events` is deliberately left alone: a disabled button already
+   swallows clicks, and killing pointer events would also kill the tooltip
+   explaining why it's disabled. */
+.leave-toolbar button,
+.lv-panel-actions button {
+  transition-property: background-color, border-color, color, box-shadow;
+  opacity: 1;
+}
+.leave-toolbar button:disabled,
+.lv-panel-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

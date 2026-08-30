@@ -5672,6 +5672,18 @@ function renderLeaveGrid() {
   const label = document.getElementById('leave-month-label');
   if (label) label.textContent = `${LEAVE_MONTH_NAMES[month - 1]} ${year}`;
 
+  // "Today" is a no-op while the current month is already showing, so it
+  // shouldn't look like a live action there.
+  const todayBtn = document.getElementById('leave-today-btn');
+  if (todayBtn) {
+    const now = new Date();
+    const onCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
+    todayBtn.disabled = onCurrentMonth;
+    todayBtn.title = onCurrentMonth
+      ? 'Already showing the current month'
+      : `Jump to ${LEAVE_MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`;
+  }
+
   renderLeaveLegend();
   renderLeaveLog();
 
