@@ -226,6 +226,19 @@ function canCurrentUserMarkPosted() {
   return !!(person && person.canMarkPosted);
 }
 
+// Gate for every Task Tracker write action (create / edit / delete / CSV
+// import). The board is a production tool for the people who actually do the
+// work or hand it out — Creatives (isDesigner) and Assigners (isAssigner),
+// plus admins. Everyone else (HR, finance, sales) keeps full read access to
+// the board but cannot change it. Signed-out guests are already covered by
+// the separate !currentUser checks. Note this is a UI gate, not a security
+// boundary: Supabase RLS grants writes to any authenticated session.
+function canCurrentUserManageTasks() {
+  const person = getCurrentUserPerson();
+  if (!person) return false;
+  return !!(person.access === 'admin' || person.isDesigner || person.isAssigner);
+}
+
 // Short codes for the Posted column, so checkbox/badge labels stay compact
 // instead of wrapping brand names across lines.
 const BRAND_SHORT_CODES = {
@@ -3197,6 +3210,14 @@ function exportTasksToCSV() {
 function handleCSVImport(e) {
   const file = e.target.files[0];
   if (!file) return;
+
+  // CSV import is a bulk task write, so it sits behind the same gate as the
+  // New Task button (which is hidden alongside the Import button anyway).
+  if (!canCurrentUserManageTasks()) {
+    showToast('Access Denied: Only Creatives and Assigners can import tasks', 'error');
+    e.target.value = '';
+    return;
+  }
   const importBtn = document.getElementById('csv-import-btn');
   setButtonLoading(importBtn, true, 'Importing…');
   const reader = new FileReader();
@@ -6316,6 +6337,17 @@ function renderTasks() {
   const tableBodyPosts = document.getElementById('tasks-list-body-posts');
   const tableBodyGeneral = document.getElementById('tasks-list-body-general');
   if (!tableBodyPosts || !tableBodyGeneral) return;
+
+  // Only Creatives / Assigners / admins get the write controls; everyone else
+  // sees the same board read-only. Done here rather than once at startup so
+  // the buttons follow sign-in and sign-out without needing a reload.
+  const canManageTasks = canCurrentUserManageTasks();
+  ['create-task-btn', 'csv-import-btn'].forEach(id => {
+    const el = document.getElementById(id);
+    // '' restores the stylesheet's own display value instead of guessing it.
+    if (el) el.style.display = canManageTasks ? '' : 'none';
+  });
+
   tableBodyPosts.innerHTML = '';
   tableBodyGeneral.innerHTML = '';
 
@@ -6748,6 +6780,13 @@ function openTaskModal(task = null) {
     return;
   }
 
+  // ...and signed-in accounts that are neither Creative nor Assigner cannot
+  // create them either (see canCurrentUserManageTasks).
+  if (!task && !canCurrentUserManageTasks()) {
+    showToast('Access Denied: Only Creatives and Assigners can create tasks', 'error');
+    return;
+  }
+
   state.editingTask = task;
   const overlay = document.getElementById('task-modal');
   const modalTitle = document.getElementById('task-modal-title');
@@ -6767,12 +6806,13 @@ function openTaskModal(task = null) {
   const teamList = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
   const account = teamList.find(p => p.name === currentUser);
   const isLimited = account && account.access === 'limited';
+  const canManageTasks = canCurrentUserManageTasks();
 
   if (task) {
     // Edit mode
     modalTitle.textContent = `Edit Task ${task.id}`;
     if (deleteBtn) {
-      deleteBtn.style.display = (!currentUser || isLimited) ? 'none' : 'block';
+      deleteBtn.style.display = (!currentUser || isLimited || !canManageTasks) ? 'none' : 'block';
     }
 
     document.getElementById('task-form-name').value = task.name;
@@ -6796,6 +6836,19 @@ function openTaskModal(task = null) {
         <div id="task-view-only-banner" class="view-only-banner">
           <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
           <span>Guest Mode: Sign in to edit tasks.</span>
+        </div>
+      `);
+    } else if (!canManageTasks) {
+      // Signed in, but not on the Task Tracker: read-only on every task,
+      // including any that happen to be assigned to them.
+      form.querySelectorAll('.form-control').forEach(el => el.setAttribute('disabled', 'true'));
+      if (submitBtn) submitBtn.style.display = 'none';
+
+      const formBody = form.querySelector('.modal-body') || form;
+      formBody.insertAdjacentHTML('afterbegin', `
+        <div id="task-view-only-banner" class="view-only-banner">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v4M12 16h.01"/></svg>
+          <span>View Only: Editing tasks is limited to Creatives and Assigners.</span>
         </div>
       `);
     } else if (isLimited) {
@@ -6862,6 +6915,13 @@ function closeTaskModal() {
 
 async function handleTaskFormSubmit(e) {
   e.preventDefault();
+
+  // Backstop for the UI gates above (a modal left open across a sign-out, a
+  // stale listener). Cheap, and keeps every write path behind one rule.
+  if (!canCurrentUserManageTasks()) {
+    showToast('Access Denied: Only Creatives and Assigners can change tasks', 'error');
+    return;
+  }
 
   const name = document.getElementById('task-form-name').value.trim();
   const designer = document.getElementById('task-form-designer').value;
@@ -6953,6 +7013,13 @@ async function handleTaskFormSubmit(e) {
 
 async function deleteTask() {
   if (!state.editingTask) return;
+
+  // Backstop for the UI gates above (a modal left open across a sign-out, a
+  // stale listener). Cheap, and keeps every write path behind one rule.
+  if (!canCurrentUserManageTasks()) {
+    showToast('Access Denied: Only Creatives and Assigners can change tasks', 'error');
+    return;
+  }
   
   if (confirm(`Are you sure you want to delete Task ${state.editingTask.id}?`)) {
     const taskId = state.editingTask.id;
