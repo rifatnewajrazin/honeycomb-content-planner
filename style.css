@@ -3856,3 +3856,107 @@ table.leave-grid th.lv-total-head {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ===========================================================================
+   Touch targets — phones and small tablets
+   Guideline: 44x44 minimum on touch, including icon-only buttons. Audited at
+   360x800 across every view; controls were landing at 34-40px and icon
+   buttons as small as 14x14.
+   =========================================================================== */
+@media (max-width: 900px) {
+  /* Controls that own their box simply grow to the minimum. */
+  .btn-primary,
+  .btn-secondary,
+  .drive-link-btn,
+  .filter-select,
+  .search-input,
+  input.form-control,
+  select.form-control,
+  .leave-tab,
+  .leave-select,
+  .leave-input {
+    min-height: 44px;
+  }
+
+  /* Square icon buttons need the floor on both axes. */
+  .btn-icon,
+  .leave-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Icon-only controls that live inside dense rows: growing the box would
+     wreck the surrounding layout, so expand only the hit area with a centred
+     overlay that occupies no space. Safe here because these appear once per
+     row, roughly 72px apart, so the areas never overlap onto a neighbouring
+     (and sometimes destructive) action. */
+  .edit-brand-btn,
+  .action-btn,
+  .task-link-btn,
+  .close-btn {
+    position: relative;
+  }
+  .edit-brand-btn::after,
+  .action-btn::after,
+  .task-link-btn::after,
+  .close-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ::before/::after don't render on replaced elements, so a checkbox can't
+     take the overlay treatment — enlarge it directly instead. 28px plus the
+     surrounding cell padding is the practical ceiling inside a dense table;
+     a true 44px box would force the row height up across the whole grid. */
+  input[type="checkbox"] {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Wide-but-short controls: expand the tap area vertically across the
+     element's own width rather than a square overlay. Verified vertically
+     isolated (~85px between rows), so these cannot overlap a neighbour. */
+  .posted-undo-btn { position: relative; }
+  .posted-undo-btn::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+
+  /* Idea-board link cells can hold several links stacked in one cell, so an
+     overlay would put their hit areas on top of each other. Real padding
+     grows the box and pushes siblings apart instead. 20px line + 24px
+     padding = exactly 44px. */
+  #idea-board-view td a[href] {
+    padding: 12px 0;
+    line-height: 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* These carry a 40px floor for dense desktop toolbars, which out-specifies
+     the generic 44px rule above. Raise them to the touch minimum on phones. */
+  .leave-toolbar .db-toolbar > button,
+  .lv-panel-actions > button,
+  .leave-month-nav > button {
+    min-height: 44px;
+  }
+
+  /* Sortable table headers are controls too — they were 28-32px tall. */
+  th.sortable-th {
+    height: 44px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
