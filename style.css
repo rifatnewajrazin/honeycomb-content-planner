@@ -3209,27 +3209,39 @@ body.minimal-theme .brand-badge-img {
     overflow-y: auto;
   }
 
+  /* Grid, not flex. Under flex the two buttons came out 154px and 152px, so
+     the split sat 1px off the footer's midpoint and the pair read as
+     off-centre. The cause isn't the labels or the border — .btn-secondary
+     computes display:block and .btn-primary display:flex, so they resolve
+     different intrinsic sizes and flex's free-space distribution follows.
+     Grid sizes the *tracks*, so the columns are identical whatever the items
+     are made of. One button fills the row; two split it evenly. */
   .modal-footer {
-    flex-wrap: wrap;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     gap: 12px;
     padding: 16px 20px;
   }
 
   /* 44px minimum touch target on phones. */
   .modal-footer button {
-    flex: 1 1 auto;
-    min-width: 100px;
+    min-width: 0;
     min-height: 44px;
   }
 
+  /* Destructive action drops to its own full-width row beneath the pair.
+     `1 / -1` only spans the explicit grid, which is empty here, so span the
+     two implicit columns the other buttons create. */
   .modal-footer #idea-modal-delete-btn,
   .modal-footer #priority-note-modal-delete-btn,
   .modal-footer #task-modal-delete-btn,
   .modal-footer #person-modal-delete-btn,
+  .modal-footer #leave-entry-delete-btn,
   .modal-footer #modal-delete-btn {
     margin-right: 0;
-    order: 3;
-    flex-basis: 100%;
+    grid-row: 2;
+    grid-column: 1 / span 2;
   }
 
   .form-row {
