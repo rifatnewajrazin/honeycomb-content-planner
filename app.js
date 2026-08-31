@@ -2281,15 +2281,80 @@ function initAuth() {
   runAppInit();
 }
 
+// The sign-in dropdown used to be a hardcoded list of five names in
+// index.html. Anyone granted a login afterwards — Oisarjo Tarafder and
+// Sharmin Mahmud Khan Orthee both had canLogin and an authEmail — simply
+// had no option to pick, so they could never sign in. Without a session no
+// permission flag applies and RLS returns nothing, which looked exactly like
+// "I don't have access to the Employee Database". Build it from the roster
+// so granting a login is enough on its own.
+function populateLoginOptions() {
+  const sel = document.getElementById('login-user');
+  if (!sel) return;
+  const eligible = (state.team || [])
+    .filter(p => p.canLogin && p.authEmail)
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+  if (!eligible.length) return;   // roster not loaded yet — keep the markup fallback
+  const previous = sel.value;
+  sel.innerHTML = eligible.map(p =>
+    `<option value="${escapeHtml(p.name)}">${escapeHtml(p.name)}${p.role ? ` — ${escapeHtml(p.role)}` : ''}</option>`
+  ).join('');
+  if (eligible.some(p => p.name === previous)) sel.value = previous;
+}
+
 function showLoginOverlay() {
   const loginOverlay = document.getElementById('login-overlay');
   if (loginOverlay) {
+    populateLoginOptions();
     loginOverlay.style.display = 'flex';
+  }
+}
+
+// Being "signed in" is two separate things here: a name in localStorage,
+// which drives the sidebar and every permission gate, and a Supabase session,
+// which is what actually satisfies RLS on the HR tables. Sign-in sets both,
+// but only the name is permanent — the session expires. When they diverged
+// the app looked signed in (name in the sidebar, HR nav visible) while every
+// read came back empty and every write failed, so the Employee Database
+// reported "No employees yet" to someone whose permissions were perfectly
+// correct. Reconcile the two on boot, and again whenever auth state changes.
+async function reconcileAuthSession() {
+  if (!supabase) return;
+  const uiUser = localStorage.getItem('hc_logged_in_user');
+  if (!uiUser) return;
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data && data.session) return;
+    localStorage.removeItem('hc_logged_in_user');
+    // A toast here fires during page load and is gone in 3s — easy to miss,
+    // and it leaves the person staring at an app that looks signed in but
+    // shows no data. Put the remedy in front of them instead.
+    showLoginOverlay();
+    showToast('Your session expired — please sign in again to see HR data', 'error');
+  } catch (err) {
+    console.warn('Session check failed:', err);
+  }
+}
+
+function watchAuthSession() {
+  if (!supabase || !supabase.auth || !supabase.auth.onAuthStateChange) return;
+  try {
+    supabase.auth.onAuthStateChange((event) => {
+      if (event !== 'SIGNED_OUT') return;
+      if (!localStorage.getItem('hc_logged_in_user')) return;   // our own sign-out
+      localStorage.removeItem('hc_logged_in_user');
+      showToast('Your session expired — please sign in again to see HR data', 'error');
+      try { renderUserProfile(); refreshViews(); } catch (e) { console.warn(e); }
+    });
+  } catch (err) {
+    console.warn('Auth state listener skipped:', err);
   }
 }
 
 async function runAppInit() {
   await initSupabase();
+  await reconcileAuthSession();
+  watchAuthSession();
   initData();
   setupEventListeners();
   renderUserProfile();
@@ -2727,6 +2792,7 @@ function initData() {
         state.team = loadedTeam.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       }
       updateModalDropdowns();
+      populateLoginOptions();
       renderUserProfile();
       refreshViews();
     }, (error) => {
