@@ -91,7 +91,7 @@ Permissions are **per-person boolean flags** on each roster record (`DEFAULT_TEA
 | Social Media Manager (Jubayer) | Social Media Manager | ❌ | assigner |
 | Mohammad Zahidul Islam | Marketing, Sales & Comms Manager | ✅ | markPosted |
 | Ashiq Ahmed | CFO | ❌ | assigner |
-| Israt Sultana Tohfa | COO | ❌ | assigner |
+| Israt Sultana Tohfa | COO | ✅ | assigner, priorityBoard — full access |
 | Saddam Hossain | Office Manager | ❌ | assigner |
 | Mostaque Ahammed Naim | Head of IT | ✅ admin | assigner |
 | Oisarjo Tarafder | Head of HR | ❌ | assigner |

@@ -44,6 +44,64 @@ async function deleteDoc(ref) {
   if (error) throw error;
 }
 
+// Like setDoc, but a plain INSERT — it FAILS (Postgres 23505) if a row with
+// this id already exists instead of silently overwriting it. Used for every
+// "create new record" path so a mis-generated id can never clobber someone
+// else's row. Updates still use setDoc (upsert).
+async function insertDoc(ref, data) {
+  const payload = { id: ref.id, data, updated_at: new Date().toISOString() };
+  const { error } = await supabase.from(ref.table).insert(payload);
+  if (error) throw error;
+}
+
+// Authoritative set of ids currently in a table, read straight from the
+// server. Throws when the backend is unreachable — callers must NOT fall
+// back to guessing an id from the in-memory cache, because that cache can be
+// the bundled DEFAULT_* seed data after a realtime blip (its max id is far
+// behind the live data, so every "next" id collides with a real row).
+async function fetchExistingIds(table) {
+  if (!supabase) throw new Error('Backend not ready');
+  const { data, error } = await supabase.from(table).select('id');
+  if (error) throw error;
+  return new Set((data || []).map(r => r.id));
+}
+
+// Allocate the next free `${prefix}<n>` id from the SERVER's current ids and
+// INSERT the record under it, retrying on the rare race where two creates
+// pick the same number at once. Returns the id actually used.
+//   table   - Supabase table name
+//   prefix  - id prefix, e.g. 'T-' / 'I-' / 'PN-'
+//   pad     - zero-pad width for the number (0 = no padding)
+//   build   - (id) => record object to store
+//   idSet   - optional pre-fetched id Set (for bulk loops like CSV import);
+//             mutated in place as ids are consumed
+async function createSequentialDoc(table, prefix, pad, build, idSet) {
+  const ids = idSet || await fetchExistingIds(table);
+  let n = 0;
+  ids.forEach(id => {
+    if (typeof id === 'string' && id.startsWith(prefix)) {
+      const num = parseInt(id.slice(prefix.length), 10);
+      if (!isNaN(num) && num > n) n = num;
+    }
+  });
+  n += 1;
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const id = `${prefix}${pad ? String(n).padStart(pad, '0') : n}`;
+    if (!ids.has(id)) {
+      try {
+        await insertDoc({ table, id }, build(id));
+        ids.add(id);
+        return id;
+      } catch (err) {
+        if (err && err.code === '23505') { ids.add(id); n += 1; continue; }
+        throw err;
+      }
+    }
+    n += 1;
+  }
+  throw new Error(`Could not allocate a free id for ${prefix} in ${table}`);
+}
+
 // Mimics Firestore's onSnapshot(collectionRef, onNext, onError): fires
 // immediately with the current rows, then again on every insert/update/
 // delete via Supabase Realtime. Requires the table to be added to the
@@ -187,7 +245,7 @@ const DEFAULT_TEAM = [
   { id: 'p-5', name: 'Social Media Manager', role: 'Social Media Manager', initial: 'SM', photo: null, access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Jubayer Hossain', 'Jubayer', 'Jubaer Bhai', 'Jubaer', 'Social Media Manager', 'SMM'] },
   { id: 'p-6', name: 'Mohammad Zahidul Islam', role: 'Marketing, Sales & Communications Manager', initial: 'ZI', photo: 'assets/avatars/Md.-Zahidul-Islam.png', authEmail: 'zahid@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: false, canLogin: true, canMarkPosted: true, aliases: ['Zahid', 'Zahidul Islam'] },
   { id: 'person-1', name: 'Ashiq Ahmed', role: 'Chief Finance Officer', initial: 'AA', photo: 'assets/avatars/Ashiq-Ahmed.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Ashiq Bhaia', 'Ashiq'] },
-  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Tohfa Apu', 'Tohfa'] },
+  { id: 'person-2', name: 'Israt Sultana Tohfa', role: 'Chief Operations Officer', initial: 'IT', photo: 'assets/avatars/Israt-Sultana-Tohfa.png', authEmail: 'tohfa@honeycomb-hub.app', access: 'limited', isDesigner: false, isAssigner: true, canLogin: true, canAccessPriorityBoard: true, aliases: ['Tohfa Apu', 'Tohfa'] },
   { id: 'person-3', name: 'Saddam Hossain', role: 'Office Manager', initial: 'SH', photo: 'assets/avatars/Saddam-Hossain.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Saddam'] },
   { id: 'person-4', name: 'Mostaque Ahammed Naim', role: 'Head of IT', initial: 'MN', photo: 'assets/avatars/Mostaque-Ahammed-Naim.png', authEmail: 'naim@honeycomb-hub.app', access: 'admin', isDesigner: false, isAssigner: true, canLogin: true, aliases: ['Naim', 'Mostaque', 'Mostaque Ahmed Naim'] },
   { id: 'person-5', name: 'Oisarjo Tarafder', role: 'Head of HR', initial: 'OT', photo: 'assets/avatars/Oisarjo-Tarafder.png', access: 'limited', isDesigner: false, isAssigner: true, canLogin: false, aliases: ['Oisarjo', 'Oishi Apu', 'Oishi'] },
@@ -339,11 +397,13 @@ function canCurrentUserHandlePriorityNotes() {
 
 // A "board-only" account (Orthee) has canAccessPriorityBoard but is not part
 // of the creative team — their sidebar/view access is restricted to just the
-// Priority Board, unlike designers who also have canAccessPriorityBoard but
-// keep their normal full navigation.
+// Priority Board. Designers, assigners, and admins who also have
+// canAccessPriorityBoard (e.g. Tohfa Apu, COO) keep their normal full
+// navigation and just gain the Priority Board on top.
 function isCurrentUserBoardOnly() {
   const person = getCurrentUserPerson();
-  return !!(person && person.canAccessPriorityBoard && !person.isDesigner);
+  return !!(person && person.canAccessPriorityBoard && !person.isDesigner
+    && !person.isAssigner && person.access !== 'admin');
 }
 
 // Gate for the Employee Database (HR directory) — only people with
@@ -2254,11 +2314,18 @@ function initAuth() {
         }
 
         localStorage.setItem('hc_logged_in_user', account.name);
-        showToast(`Welcome back, ${account.name.split(' ')[0]}!`, 'success');
         if (loginOverlay) loginOverlay.style.display = 'none';
 
-        renderUserProfile();
-        refreshViews();
+        // The realtime data subscriptions (employee_records, leave_records,
+        // etc.) are wired once at page load — see initData(). Each one does a
+        // single initial SELECT, then only receives *changes*. When that load
+        // happened there was no Supabase session, so RLS returned nothing for
+        // the HR tables and those views came up empty; signing in now doesn't
+        // re-run the SELECT, so they stayed empty until a manual refresh.
+        // Reload so initData() runs again with the session active. The welcome
+        // toast is handed across the reload via sessionStorage.
+        try { sessionStorage.setItem('hc_post_login_welcome', account.name.split(' ')[0]); } catch (e) {}
+        location.reload();
       } catch (err) {
         // Never let an unexpected error silently kill the Sign In button —
         // surface it so it's diagnosable instead of looking like a dead click.
@@ -2365,6 +2432,16 @@ async function runAppInit() {
   if (lastView === 'kanban' || lastView === 'analytics' || lastView === 'ideas') lastView = 'dashboard';
   if (isCurrentUserBoardOnly() && lastView !== 'team') lastView = 'priority-board';
   switchView(lastView);
+
+  // Show the "Welcome back" toast that was deferred across the post-login
+  // reload (see the login handler).
+  try {
+    const welcomeName = sessionStorage.getItem('hc_post_login_welcome');
+    if (welcomeName) {
+      sessionStorage.removeItem('hc_post_login_welcome');
+      showToast(`Welcome back, ${welcomeName}!`, 'success');
+    }
+  } catch (e) {}
 
   // Safety net: don't let the loading overlay get stuck forever if the
   // Firestore listener errors out silently for some reason.
@@ -2757,13 +2834,14 @@ function initData() {
           // already-seeded Firestore docs (mirrors the `taskType` backfill
           // above). Only ever fills in fields the stored doc doesn't have an
           // explicit value for yet — never clobbers an admin's later edits —
-          // except Orthee's canLogin, which this feature deliberately flips
-          // from false to true so she can sign in to the board.
+          // except the canLogin flips this feature deliberately makes from
+          // false to true: Orthee (person-6) and Tohfa Apu (person-2), so
+          // they can sign in to the board.
           if (defaultMatch) {
             const patch = {};
             if (data.canAccessPriorityBoard === undefined && defaultMatch.canAccessPriorityBoard) patch.canAccessPriorityBoard = true;
             if (data.canManagePriorityNotes === undefined && defaultMatch.canManagePriorityNotes) patch.canManagePriorityNotes = true;
-            if (defaultMatch.id === 'person-6' && !data.canLogin && defaultMatch.canLogin) patch.canLogin = true;
+            if ((defaultMatch.id === 'person-6' || defaultMatch.id === 'person-2') && !data.canLogin && defaultMatch.canLogin) patch.canLogin = true;
             if (data.authEmail === undefined && defaultMatch.authEmail) patch.authEmail = defaultMatch.authEmail;
             // Recover flags/aliases that older person-edits (pre-merge-fix) could
             // have wiped. Only fills values the stored doc has no opinion on —
@@ -3405,12 +3483,11 @@ function handleCSVImport(e) {
       const text = evt.target.result;
       const lines = text.split('\n');
       let importedCount = 0;
-      
-      let maxId = 0;
-      state.tasks.forEach(t => {
-        const num = parseInt(t.id.replace('T-', ''));
-        if (!isNaN(num) && num > maxId) maxId = num;
-      });
+
+      // One authoritative read of the live ids; createSequentialDoc consumes
+      // and extends this set per row (INSERT, so a collision can't overwrite
+      // an existing task).
+      const existingIds = await fetchExistingIds('tasks');
 
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -3444,25 +3521,11 @@ function handleCSVImport(e) {
         const deliveryLink = cells[8] || '';
         const comments = cells[9] || '';
         const jobType = cells[10] || 'general';
-        
-        maxId++;
-        const newId = `T-${String(maxId).padStart(2, '0')}`;
-        
-        const newTask = {
-          id: newId,
-          name,
-          designer,
-          assignedBy,
-          date,
-          time,
-          urgency,
-          status,
-          deliveryLink,
-          comments,
-          taskType: jobType
-        };
-        
-        await setDoc(doc(db, "tasks", newId), newTask);
+
+        await createSequentialDoc('tasks', 'T-', 2, (id) => ({
+          id, name, designer, assignedBy, date, time, urgency,
+          status, deliveryLink, comments, taskType: jobType
+        }), existingIds);
         importedCount++;
       }
       
@@ -8897,44 +8960,30 @@ async function handleTaskFormSubmit(e) {
       }
     }
   } else {
-    // Generate new task ID like T-20, T-21...
-    let maxId = 0;
-    state.tasks.forEach(t => {
-      const num = parseInt(t.id.replace('T-', ''));
-      if (!isNaN(num) && num > maxId) maxId = num;
-    });
-    const newNum = maxId + 1;
-    const newId = `T-${String(newNum).padStart(2, '0')}`;
-
-    const newTask = {
-      id: newId,
-      name,
-      designer,
-      assignedBy,
-      date,
-      time,
-      urgency,
-      status,
-      deliveryLink,
-      comments,
-      taskType: jobType,
-      brandId
+    // Allocate the id from the SERVER's live task ids and INSERT (never
+    // upsert) so a stale/def­ault-seeded cache can't hand us an id that
+    // already belongs to someone else's task and overwrite it. See
+    // createSequentialDoc / insertDoc.
+    const fields = {
+      name, designer, assignedBy, date, time, urgency, status,
+      deliveryLink, comments, taskType: jobType, brandId
     };
 
-    // Same fix as above: confirm the Firestore write before claiming success,
-    // so a failed save is never silently lost / falsely reported as created.
+    let newId;
     try {
-      await setDoc(doc(db, "tasks", newId), newTask);
-      state.tasks.push(newTask);
-      showToast(`Task ${newId} created successfully`, 'success');
-      logActivity(`created task ${newId}: "${newTask.name}"`, db);
-      refreshViews();
-      closeTaskModal();
+      newId = await createSequentialDoc('tasks', 'T-', 2, (id) => ({ id, ...fields }));
     } catch (err) {
-      console.error("Firestore new task save failed:", err);
+      console.error("New task insert failed:", err);
       showToast('Failed to create task — check your connection and try again' + errSuffix(err), 'error');
       return; // keep the modal open so nothing typed is lost
     }
+
+    const newTask = { id: newId, ...fields };
+    state.tasks.push(newTask);
+    showToast(`Task ${newId} created successfully`, 'success');
+    logActivity(`created task ${newId}: "${newTask.name}"`, db);
+    refreshViews();
+    closeTaskModal();
   }
 }
 
@@ -9582,23 +9631,12 @@ async function handleIdeaFormSubmit(e) {
 
   const isEditing = !!state.editingIdeaId;
   let ideaId = state.editingIdeaId;
-  if (!isEditing) {
-    // Bug fix: this used to be I-${Date.now()}, producing ugly, non-sequential
-    // IDs like "I-1786881345197". Generate a clean sequential ID instead,
-    // matching the same pattern already used for tasks (T-1, T-2, ...).
-    let maxId = 0;
-    (state.contentIdeas || []).forEach(i => {
-      const num = parseInt(String(i.id).replace('I-', ''));
-      if (!isNaN(num) && num > maxId) maxId = num;
-    });
-    ideaId = `I-${maxId + 1}`;
-  }
   const existing = isEditing ? (state.contentIdeas || []).find(i => i.id === ideaId) : null;
 
   const currentUser = localStorage.getItem('hc_logged_in_user') || 'System';
 
-  const ideaData = {
-    id: ideaId,
+  const build = (id) => ({
+    id,
     name,
     date,
     notes,
@@ -9608,15 +9646,21 @@ async function handleIdeaFormSubmit(e) {
     initiatedBy: existing ? existing.initiatedBy : currentUser,
     initiatedAt: existing ? existing.initiatedAt : new Date().toISOString(),
     handled: existing ? !!existing.handled : false
-  };
+  });
 
   try {
-    await setDoc(doc(db, "content_ideas", ideaId), ideaData);
+    if (isEditing) {
+      await setDoc(doc(db, "content_ideas", ideaId), build(ideaId));
+    } else {
+      // Sequential I-<n> id allocated from the server's live ids and
+      // INSERTed, so a stale cache can't reuse an id and overwrite an idea.
+      ideaId = await createSequentialDoc('content_ideas', 'I-', 0, build);
+    }
     showToast(isEditing ? 'Idea updated successfully' : 'Idea added to the board', 'success');
     await logActivity(isEditing ? `updated idea ${ideaId}: "${name}"` : `added idea ${ideaId}: "${name}"`, db);
     closeIdeaModal();
   } catch (err) {
-    console.error("Firestore idea save failed:", err);
+    console.error("Idea save failed:", err);
     showToast('Failed to save idea — check your connection and try again' + errSuffix(err), 'error');
   }
 }
@@ -9957,17 +10001,8 @@ async function handlePriorityNoteFormSubmit(e) {
     return;
   }
 
-  if (!isEditing) {
-    let maxNum = 0;
-    (state.priorityNotes || []).forEach(n => {
-      const num = parseInt(String(n.id).replace('PN-', ''));
-      if (!isNaN(num) && num > maxNum) maxNum = num;
-    });
-    noteId = `PN-${maxNum + 1}`;
-  }
-
-  const noteData = {
-    id: noteId,
+  const build = (id) => ({
+    id,
     date,
     slot,
     jobType,
@@ -9978,10 +10013,16 @@ async function handlePriorityNoteFormSubmit(e) {
     handledBy: existing ? existing.handledBy : null,
     handledAt: existing ? existing.handledAt : null,
     commentsList: existing ? (existing.commentsList || []) : []
-  };
+  });
 
   try {
-    await setDoc(doc(db, "priority_notes", noteId), noteData);
+    if (isEditing) {
+      await setDoc(doc(db, "priority_notes", noteId), build(noteId));
+    } else {
+      // Sequential PN-<n> id from the server's live ids, INSERTed so a stale
+      // cache can't reuse an id and overwrite an existing note.
+      noteId = await createSequentialDoc('priority_notes', 'PN-', 0, build);
+    }
     showToast(isEditing ? 'Priority note updated' : 'Priority note posted', 'success');
     const summary = `"${jobType}" note (${date}, ${slot === 'start-of-day' ? 'start of day' : 'end of day'})`;
     await logActivity(`${isEditing ? 'updated' : 'posted'} priority board ${summary}`, db);
