@@ -4314,3 +4314,69 @@ html { scroll-behavior: smooth; }
 /* (no persistent will-change on rows — it promotes every row to its own
    layer and lets them paint over the sticky header; WAAPI handles the
    compositing during the pin FLIP on its own.) */
+
+/* ===========================================================================
+   Task Tracker — Social / General section tabs
+   =========================================================================== */
+.tasks-tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+.tasks-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.tasks-tab:hover { color: #e2e8f0; }
+.tasks-tab.active {
+  color: #fff;
+  border-bottom-color: var(--honey-gold);
+}
+.tasks-tab svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  flex-shrink: 0;
+}
+.tasks-tab-count {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.tasks-tab.active .tasks-tab-count {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--honey-gold);
+}
+
+/* the tab bar carries the count now — drop the duplicate badge in the two
+   section headers (kept in the DOM so renderTasks() can still write to it) */
+#tasks-section-posts .tasks-section-header #social-tasks-count,
+#tasks-section-general .tasks-section-header #general-tasks-count { display: none; }
+
+/* hidden tab section must actually collapse even though .tasks-section-block
+   may set its own display */
+#tasks-view .tasks-section-block[hidden] { display: none !important; }
+
+@media (max-width: 560px) {
+  .tasks-tab { padding: 10px 12px; font-size: 0.82rem; }
+}

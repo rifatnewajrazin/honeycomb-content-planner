@@ -10,7 +10,7 @@
   <meta http-equiv="Expires" content="0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3.25.0">
+  <link rel="stylesheet" href="style.css?v=3.26.0">
   <style>
     /* Date field: word-month display text with a native calendar picker layered on top */
     .date-field { position: relative; }
@@ -353,8 +353,23 @@
               </table>
             </div>
 
+            <!-- Tab switcher: Social Media Posts | General Design Tasks.
+                 The Pinned group above stays visible on both tabs. -->
+            <div id="tasks-section-tabs" class="tasks-tab-bar" role="tablist">
+              <button type="button" class="tasks-tab active" data-tab="posts" role="tab" aria-selected="true">
+                <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Social Media Posts
+                <span class="tasks-tab-count" id="tab-count-posts">0</span>
+              </button>
+              <button type="button" class="tasks-tab" data-tab="general" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                General Design Tasks
+                <span class="tasks-tab-count" id="tab-count-general">0</span>
+              </button>
+            </div>
+
             <!-- Section 1: Social Media Posts -->
-            <div class="tasks-section-block">
+            <div class="tasks-section-block" id="tasks-section-posts">
               <div class="tasks-section-header" style="border-bottom: 1px solid rgba(245, 158, 11, 0.18);">
                 <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.12); color: var(--honey-gold); flex-shrink: 0;">
                   <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -395,7 +410,7 @@
             </div>
 
             <!-- Section 2: General Design Tasks -->
-            <div class="tasks-section-block">
+            <div class="tasks-section-block" id="tasks-section-general">
               <div class="tasks-section-header" style="border-bottom: 1px solid rgba(168, 85, 247, 0.18);">
                 <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.12); color: #c084fc; flex-shrink: 0;">
                   <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
@@ -1587,6 +1602,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.25.0"></script>
+  <script type="module" src="app.js?v=3.26.0"></script>
 </body>
 </html>

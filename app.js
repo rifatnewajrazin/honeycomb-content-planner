@@ -3824,6 +3824,11 @@ function setupEventListeners() {
     });
   }
 
+  // Task Tracker section tabs (Social Media Posts / General Design Tasks)
+  document.querySelectorAll('#tasks-section-tabs .tasks-tab').forEach(btn => {
+    btn.addEventListener('click', () => setTaskActiveTab(btn.dataset.tab));
+  });
+
   // Task Tracker table column header click to sort (Ascending / Descending)
   document.querySelectorAll('.tasks-table th.sortable-th').forEach(th => {
     th.addEventListener('click', () => {
@@ -8372,6 +8377,37 @@ function showToast(msg, type = 'success') {
    TASK TRACKER CORE LOGIC & CONTROLLERS
    ========================================================================== */
 
+// The Task Tracker shows one of two sections at a time — Social Media Posts or
+// General Design Tasks — chosen by a tab bar. The Pinned group above the tabs
+// is always visible on both. The choice is remembered per browser; it's pure
+// UI, nothing about the data changes.
+function getTaskActiveTab() {
+  try {
+    return localStorage.getItem('hc_task_active_tab') === 'general' ? 'general' : 'posts';
+  } catch (e) {
+    return 'posts';
+  }
+}
+
+function applyTaskTabVisibility() {
+  const tab = getTaskActiveTab();
+  const posts = document.getElementById('tasks-section-posts');
+  const general = document.getElementById('tasks-section-general');
+  if (posts) posts.hidden = (tab !== 'posts');
+  if (general) general.hidden = (tab !== 'general');
+  document.querySelectorAll('#tasks-section-tabs .tasks-tab').forEach(btn => {
+    const on = btn.dataset.tab === tab;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+}
+
+function setTaskActiveTab(tab) {
+  const next = tab === 'general' ? 'general' : 'posts';
+  try { localStorage.setItem('hc_task_active_tab', next); } catch (e) {}
+  applyTaskTabVisibility();
+}
+
 function renderTasks() {
   const tableBodyPosts = document.getElementById('tasks-list-body-posts');
   const tableBodyGeneral = document.getElementById('tasks-list-body-general');
@@ -8515,6 +8551,13 @@ function renderTasks() {
 
   document.getElementById('social-tasks-count').textContent = socialTasks.length;
   document.getElementById('general-tasks-count').textContent = generalTasks.length;
+
+  // Tab switcher counts + which section is shown (Pinned stays visible on both).
+  const tabCountPosts = document.getElementById('tab-count-posts');
+  const tabCountGeneral = document.getElementById('tab-count-general');
+  if (tabCountPosts) tabCountPosts.textContent = socialTasks.length;
+  if (tabCountGeneral) tabCountGeneral.textContent = generalTasks.length;
+  applyTaskTabVisibility();
 
   const tableBodyPinned = document.getElementById('tasks-list-body-pinned');
   const pinnedSection = document.getElementById('tasks-section-pinned');
