@@ -4321,6 +4321,7 @@ html { scroll-behavior: smooth; }
 .tasks-tab-bar {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
   border-bottom: 1px solid var(--border-color);
 }
