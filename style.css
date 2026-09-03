@@ -4022,17 +4022,7 @@ table.leave-grid th.lv-total-head {
    Task Tracker — For Brand column, Pin control, per-task Notes, detail view
    =========================================================================== */
 
-.task-brand-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #e2e8f0;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  white-space: nowrap;
-}
+/* .task-brand-tag lives in the density pass at the end of this file. */
 
 /* Rows are clickable to open the read-only detail view */
 .tasks-table tr.task-row-clickable { cursor: pointer; }
@@ -4116,3 +4106,152 @@ table.leave-grid th.lv-total-head {
 @media (max-width: 560px) {
   .task-view-row { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* ===========================================================================
+   Task Tracker — density pass (no horizontal scroll) + motion polish
+   =========================================================================== */
+
+html { scroll-behavior: smooth; }
+
+/* Fit the table to the card instead of riding a 900px floor, and stop the
+   container from ever scrolling sideways. */
+#tasks-view .tasks-table { min-width: 0; }
+#tasks-view .tasks-table-container { overflow-x: hidden; }
+
+/* Tighter cells across the Task Tracker only */
+#tasks-view .tasks-table th,
+#tasks-view .tasks-table td {
+  padding: 9px 10px;
+  font-size: 0.78rem;
+}
+#tasks-view .tasks-table th {
+  font-size: 0.62rem;
+  padding-top: 11px;
+  padding-bottom: 11px;
+  letter-spacing: 0.4px;
+}
+
+/* Column budget. Columns 1-9 are identical in all three tables; Task Name
+   soaks up whatever is left. Names / brand / date / need-within wrap. */
+#tasks-view .tasks-table th:nth-child(1),
+#tasks-view .tasks-table td:nth-child(1) { width: 42px; }                        /* ID */
+#tasks-view .tasks-table td:nth-child(2) { white-space: normal; min-width: 150px; } /* Task Name */
+#tasks-view .tasks-table th:nth-child(3),
+#tasks-view .tasks-table td:nth-child(3),
+#tasks-view .tasks-table th:nth-child(4),
+#tasks-view .tasks-table td:nth-child(4) { width: 96px; white-space: normal; }   /* Creative / Assigned By */
+#tasks-view .tasks-table th:nth-child(5),
+#tasks-view .tasks-table td:nth-child(5) { width: 58px; }                        /* For Brand */
+#tasks-view .tasks-table th:nth-child(6),
+#tasks-view .tasks-table td:nth-child(6) { width: 66px; white-space: normal; }   /* Date / Time */
+#tasks-view .tasks-table th:nth-child(7),
+#tasks-view .tasks-table td:nth-child(7) { width: 62px; white-space: normal; }   /* Need Within */
+#tasks-view .tasks-table th:nth-child(8),
+#tasks-view .tasks-table td:nth-child(8) { width: 84px; }                        /* Status */
+#tasks-view .tasks-table th:nth-child(9),
+#tasks-view .tasks-table td:nth-child(9) { width: 40px; }                        /* Links */
+#tasks-view .tasks-table th:last-child,
+#tasks-view .tasks-table td:last-child { width: 78px; }                          /* Actions */
+
+/* Smaller inline avatars in the Creative / Assigned By cells */
+#tasks-view .tasks-table td:nth-child(3) img,
+#tasks-view .tasks-table td:nth-child(4) img,
+#tasks-view .tasks-table td:nth-child(3) .card-assignee-avatar,
+#tasks-view .tasks-table td:nth-child(4) .card-assignee-avatar {
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 0.62rem !important;
+}
+#tasks-view .tasks-table td:nth-child(3) > div,
+#tasks-view .tasks-table td:nth-child(4) > div { gap: 6px !important; }
+#tasks-view .tasks-table td:nth-child(3) span,
+#tasks-view .tasks-table td:nth-child(4) span { line-height: 1.2; }
+
+/* Compact status pill + hide the tiny icon buttons' padding */
+#tasks-view .task-status-badge { padding: 3px 7px; font-size: 0.66rem; }
+#tasks-view .btn-icon { width: 28px !important; height: 28px !important; }
+#tasks-view .tasks-table td:last-child > div { gap: 4px !important; }
+
+/* Two-line Date / Time */
+.tt-dt-date { color: #e2e8f0; }
+.tt-dt-time { color: #94a3b8; font-size: 0.7rem; margin-top: 1px; }
+
+/* For Brand — logo + short code, one tight line */
+.task-brand-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.task-brand-logo {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.task-brand-code { white-space: nowrap; }
+
+/* --- Motion: butter-smooth transitions + recent-change glow -------------- */
+.tasks-table tr { transition: background-color 0.18s ease; }
+.btn-icon {
+  transition: background-color 0.16s ease, color 0.16s ease,
+              border-color 0.16s ease, transform 0.12s ease;
+}
+.btn-icon:active { transform: scale(0.9); }
+.modal-overlay { transition: opacity 0.22s ease; }
+
+@keyframes tt-row-glow {
+  0%   { box-shadow: inset 0 0 0 0 rgba(245, 158, 11, 0),
+                     0 0 0 0 rgba(245, 158, 11, 0);
+         background-color: rgba(245, 158, 11, 0.16); }
+  35%  { box-shadow: inset 3px 0 0 0 var(--honey-gold),
+                     0 0 16px 3px rgba(245, 158, 11, 0.45);
+         background-color: rgba(245, 158, 11, 0.12); }
+  100% { box-shadow: inset 0 0 0 0 rgba(245, 158, 11, 0),
+                     0 0 0 0 rgba(245, 158, 11, 0);
+         background-color: transparent; }
+}
+.tasks-table tr.tt-recent-change {
+  animation: tt-row-glow 2.3s ease-out;
+  position: relative;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* On phones the tracker can still scroll sideways rather than crush columns */
+@media (max-width: 720px) {
+  #tasks-view .tasks-table { min-width: 720px; }
+  #tasks-view .tasks-table-container { overflow-x: auto; }
+}
+
+/* Pinned group easing in when it first appears */
+@keyframes tt-section-reveal {
+  from { opacity: 0; transform: translateY(-10px) scaleY(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+#tasks-section-pinned.tt-section-reveal {
+  animation: tt-section-reveal 0.36s cubic-bezier(.22,.68,0,1);
+  transform-origin: top center;
+}
+
+/* Rows being FLIP-animated shouldn't be clipped by the container as they
+   travel between the Pinned group and the list below. */
+#tasks-view .tasks-table-container { overflow-y: auto; }
+#tasks-view .tasks-table tr { will-change: transform; }

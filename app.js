@@ -8519,7 +8519,18 @@ function renderTasks() {
   const pinnedSection = document.getElementById('tasks-section-pinned');
   const pinnedCount = document.getElementById('pinned-tasks-count');
   if (tableBodyPinned) tableBodyPinned.innerHTML = '';
-  if (pinnedSection) pinnedSection.style.display = pinnedTasks.length ? '' : 'none';
+  if (pinnedSection) {
+    const wasShown = pinnedSection.style.display !== 'none';
+    const show = pinnedTasks.length > 0;
+    pinnedSection.style.display = show ? '' : 'none';
+    // Gentle expand when the group first appears (it's covered by the row
+    // FLIP when it was already open).
+    if (show && !wasShown && !ttPrefersReducedMotion()) {
+      pinnedSection.classList.remove('tt-section-reveal');
+      void pinnedSection.offsetWidth;
+      pinnedSection.classList.add('tt-section-reveal');
+    }
+  }
   if (pinnedCount) pinnedCount.textContent = pinnedTasks.length;
 
   const renderRow = (task, targetBody, isSocialRow, postedCellHtml, forcePostedCol = false) => {
@@ -8551,10 +8562,19 @@ function renderTasks() {
       ? `<img src="${assignerPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${assignerName}" title="${assignerName}">`
       : '';
 
-    const brandName = taskBrandName(task);
-    const brandCellHtml = brandName
-      ? `<span class="task-brand-tag">${brandName}</span>`
-      : `<span style="color:#64748b;">—</span>`;
+    const _bId = taskEffectiveBrandId(task);
+    const _brandList = (state.brands && state.brands.length > 0) ? state.brands : DEFAULT_BRANDS;
+    const _brandObj = _bId ? _brandList.find(b => b.id === _bId) : null;
+    let brandCellHtml = `<span style="color:#64748b;">—</span>`;
+    if (_brandObj) {
+      const _code = BRAND_SHORT_CODES[_brandObj.name]
+        || (_brandObj.name || '').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase()
+        || _brandObj.name;
+      const _logo = _brandObj.logo
+        ? `<img src="${_brandObj.logo}" alt="" class="task-brand-logo" loading="lazy">`
+        : '';
+      brandCellHtml = `<span class="task-brand-tag" title="${_brandObj.name}">${_logo}<span class="task-brand-code">${_code}</span></span>`;
+    }
 
     const pinBtnHtml = canManageTasks
       ? `<button class="btn-icon task-pin-btn${task.pinned ? ' is-pinned' : ''}" data-id="${task.id}" style="width: 32px; height: 32px" title="${task.pinned ? 'Unpin task' : 'Pin task to top'}" aria-pressed="${task.pinned ? 'true' : 'false'}">
@@ -8588,7 +8608,7 @@ function renderTasks() {
         </div>
       </td>
       <td>${brandCellHtml}</td>
-      <td>${dateFormatted} ${task.time || ''}</td>
+      <td><div class="tt-dt-date">${dateFormatted}</div>${task.time ? `<div class="tt-dt-time">${task.time}</div>` : ''}</td>
       <td>${task.urgency || 'N/A'}</td>
       <td>
         <span class="task-status-badge ${statusClass}">${task.status}</span>
@@ -8890,16 +8910,94 @@ async function togglePinTask(taskId) {
   const nextPinned = !task.pinned;
   const updatedTask = { ...task, pinned: nextPinned, pinnedAt: nextPinned ? new Date().toISOString() : null };
 
+  // Snapshot where every task row sits right now. After the re-render we play
+  // a FLIP: the pinned/unpinned row flies to its new home with a touch of
+  // motion blur, and every row it displaces slides to make room — one fluid
+  // reflow instead of a hard jump.
+  const prevRects = captureTaskRowRects();
+
   try {
     await setDoc(doc(db, "tasks", taskId), updatedTask);
     Object.assign(task, updatedTask);
     logActivity(`${nextPinned ? 'pinned' : 'unpinned'} Task ${task.id}: "${task.name}"`, db);
     showToast(nextPinned ? `Pinned Task ${task.id} to the top` : `Unpinned Task ${task.id}`, nextPinned ? 'success' : 'info');
     refreshViews();
+    requestAnimationFrame(() => playTaskRowFlip(prevRects, taskId));
   } catch (err) {
     console.error(`Failed to ${nextPinned ? 'pin' : 'unpin'} task ${taskId}:`, err);
     showToast('Failed to update pin — check your connection and try again' + errSuffix(err), 'error');
   }
+}
+
+// Reduced-motion-aware check used by the Task Tracker's little animations.
+function ttPrefersReducedMotion() {
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// Snapshot the on-screen box of every Task Tracker row, keyed by row id, so a
+// re-render can be animated as a FLIP.
+function captureTaskRowRects() {
+  const m = new Map();
+  document.querySelectorAll('#tasks-view tr[id^="task-row-"]').forEach(tr => {
+    m.set(tr.id, tr.getBoundingClientRect());
+  });
+  return m;
+}
+
+// FLIP: after refreshViews() has rebuilt the tables, take each row from where
+// it used to be to where it is now. The row identified by movedId (the one
+// just pinned/unpinned) travels furthest and picks up a short motion blur +
+// fade; the rows it pushes past just glide into their new slots, so the list
+// visibly "makes space". Ends with a soft honey glow on the moved row.
+function playTaskRowFlip(prevRects, movedId) {
+  const movedRowId = `task-row-${movedId}`;
+
+  if (!ttPrefersReducedMotion()) {
+    document.querySelectorAll('#tasks-view tr[id^="task-row-"]').forEach(tr => {
+      const prev = prevRects.get(tr.id);
+      if (!prev) return;
+      const next = tr.getBoundingClientRect();
+      const dx = prev.left - next.left;
+      const dy = prev.top - next.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+
+      const isMoved = tr.id === movedRowId;
+      const dist = Math.hypot(dx, dy);
+      const blurred = isMoved && dist > 48;
+
+      tr.animate(
+        [
+          {
+            transform: `translate(${dx}px, ${dy}px)`,
+            filter: blurred ? 'blur(3.5px)' : 'blur(0)',
+            opacity: isMoved ? 0.5 : 1
+          },
+          { offset: 0.6, filter: blurred ? 'blur(1.2px)' : 'blur(0)', opacity: isMoved ? 0.9 : 1 },
+          { transform: 'translate(0, 0)', filter: 'blur(0)', opacity: 1 }
+        ],
+        {
+          duration: isMoved ? Math.min(760, 380 + dist * 0.34) : 340,
+          easing: 'cubic-bezier(.22,.68,0,1)'
+        }
+      );
+    });
+  }
+
+  const movedEl = document.getElementById(movedRowId);
+  if (movedEl) movedEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  flashTaskRow(movedId);
+}
+
+// Soft "this just changed" glow on a task row. Safe to call after any write
+// that ends in refreshViews(); it re-finds the row by id.
+function flashTaskRow(taskId) {
+  const el = document.getElementById(`task-row-${taskId}`);
+  if (!el) return;
+  el.classList.remove('tt-recent-change');
+  // reflow so the animation restarts even on a repeat change
+  void el.offsetWidth;
+  el.classList.add('tt-recent-change');
+  setTimeout(() => el.classList.remove('tt-recent-change'), 2400);
 }
 
 /* ---------------------------------------------------------------------------
@@ -8981,6 +9079,7 @@ async function addNoteToTask(taskId, text) {
     logActivity(`added a note to Task ${task.id}: "${clean}"`, db);
     renderTaskNotes(task, 'task-notes-feed', false);
     refreshViews();
+    requestAnimationFrame(() => flashTaskRow(task.id));
   } catch (err) {
     console.error(`Failed to add note to task ${taskId}:`, err);
     showToast('Failed to save note — check your connection and try again' + errSuffix(err), 'error');
@@ -9272,8 +9371,14 @@ async function handleTaskFormSubmit(e) {
   const name = document.getElementById('task-form-name').value.trim();
   const designer = document.getElementById('task-form-designer').value;
   const assignedBy = document.getElementById('task-form-assigner').value;
-  const date = document.getElementById('task-form-date').value;
-  const time = document.getElementById('task-form-time').value;
+  // Date & time fall back to "right now" whenever they're left blank, so a
+  // task can never land on the tracker without a timestamp.
+  const _now = new Date();
+  const _pad = n => String(n).padStart(2, '0');
+  let date = document.getElementById('task-form-date').value;
+  let time = document.getElementById('task-form-time').value;
+  if (!date) date = `${_now.getFullYear()}-${_pad(_now.getMonth() + 1)}-${_pad(_now.getDate())}`;
+  if (!time) time = `${_pad(_now.getHours())}:${_pad(_now.getMinutes())}`;
   const urgency = document.getElementById('task-form-urgency').value.trim();
   const status = document.getElementById('task-form-status').value;
   const deliveryLink = document.getElementById('task-form-delivery').value.trim();
@@ -9308,6 +9413,7 @@ async function handleTaskFormSubmit(e) {
         showToast('Task updated successfully', 'success');
         logActivity(`updated Task ${task.id}: "${task.name}"`, db);
         refreshViews();
+        requestAnimationFrame(() => flashTaskRow(task.id));
         closeTaskModal();
       } catch (err) {
         console.error("Firestore task update failed:", err);
@@ -9339,6 +9445,7 @@ async function handleTaskFormSubmit(e) {
     showToast(`Task ${newId} created successfully`, 'success');
     logActivity(`created task ${newId}: "${newTask.name}"`, db);
     refreshViews();
+    requestAnimationFrame(() => flashTaskRow(newId));
     closeTaskModal();
   }
 }
