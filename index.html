@@ -196,9 +196,11 @@
 
       <!-- View 1: Dashboard View -->
       <section id="dashboard-view" class="view-panel active">
-        <span id="dashboard-priority-board-badge" class="priority-board-dashboard-badge" style="display:none;"></span>
-        <span id="dashboard-onboarding-badge" style="display:none; align-items:center; gap:6px; border-radius:9999px; padding:6px 16px; font-size:0.8rem; font-weight:600; margin-left:8px;"></span>
-        <span id="dashboard-leave-badge" style="display:none; align-items:center; gap:6px; border-radius:9999px; padding:6px 16px; font-size:0.8rem; font-weight:600; margin-left:8px; background:rgba(52,211,153,0.12); color:#34d399; border:1px solid rgba(52,211,153,0.3);"></span>
+        <div class="dashboard-badges" id="dashboard-badges-row">
+          <span id="dashboard-priority-board-badge" class="priority-board-dashboard-badge" style="display:none;"></span>
+          <span id="dashboard-onboarding-badge" style="display:none; align-items:center; gap:6px; border-radius:9999px; padding:6px 16px; font-size:0.8rem; font-weight:600;"></span>
+          <span id="dashboard-leave-badge" style="display:none; align-items:center; gap:6px; border-radius:9999px; padding:6px 16px; font-size:0.8rem; font-weight:600; background:rgba(52,211,153,0.12); color:#34d399; border:1px solid rgba(52,211,153,0.3);"></span>
+        </div>
         <div class="dashboard-grid" id="dashboard-cards-grid">
           <!-- Dynamically Rendered Page Cards -->
         </div>
@@ -274,7 +276,7 @@
                 <option value="Razin">Razin</option>
                 <option value="Rabby">Rabby</option>
                 <option value="Niaz">Niaz</option>
-                <option value="Mahim">Mahim</option>
+                <option value="Mamun">Mamun</option>
               </select>
 
               <select id="task-assigner-filter" class="filter-select">
