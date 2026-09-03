@@ -4120,7 +4120,10 @@ html { scroll-behavior: smooth; }
 #tasks-view .tasks-table {
   min-width: 0;
   width: 100%;
-  table-layout: fixed;
+  /* auto layout: every column sizes to its content and the small leftover
+     spreads proportionally, so nothing clips and there's no dead gap. The
+     old fixed % budget was a constant tuning fight across widths. */
+  table-layout: auto;
   /* Chrome renders body rows *over* a sticky <th> when the table uses
      border-collapse: collapse — separate borders make the frozen header
      reliably paint on top. */
@@ -4139,40 +4142,40 @@ html { scroll-behavior: smooth; }
 /* Tighter cells across the Task Tracker only */
 #tasks-view .tasks-table th,
 #tasks-view .tasks-table td {
-  padding: 10px 12px;
-  font-size: 0.78rem;
+  padding: 9px 8px;
+  font-size: 0.76rem;
   vertical-align: middle;
 }
+#tasks-view .tasks-table td:first-child,
+#tasks-view .tasks-table th:first-child { padding-left: 14px; }
+#tasks-view .tasks-table td:last-child,
+#tasks-view .tasks-table th:last-child { padding-right: 14px; }
 #tasks-view .tasks-table th {
   font-size: 0.62rem;
   padding-top: 12px;
   padding-bottom: 12px;
   letter-spacing: 0.4px;
+  /* header labels wrap to two lines instead of clipping ("For Brand",
+     "Posted", "Need Within" don't fit one line in a tight fixed column) */
+  white-space: normal;
+  line-height: 1.25;
+  vertical-align: bottom;
 }
 #tasks-view .tasks-table td { overflow: hidden; text-overflow: ellipsis; }
 
-/* Proportional column budget — columns 1-9 are identical in all three
-   tables; 10/11 (Posted / Actions, or just Actions) share the remainder. */
-#tasks-view .tasks-table th:nth-child(1),
-#tasks-view .tasks-table td:nth-child(1) { width: 4%; }                          /* ID */
-#tasks-view .tasks-table th:nth-child(2),
-#tasks-view .tasks-table td:nth-child(2) { width: 21%; white-space: normal; }    /* Task Name */
-#tasks-view .tasks-table th:nth-child(3),
+/* Light sizing hints only — auto layout does the rest. */
+#tasks-view .tasks-table td:nth-child(1) { white-space: nowrap; }                          /* ID */
+#tasks-view .tasks-table td:nth-child(2) { white-space: normal; min-width: 130px; max-width: 240px; } /* Task Name */
 #tasks-view .tasks-table td:nth-child(3),
-#tasks-view .tasks-table th:nth-child(4),
-#tasks-view .tasks-table td:nth-child(4) { width: 12%; white-space: normal; }    /* Creative / Assigned By */
-#tasks-view .tasks-table th:nth-child(5),
-#tasks-view .tasks-table td:nth-child(5) { width: 7%; }                          /* For Brand */
-#tasks-view .tasks-table th:nth-child(6),
-#tasks-view .tasks-table td:nth-child(6) { width: 8%; white-space: normal; }     /* Date / Time */
-#tasks-view .tasks-table th:nth-child(7),
-#tasks-view .tasks-table td:nth-child(7) { width: 7%; white-space: normal; }     /* Need Within */
-#tasks-view .tasks-table th:nth-child(8),
-#tasks-view .tasks-table td:nth-child(8) { width: 10%; }                         /* Status */
-#tasks-view .tasks-table th:nth-child(9),
-#tasks-view .tasks-table td:nth-child(9) { width: 4%; }                          /* Links */
-#tasks-view .tasks-table th:last-child,
-#tasks-view .tasks-table td:last-child { width: 8%; }                            /* Actions */
+#tasks-view .tasks-table td:nth-child(4) { white-space: normal; min-width: 84px; max-width: 108px; }  /* Creative / Assigned By */
+#tasks-view .tasks-table td:nth-child(6),
+#tasks-view .tasks-table td:nth-child(7) { white-space: normal; }                          /* Date / Need Within */
+
+/* Row action buttons must not be squeezed by the flex row they sit in */
+#tasks-view .tasks-table td:last-child .btn-icon { flex: 0 0 32px; }
+@media (max-width: 900px) {
+  #tasks-view .tasks-table td:last-child .btn-icon { flex: 0 0 44px; }
+}
 
 /* Frozen header for the Task Tracker. The page's own title bar (.header) is
    sticky, 80px tall, z-index 5 — so the table header must park *below* it
@@ -4205,9 +4208,22 @@ html { scroll-behavior: smooth; }
 #tasks-view .tasks-table td:nth-child(4) span { line-height: 1.2; }
 
 /* Compact status pill + hide the tiny icon buttons' padding */
-#tasks-view .task-status-badge { padding: 3px 7px; font-size: 0.66rem; }
-#tasks-view .btn-icon { width: 28px !important; height: 28px !important; }
-#tasks-view .tasks-table td:last-child > div { gap: 4px !important; }
+/* out-specifies body.minimal-theme .task-status-badge { padding …!important } */
+#tasks-view .task-status-badge {
+  padding: 3px 8px !important;
+  font-size: 0.6rem !important;
+  letter-spacing: 0.2px !important;
+  gap: 4px !important;
+  box-shadow: none !important;
+}
+/* Keep the row action buttons at the app's normal 32px on desktop (they were
+   briefly shrunk to 28px in the density pass) and lift them to the 44px
+   touch-target minimum on phones. */
+#tasks-view .btn-icon { width: 32px !important; height: 32px !important; }
+#tasks-view .tasks-table td:last-child > div { gap: 6px !important; }
+@media (max-width: 900px) {
+  #tasks-view .btn-icon { width: 44px !important; height: 44px !important; }
+}
 
 /* Two-line Date / Time */
 .tt-dt-date { color: #e2e8f0; }
@@ -4272,13 +4288,17 @@ html { scroll-behavior: smooth; }
   }
 }
 
-/* On phones, 11 fixed columns would be unreadable — fall back to a natural
-   layout that scrolls sideways within its card (the frozen header is a
-   desktop nicety and can lapse here). */
-@media (max-width: 900px) {
-  #tasks-view .tasks-table { table-layout: auto; min-width: 840px; }
+/* Below ~1250px the 11 columns can't all fit the card, so let the table
+   scroll sideways inside its own card (like every other table view) and drop
+   the frozen header — it can't stay sticky once the container scrolls. Above
+   that width the table fits and the header freezes. */
+@media (max-width: 1250px) {
+  #tasks-view .tasks-table { min-width: 900px; }
   #tasks-view .tasks-table-container { overflow-x: auto; overflow-y: visible; }
   #tasks-view .tasks-table thead th { position: static; top: 0; box-shadow: inset 0 -1px 0 var(--border-color); }
+  #tasks-view .tasks-table td:nth-child(2) { max-width: none; }
+  #tasks-view .tasks-table td:nth-child(3),
+  #tasks-view .tasks-table td:nth-child(4) { max-width: none; }
 }
 
 /* Pinned group easing in when it first appears */
