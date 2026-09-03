@@ -8503,14 +8503,15 @@ function renderTasks() {
 
   // Pinned tasks float into their own merged group above both sections,
   // regardless of job type. Most-recently-pinned sits on top. They're pulled
-  // out of the Social / General lists so a task never appears twice.
+  // out of the Social / General lists so a task never appears twice. Pins are
+  // per-person (task.pinnedBy[<user>]) — what you pin is pinned only for you.
   const pinnedTasks = filteredTasks
-    .filter(t => t.pinned)
-    .sort((a, b) => (b.pinnedAt || '').localeCompare(a.pinnedAt || ''));
+    .filter(t => isTaskPinnedForMe(t))
+    .sort((a, b) => taskPinnedAtForMe(b).localeCompare(taskPinnedAtForMe(a)));
 
   // Split remaining filtered tasks into Social Media Posts and General Design Tasks
-  const socialTasks = filteredTasks.filter(t => t.taskType === 'post' && !t.pinned);
-  const generalTasks = filteredTasks.filter(t => t.taskType !== 'post' && !t.pinned);
+  const socialTasks = filteredTasks.filter(t => t.taskType === 'post' && !isTaskPinnedForMe(t));
+  const generalTasks = filteredTasks.filter(t => t.taskType !== 'post' && !isTaskPinnedForMe(t));
 
   document.getElementById('social-tasks-count').textContent = socialTasks.length;
   document.getElementById('general-tasks-count').textContent = generalTasks.length;
@@ -8576,8 +8577,9 @@ function renderTasks() {
       brandCellHtml = `<span class="task-brand-tag" title="${_brandObj.name}">${_logo}<span class="task-brand-code">${_code}</span></span>`;
     }
 
+    const pinnedForMe = isTaskPinnedForMe(task);
     const pinBtnHtml = canManageTasks
-      ? `<button class="btn-icon task-pin-btn${task.pinned ? ' is-pinned' : ''}" data-id="${task.id}" style="width: 32px; height: 32px" title="${task.pinned ? 'Unpin task' : 'Pin task to top'}" aria-pressed="${task.pinned ? 'true' : 'false'}">
+      ? `<button class="btn-icon task-pin-btn${pinnedForMe ? ' is-pinned' : ''}" data-id="${task.id}" style="width: 32px; height: 32px" title="${pinnedForMe ? 'Unpin (only for you)' : 'Pin to top (only for you)'}" aria-pressed="${pinnedForMe ? 'true' : 'false'}">
           <svg viewBox="0 0 24 24"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
          </button>`
       : '';
@@ -8588,9 +8590,9 @@ function renderTasks() {
     if (task.status === 'Correction') {
       row.classList.add('highlighted-correction');
     }
-    if (task.pinned) row.classList.add('task-row-pinned');
+    if (pinnedForMe) row.classList.add('task-row-pinned');
     row.innerHTML = `
-      <td style="white-space: nowrap;">${task.pinned ? '<span class="task-pin-dot" title="Pinned">📌</span> ' : ''}<strong>${task.id}</strong></td>
+      <td style="white-space: nowrap;">${pinnedForMe ? '<span class="task-pin-dot" title="Pinned for you">📌</span> ' : ''}<strong>${task.id}</strong></td>
       <td>
         <div style="font-weight: 600; color: #fff">${task.name}</div>
         ${commentsText}
@@ -8894,21 +8896,44 @@ function escHtml(s) {
 }
 
 /* ---------------------------------------------------------------------------
-   PIN / UNPIN  — user-to-user, shared through the same Firestore task doc.
-   Only Creatives / Assigners / admins (canCurrentUserManageTasks) may pin or
-   unpin; the button isn't rendered for anyone else. Pinned tasks render in
-   the merged "Pinned" group at the top of the Task Tracker, newest pin first.
+   PIN / UNPIN  — PER PERSON. The task document is shared by the whole team,
+   but pins are not: task.pinnedBy is a map of { "<user name>": "<ISO time>" }.
+   A row shows in the Pinned group only for the people whose name is a key.
+   Pinning writes/removes ONLY the current user's own key — every other field
+   on the task (and everyone else's pin) is left exactly as it was. The old
+   flat task.pinned / task.pinnedAt fields are ignored and left untouched.
+   Only Creatives / Assigners / admins (canCurrentUserManageTasks) get the
+   button.
 --------------------------------------------------------------------------- */
+function isTaskPinnedForMe(task) {
+  const me = localStorage.getItem('hc_logged_in_user');
+  return !!(me && task && task.pinnedBy && task.pinnedBy[me]);
+}
+
+function taskPinnedAtForMe(task) {
+  const me = localStorage.getItem('hc_logged_in_user');
+  return (me && task && task.pinnedBy && task.pinnedBy[me]) || '';
+}
+
 async function togglePinTask(taskId) {
   if (!canCurrentUserManageTasks()) {
     showToast('Only Creatives and Assigners can pin tasks', 'error');
     return;
   }
+  const me = localStorage.getItem('hc_logged_in_user');
+  if (!me) {
+    showToast('Sign in to pin tasks', 'error');
+    return;
+  }
   const task = state.tasks.find(t => t.id === taskId);
   if (!task) return;
 
-  const nextPinned = !task.pinned;
-  const updatedTask = { ...task, pinned: nextPinned, pinnedAt: nextPinned ? new Date().toISOString() : null };
+  // Touch only our own key in the shared map.
+  const pinnedBy = { ...(task.pinnedBy || {}) };
+  const nextPinned = !pinnedBy[me];
+  if (nextPinned) pinnedBy[me] = new Date().toISOString();
+  else delete pinnedBy[me];
+  const updatedTask = { ...task, pinnedBy };
 
   // Snapshot where every task row sits right now. After the re-render we play
   // a FLIP: the pinned/unpinned row flies to its new home with a touch of
@@ -8919,8 +8944,8 @@ async function togglePinTask(taskId) {
   try {
     await setDoc(doc(db, "tasks", taskId), updatedTask);
     Object.assign(task, updatedTask);
-    logActivity(`${nextPinned ? 'pinned' : 'unpinned'} Task ${task.id}: "${task.name}"`, db);
-    showToast(nextPinned ? `Pinned Task ${task.id} to the top` : `Unpinned Task ${task.id}`, nextPinned ? 'success' : 'info');
+    logActivity(`${nextPinned ? 'pinned' : 'unpinned'} Task ${task.id} (personal): "${task.name}"`, db);
+    showToast(nextPinned ? `Pinned Task ${task.id} for you` : `Unpinned Task ${task.id} for you`, nextPinned ? 'success' : 'info');
     refreshViews();
     requestAnimationFrame(() => playTaskRowFlip(prevRects, taskId));
   } catch (err) {
