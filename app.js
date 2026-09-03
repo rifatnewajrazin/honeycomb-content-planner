@@ -3752,6 +3752,21 @@ function setupEventListeners() {
     });
   }
 
+  // Global: Escape closes whatever modal is open. Every modal is a
+  // .modal-overlay that gets an .active class and carries a .close-btn — we
+  // click that button so each modal's own cleanup runs (e.g. clearing
+  // state.editingTask), then drop .active as a backstop. Nothing is saved or
+  // deleted here — it's the same path as clicking the modal's X / Cancel.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' && e.key !== 'Esc') return;
+    const openModals = document.querySelectorAll('.modal-overlay.active');
+    if (!openModals.length) return;
+    const modal = openModals[openModals.length - 1]; // top-most
+    const btn = modal.querySelector('.close-btn, .modal-cancel, [data-modal-close]');
+    if (btn) btn.click();
+    modal.classList.remove('active');
+  });
+
   // CSV Import / Export
   const csvExportBtn = document.getElementById('csv-export-btn');
   if (csvExportBtn) {
