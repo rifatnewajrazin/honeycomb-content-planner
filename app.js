@@ -3715,6 +3715,43 @@ function setupEventListeners() {
   if (taskCloseBtn) taskCloseBtn.addEventListener('click', closeTaskModal);
   if (taskCancelBtn) taskCancelBtn.addEventListener('click', closeTaskModal);
 
+  // Per-task Notes composer inside the task modal
+  const taskNoteAddBtn = document.getElementById('task-note-add-btn');
+  const taskNoteInput = document.getElementById('task-note-input');
+  const submitTaskNote = () => {
+    if (!state.editingTask || !taskNoteInput) return;
+    const txt = taskNoteInput.value;
+    if (!txt.trim()) return;
+    taskNoteInput.value = '';
+    addNoteToTask(state.editingTask.id, txt);
+  };
+  if (taskNoteAddBtn) taskNoteAddBtn.addEventListener('click', submitTaskNote);
+  if (taskNoteInput) {
+    taskNoteInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitTaskNote(); }
+    });
+  }
+
+  // Read-only Task detail view (opened by clicking a task row)
+  const taskViewCloseBtn = document.getElementById('task-view-modal-close-btn');
+  const taskViewCancelBtn = document.getElementById('task-view-modal-cancel-btn');
+  const taskViewEditBtn = document.getElementById('task-view-modal-edit-btn');
+  if (taskViewCloseBtn) taskViewCloseBtn.addEventListener('click', closeTaskViewModal);
+  if (taskViewCancelBtn) taskViewCancelBtn.addEventListener('click', closeTaskViewModal);
+  if (taskViewEditBtn) {
+    taskViewEditBtn.addEventListener('click', () => {
+      const t = taskViewModalTask;
+      closeTaskViewModal();
+      if (t) openTaskModal(t);
+    });
+  }
+  const taskViewOverlay = document.getElementById('task-view-modal');
+  if (taskViewOverlay) {
+    taskViewOverlay.addEventListener('click', (e) => {
+      if (e.target === taskViewOverlay) closeTaskViewModal();
+    });
+  }
+
   // CSV Import / Export
   const csvExportBtn = document.getElementById('csv-export-btn');
   if (csvExportBtn) {
@@ -7307,6 +7344,18 @@ function taskEffectiveBrandId(task) {
   return matchTaskToBrandId(task.name, state.brands);
 }
 
+// Human-readable brand name for a task's "For Brand" column — resolves the
+// effective brand id (explicit task.brandId, else the name-match heuristic)
+// to its display name. Returns '' when nothing matches so it sorts last and
+// renders as a neutral dash.
+function taskBrandName(task) {
+  const brandId = taskEffectiveBrandId(task);
+  if (!brandId) return '';
+  const brands = (state.brands && state.brands.length > 0) ? state.brands : DEFAULT_BRANDS;
+  const brand = brands.find(b => b.id === brandId);
+  return brand ? brand.name : '';
+}
+
 // Render Dashboard View
 function renderDashboard() {
   const grid = document.getElementById('dashboard-cards-grid');
@@ -8383,8 +8432,8 @@ function renderTasks() {
   const taskDir = state.taskSortDir === 'asc' ? 1 : -1;
 
   filteredTasks.sort((a, b) => {
-    let valA = a[taskCol] || '';
-    let valB = b[taskCol] || '';
+    let valA = taskCol === 'brand' ? taskBrandName(a) : (a[taskCol] || '');
+    let valB = taskCol === 'brand' ? taskBrandName(b) : (b[taskCol] || '');
 
     if (taskCol === 'id') {
       const numA = parseInt((valA || '').replace('T-', '')) || 0;
@@ -8452,14 +8501,28 @@ function renderTasks() {
     workloadEl.innerHTML = splitHtml;
   }
 
-  // Split filtered tasks into Social Media Posts and General Design Tasks
-  const socialTasks = filteredTasks.filter(t => t.taskType === 'post');
-  const generalTasks = filteredTasks.filter(t => t.taskType !== 'post');
+  // Pinned tasks float into their own merged group above both sections,
+  // regardless of job type. Most-recently-pinned sits on top. They're pulled
+  // out of the Social / General lists so a task never appears twice.
+  const pinnedTasks = filteredTasks
+    .filter(t => t.pinned)
+    .sort((a, b) => (b.pinnedAt || '').localeCompare(a.pinnedAt || ''));
+
+  // Split remaining filtered tasks into Social Media Posts and General Design Tasks
+  const socialTasks = filteredTasks.filter(t => t.taskType === 'post' && !t.pinned);
+  const generalTasks = filteredTasks.filter(t => t.taskType !== 'post' && !t.pinned);
 
   document.getElementById('social-tasks-count').textContent = socialTasks.length;
   document.getElementById('general-tasks-count').textContent = generalTasks.length;
 
-  const renderRow = (task, targetBody, isSocialRow, postedCellHtml) => {
+  const tableBodyPinned = document.getElementById('tasks-list-body-pinned');
+  const pinnedSection = document.getElementById('tasks-section-pinned');
+  const pinnedCount = document.getElementById('pinned-tasks-count');
+  if (tableBodyPinned) tableBodyPinned.innerHTML = '';
+  if (pinnedSection) pinnedSection.style.display = pinnedTasks.length ? '' : 'none';
+  if (pinnedCount) pinnedCount.textContent = pinnedTasks.length;
+
+  const renderRow = (task, targetBody, isSocialRow, postedCellHtml, forcePostedCol = false) => {
     const statusClass = task.status.toLowerCase().replace(' ', '-');
     let rawDeliveryLink = (task.deliveryLink || '').trim();
     let finalDeliveryUrl = rawDeliveryLink;
@@ -8488,13 +8551,26 @@ function renderTasks() {
       ? `<img src="${assignerPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${assignerName}" title="${assignerName}">`
       : '';
 
+    const brandName = taskBrandName(task);
+    const brandCellHtml = brandName
+      ? `<span class="task-brand-tag">${brandName}</span>`
+      : `<span style="color:#64748b;">—</span>`;
+
+    const pinBtnHtml = canManageTasks
+      ? `<button class="btn-icon task-pin-btn${task.pinned ? ' is-pinned' : ''}" data-id="${task.id}" style="width: 32px; height: 32px" title="${task.pinned ? 'Unpin task' : 'Pin task to top'}" aria-pressed="${task.pinned ? 'true' : 'false'}">
+          <svg viewBox="0 0 24 24"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
+         </button>`
+      : '';
+
     const row = document.createElement('tr');
     row.id = `task-row-${task.id}`;
+    row.classList.add('task-row-clickable');
     if (task.status === 'Correction') {
-      row.className = 'highlighted-correction';
+      row.classList.add('highlighted-correction');
     }
+    if (task.pinned) row.classList.add('task-row-pinned');
     row.innerHTML = `
-      <td style="white-space: nowrap;"><strong>${task.id}</strong></td>
+      <td style="white-space: nowrap;">${task.pinned ? '<span class="task-pin-dot" title="Pinned">📌</span> ' : ''}<strong>${task.id}</strong></td>
       <td>
         <div style="font-weight: 600; color: #fff">${task.name}</div>
         ${commentsText}
@@ -8511,6 +8587,7 @@ function renderTasks() {
           <span>${assignerName}</span>
         </div>
       </td>
+      <td>${brandCellHtml}</td>
       <td>${dateFormatted} ${task.time || ''}</td>
       <td>${task.urgency || 'N/A'}</td>
       <td>
@@ -8521,18 +8598,38 @@ function renderTasks() {
           ${driveLinkHtml}
         </div>
       </td>
-      ${isSocialRow ? `<td class="posted-cell" style="text-align: center;">${postedCellHtml}</td>` : ''}
+      ${isSocialRow ? `<td class="posted-cell" style="text-align: center;">${postedCellHtml}</td>` : (forcePostedCol ? `<td class="posted-cell" style="text-align: center; color:#64748b;">—</td>` : '')}
       <td>
-        <button class="btn-icon task-edit-btn" data-id="${task.id}" style="width: 32px; height: 32px" title="Edit Task">
-          <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        </button>
+        <div style="display: flex; align-items: center; gap: 6px">
+          ${pinBtnHtml}
+          <button class="btn-icon task-edit-btn" data-id="${task.id}" style="width: 32px; height: 32px" title="Edit Task">
+            <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+        </div>
       </td>
     `;
 
+    // Clicking anywhere on the row (except an interactive control) opens the
+    // read-only detail view — no need to enter Edit just to read or copy a link.
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('button, a, input, label, .posted-cell')) return;
+      openTaskViewModal(task);
+    });
+
     // Hook edit button click
-    row.querySelector('.task-edit-btn').addEventListener('click', () => {
+    row.querySelector('.task-edit-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
       openTaskModal(task);
     });
+
+    // Hook pin / unpin (Creatives / Assigners / admins only)
+    const pinBtn = row.querySelector('.task-pin-btn');
+    if (pinBtn) {
+      pinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePinTask(task.id);
+      });
+    }
 
     // Hook task link button click
     const taskLinkBtn = row.querySelector('.task-link-btn');
@@ -8613,6 +8710,13 @@ function renderTasks() {
     return `${partialBadge}<div class="posted-cell-pages">${pageHtml}</div>`;
   };
 
+  if (tableBodyPinned) {
+    pinnedTasks.forEach(t => {
+      const isSocialRow = t.taskType === 'post';
+      renderRow(t, tableBodyPinned, isSocialRow, isSocialRow ? buildPostedCellHtml(t) : '', true);
+    });
+  }
+
   socialTasks.forEach(t => {
     const isSocialRow = true;
     const postedCellHtml = buildPostedCellHtml(t);
@@ -8620,7 +8724,8 @@ function renderTasks() {
   });
   generalTasks.forEach(t => renderRow(t, tableBodyGeneral, false, ''));
 
-  setupMarkAsPostedControls(canMarkPosted, socialTasks);
+  // Bulk "mark posted" controls still consider every social post, pinned or not.
+  setupMarkAsPostedControls(canMarkPosted, socialTasks.concat(pinnedTasks.filter(t => t.taskType === 'post')));
 }
 
 // Wires up the "Posted" column header select-all checkbox and the bulk
@@ -8760,6 +8865,246 @@ async function unpostTaskPage(taskId, pageKey) {
   }
 }
 
+// Small HTML escaper for user-entered strings rendered via innerHTML in the
+// Task Tracker's notes feed and the read-only detail view.
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* ---------------------------------------------------------------------------
+   PIN / UNPIN  — user-to-user, shared through the same Firestore task doc.
+   Only Creatives / Assigners / admins (canCurrentUserManageTasks) may pin or
+   unpin; the button isn't rendered for anyone else. Pinned tasks render in
+   the merged "Pinned" group at the top of the Task Tracker, newest pin first.
+--------------------------------------------------------------------------- */
+async function togglePinTask(taskId) {
+  if (!canCurrentUserManageTasks()) {
+    showToast('Only Creatives and Assigners can pin tasks', 'error');
+    return;
+  }
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const nextPinned = !task.pinned;
+  const updatedTask = { ...task, pinned: nextPinned, pinnedAt: nextPinned ? new Date().toISOString() : null };
+
+  try {
+    await setDoc(doc(db, "tasks", taskId), updatedTask);
+    Object.assign(task, updatedTask);
+    logActivity(`${nextPinned ? 'pinned' : 'unpinned'} Task ${task.id}: "${task.name}"`, db);
+    showToast(nextPinned ? `Pinned Task ${task.id} to the top` : `Unpinned Task ${task.id}`, nextPinned ? 'success' : 'info');
+    refreshViews();
+  } catch (err) {
+    console.error(`Failed to ${nextPinned ? 'pin' : 'unpin'} task ${taskId}:`, err);
+    showToast('Failed to update pin — check your connection and try again' + errSuffix(err), 'error');
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   PER-TASK NOTES  — a lightweight running log on each task, separate from the
+   (legacy, hidden) Comments field. Any signed-in user can add a note; a note
+   can be removed by its author or by anyone with task-management access.
+   Stored on the task doc as `notesList: [{user, text, timestamp}]`; the old
+   free-text `task.notes` string is surfaced as a seed entry until the first
+   real note is added, at which point it's folded into the list.
+--------------------------------------------------------------------------- */
+function getTaskNotes(task) {
+  if (!task) return [];
+  if (Array.isArray(task.notesList) && task.notesList.length) return task.notesList;
+  if (task.notes && String(task.notes).trim()) {
+    return [{ user: '—', text: String(task.notes).trim(), timestamp: task.date ? `${task.date}T12:00:00.000Z` : null, seed: true }];
+  }
+  return [];
+}
+
+function renderTaskNotes(task, containerId, readOnly) {
+  const feed = document.getElementById(containerId);
+  if (!feed) return;
+  const notes = getTaskNotes(task);
+  const currentUser = localStorage.getItem('hc_logged_in_user') || '';
+  const canManage = canCurrentUserManageTasks();
+
+  if (!notes.length) {
+    feed.innerHTML = '<div style="color:#64748b; font-style:italic; font-size:0.8rem; text-align:center; padding:10px;">No notes yet.</div>';
+    return;
+  }
+
+  feed.innerHTML = notes.map((n, i) => {
+    const who = n.user || 'Unknown';
+    const initials = who === '—' ? '•' : who.split(' ').map(p => p[0]).join('').toUpperCase().substring(0, 2);
+    const when = n.timestamp ? new Date(n.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    const canDelete = !readOnly && !n.seed && (canManage || (currentUser && who === currentUser));
+    const del = canDelete
+      ? `<button type="button" class="task-note-del-btn" data-task-id="${escHtml(task.id)}" data-note-index="${i}" title="Delete note" aria-label="Delete note">&times;</button>`
+      : '';
+    return `
+      <div class="comment-bubble-card">
+        <div class="comment-avatar">${escHtml(initials)}</div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="comment-user">${escHtml(who)}</span>
+            <span class="comment-time">${escHtml(when)}${del}</span>
+          </div>
+          <div class="comment-text">${escHtml(n.text).replace(/\n/g, '<br>')}</div>
+        </div>
+      </div>`;
+  }).join('');
+  feed.scrollTop = feed.scrollHeight;
+
+  feed.querySelectorAll('.task-note-del-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteTaskNote(btn.dataset.taskId, parseInt(btn.dataset.noteIndex, 10)));
+  });
+}
+
+async function addNoteToTask(taskId, text) {
+  const currentUser = localStorage.getItem('hc_logged_in_user');
+  if (!currentUser) { showToast('Sign in to add a note', 'error'); return; }
+  const clean = (text || '').trim();
+  if (!clean) return;
+
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  // Fold a legacy free-text note into the list the first time a real note lands.
+  let notesList = Array.isArray(task.notesList) ? [...task.notesList] : [];
+  if (!notesList.length && task.notes && String(task.notes).trim()) {
+    notesList.push({ user: '—', text: String(task.notes).trim(), timestamp: task.date ? `${task.date}T12:00:00.000Z` : new Date().toISOString() });
+  }
+  notesList.push({ user: currentUser, text: clean, timestamp: new Date().toISOString() });
+
+  const updatedTask = { ...task, notesList, notes: '' };
+  try {
+    await setDoc(doc(db, "tasks", taskId), updatedTask);
+    Object.assign(task, updatedTask);
+    logActivity(`added a note to Task ${task.id}: "${clean}"`, db);
+    renderTaskNotes(task, 'task-notes-feed', false);
+    refreshViews();
+  } catch (err) {
+    console.error(`Failed to add note to task ${taskId}:`, err);
+    showToast('Failed to save note — check your connection and try again' + errSuffix(err), 'error');
+  }
+}
+
+async function deleteTaskNote(taskId, index) {
+  const task = state.tasks.find(t => t.id === taskId);
+  if (!task || !Array.isArray(task.notesList) || !task.notesList[index]) return;
+
+  const currentUser = localStorage.getItem('hc_logged_in_user') || '';
+  const note = task.notesList[index];
+  if (!(canCurrentUserManageTasks() || note.user === currentUser)) {
+    showToast('You can only delete your own notes', 'error');
+    return;
+  }
+  if (!confirm('Delete this note?')) return;
+
+  const notesList = task.notesList.filter((_, i) => i !== index);
+  const updatedTask = { ...task, notesList };
+  try {
+    await setDoc(doc(db, "tasks", taskId), updatedTask);
+    Object.assign(task, updatedTask);
+    logActivity(`deleted a note from Task ${task.id}`, db);
+    renderTaskNotes(task, 'task-notes-feed', false);
+    refreshViews();
+  } catch (err) {
+    console.error(`Failed to delete note from task ${taskId}:`, err);
+    showToast('Failed to delete note — check your connection and try again' + errSuffix(err), 'error');
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   READ-ONLY TASK DETAIL VIEW  — opened by clicking a task row. Shows every
+   field at a glance with a one-click copy for the delivery link, so there's
+   no need to open Edit just to read or grab a link.
+--------------------------------------------------------------------------- */
+let taskViewModalTask = null;
+
+function openTaskViewModal(task) {
+  if (!task) return;
+  taskViewModalTask = task;
+  const overlay = document.getElementById('task-view-modal');
+  const body = document.getElementById('task-view-modal-body');
+  const titleEl = document.getElementById('task-view-modal-title');
+  const editBtn = document.getElementById('task-view-modal-edit-btn');
+  if (!overlay || !body) return;
+
+  if (titleEl) titleEl.textContent = `Task ${task.id}`;
+
+  const creativePerson = findTeamMember(task.designer);
+  const creativeName = creativePerson ? creativePerson.name : (task.designer || 'Unassigned');
+  const assignerPerson = findTeamMember(task.assignedBy);
+  const assignerName = assignerPerson ? assignerPerson.name : (task.assignedBy || 'Unassigned');
+  const brandName = taskBrandName(task) || '—';
+  const jobType = task.taskType === 'post' ? 'Social Media Post Deliverable' : 'General Design Task';
+  const rawLink = (task.deliveryLink || '').trim();
+  let linkUrl = rawLink;
+  if (rawLink && !/^https?:\/\//.test(rawLink)) {
+    linkUrl = `https://drive.google.com/drive/search?q=${encodeURIComponent(rawLink)}`;
+  }
+
+  let postedLine = '—';
+  if (task.taskType === 'post') {
+    const st = getTaskPostedState(task);
+    postedLine = st === 'posted' ? 'Posted' : st === 'partial' ? 'Partially posted' : 'Not posted';
+  }
+
+  const row = (label, valueHtml) => `
+    <div class="task-view-row">
+      <div class="task-view-label">${escHtml(label)}</div>
+      <div class="task-view-value">${valueHtml}</div>
+    </div>`;
+
+  const linkHtml = rawLink
+    ? `<span class="task-view-link-text">${escHtml(rawLink)}</span>
+       <button type="button" class="btn-secondary task-view-copy-btn" id="task-view-copy-btn" data-link="${escHtml(rawLink)}">Copy</button>
+       <a href="${escHtml(linkUrl)}" target="_blank" rel="noopener noreferrer" class="btn-secondary">Open</a>`
+    : '<span style="color:#64748b;">No link</span>';
+
+  body.innerHTML = `
+    ${row('Task Name / Description', `<strong style="color:#fff;">${escHtml(task.name)}</strong>`)}
+    ${row('Job Type', escHtml(jobType))}
+    ${row('For Brand', escHtml(brandName))}
+    ${row('Assigned Creative', escHtml(creativeName))}
+    ${row('Assigned By', escHtml(assignerName))}
+    ${row('Date / Time', `${escHtml(formatCardDate(task.date))} ${escHtml(task.time || '')}`)}
+    ${row('Need Within', escHtml(task.urgency || 'N/A'))}
+    ${row('Status', `<span class="task-status-badge ${task.status.toLowerCase().replace(' ', '-')}">${escHtml(task.status)}</span>`)}
+    ${row('Delivery Link', `<div class="task-view-link-wrap">${linkHtml}</div>`)}
+    ${row('Posted', escHtml(postedLine))}
+    <div class="task-view-row">
+      <div class="task-view-label">Notes</div>
+      <div class="task-view-value"><div id="task-view-notes-feed" class="modal-comments-feed task-notes-feed"></div></div>
+    </div>
+  `;
+
+  renderTaskNotes(task, 'task-view-notes-feed', true);
+
+  const copyBtn = document.getElementById('task-view-copy-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(copyBtn.dataset.link);
+        showToast('Delivery link copied', 'success');
+      } catch (e) {
+        showToast('Could not copy — select the text manually', 'error');
+      }
+    });
+  }
+
+  if (editBtn) {
+    editBtn.style.display = canCurrentUserManageTasks() ? '' : 'none';
+  }
+
+  overlay.classList.add('active');
+}
+
+function closeTaskViewModal() {
+  const overlay = document.getElementById('task-view-modal');
+  if (overlay) overlay.classList.remove('active');
+  taskViewModalTask = null;
+}
+
 function openTaskModal(task = null) {
   const currentUser = localStorage.getItem('hc_logged_in_user');
 
@@ -8884,6 +9229,17 @@ function openTaskModal(task = null) {
       (state.brands || []).map(b => `<option value="${b.id}">${b.name}</option>`).join('');
     brandSelect.value = (task && task.brandId) ? task.brandId : '';
   }
+
+  // Per-task Notes. Existing tasks show their running note log; a brand-new
+  // task has nothing to attach notes to yet, so the whole group is hidden
+  // until the task is saved. The composer is limited to signed-in users.
+  const notesGroup = document.getElementById('task-notes-group');
+  const notesComposer = document.getElementById('task-notes-composer');
+  const noteInput = document.getElementById('task-note-input');
+  if (noteInput) noteInput.value = '';
+  if (notesGroup) notesGroup.style.display = task ? '' : 'none';
+  if (notesComposer) notesComposer.style.display = (task && currentUser) ? 'flex' : 'none';
+  if (task) renderTaskNotes(task, 'task-notes-feed', !currentUser);
 
   overlay.classList.add('active');
 }

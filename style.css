@@ -522,6 +522,25 @@ th.sortable-th.active-sort .sort-icon {
   margin-bottom: 40px;
 }
 
+/* Row of dashboard status pills (onboarding / leave / priority board) that
+   sits above the card grid. They're toggled individually by JS; keep them
+   on one wrapping row with even spacing, and only reserve the gap below the
+   row when at least one pill is actually visible. */
+.dashboard-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboard-badges > span {
+  margin: 0;
+}
+
+.dashboard-badges:has(> span:not([style*="none"])) {
+  margin-bottom: 24px;
+}
+
 .brand-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -1999,6 +2018,44 @@ textarea.form-control {
 
 .tasks-table tr:hover {
   background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* --- Frozen header row (Google Sheets "freeze panes") ---------------------
+   Every .tasks-table sits inside a .tasks-table-container that scrolls
+   vertically (its own max-height box, or one we add below for the two views
+   that lacked one). Making the header cells sticky pins them to the top of
+   that scroll box on both desktop and mobile. The background must be fully
+   opaque so body rows don't bleed through as they slide underneath. */
+.tasks-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--bg-surface-solid);
+}
+
+body.minimal-theme .tasks-table thead th {
+  background: #1a0a0f !important;
+}
+
+/* Scroll containers carry 24dp of top padding for breathing room. That
+   padding sits *above* the sticky header and doesn't scroll, so body rows
+   would show through it as they slide under the frozen header. Drop the top
+   padding on the containers that hold a data table directly — the header
+   cells' own 16px padding keeps the labels off the card edge. */
+.tasks-table-container:has(> table.tasks-table),
+#tasks-view .tasks-table-container,
+#team-view .tasks-table-container {
+  padding-top: 0;
+}
+
+/* Task Tracker and People & Roles had no scroll box of their own (they
+   scrolled with the page), so their header had nothing to stick to. Give
+   them the same internal-scroll treatment as Onboarding / Log Report /
+   Content Links so the frozen header behaves identically everywhere. */
+#tasks-view .tasks-table-container,
+#team-view .tasks-table-container {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
 }
 
 .post-card.flash-outline-kanban {
@@ -3959,4 +4016,103 @@ table.leave-grid th.lv-total-head {
     padding-top: 8px;
     padding-bottom: 8px;
   }
+}
+
+/* ===========================================================================
+   Task Tracker — For Brand column, Pin control, per-task Notes, detail view
+   =========================================================================== */
+
+.task-brand-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+/* Rows are clickable to open the read-only detail view */
+.tasks-table tr.task-row-clickable { cursor: pointer; }
+.tasks-table tr.task-row-clickable:hover { background: rgba(255, 255, 255, 0.03); }
+
+.tasks-table tr.task-row-pinned {
+  background: rgba(245, 158, 11, 0.06);
+  box-shadow: inset 3px 0 0 var(--honey-gold);
+}
+.tasks-table tr.task-row-pinned:hover { background: rgba(245, 158, 11, 0.1); }
+
+.task-pin-dot { font-size: 0.8rem; }
+
+.btn-icon.task-pin-btn.is-pinned {
+  color: var(--honey-gold);
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Per-task Notes composer inside the task modal */
+.task-notes-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding-right: 4px;
+}
+
+.task-notes-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+.task-notes-composer textarea { resize: vertical; min-height: 44px; }
+.task-notes-composer .btn-secondary { align-self: flex-end; }
+
+.task-note-del-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  margin-left: 8px;
+  padding: 0 4px;
+}
+.task-note-del-btn:hover { color: var(--status-critical, #ef4444); }
+
+/* Read-only task detail view */
+.task-view-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.85rem;
+}
+.task-view-row:last-child { border-bottom: none; }
+.task-view-label { color: #94a3b8; font-weight: 600; }
+.task-view-value { color: #e2e8f0; word-break: break-word; }
+
+.task-view-link-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.task-view-link-text {
+  color: #cbd5e1;
+  word-break: break-all;
+  flex: 1 1 180px;
+}
+.task-view-link-wrap .btn-secondary {
+  padding: 4px 12px;
+  font-size: 0.78rem;
+}
+
+@media (max-width: 560px) {
+  .task-view-row { grid-template-columns: 1fr; gap: 4px; }
 }

@@ -1,0 +1,4 @@
+# Internal HoneyComb Inc. tool — not for public indexing.
+# Covers planner.rifatnewajrazin.com and honeycomb-content-planner.vercel.app.
+User-agent: *
+Disallow: /

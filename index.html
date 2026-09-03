@@ -321,7 +321,38 @@
 
           <!-- Tasks Table/List Area -->
           <div class="tasks-table-container" style="display: flex; flex-direction: column; gap: 32px;">
-            
+
+            <!-- Section 0: Pinned (merged group above every other section) -->
+            <div class="tasks-section-block" id="tasks-section-pinned" style="display: none;">
+              <div class="tasks-section-header" style="border-bottom: 1px solid rgba(245, 158, 11, 0.18);">
+                <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.12); color: var(--honey-gold); flex-shrink: 0;">
+                  <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5;"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
+                </span>
+                <h3 style="color: var(--honey-gold); font-size: 1.1rem; font-weight: 600; margin: 0;">Pinned</h3>
+                <span class="column-count" id="pinned-tasks-count" style="background: rgba(245, 158, 11, 0.15); color: var(--honey-gold); padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; line-height: 1.4;">0</span>
+              </div>
+              <table class="tasks-table">
+                <thead>
+                  <tr>
+                    <th style="white-space: nowrap; width: 60px;">ID</th>
+                    <th>Task Name / Description</th>
+                    <th>Creative</th>
+                    <th>Assigned By</th>
+                    <th>For Brand</th>
+                    <th>Date / Time</th>
+                    <th>Need Within</th>
+                    <th>Status</th>
+                    <th>Links</th>
+                    <th style="white-space: nowrap;">Posted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-list-body-pinned">
+                  <!-- Dynamically Rendered Pinned Tasks -->
+                </tbody>
+              </table>
+            </div>
+
             <!-- Section 1: Social Media Posts -->
             <div class="tasks-section-block">
               <div class="tasks-section-header" style="border-bottom: 1px solid rgba(245, 158, 11, 0.18);">
@@ -342,6 +373,7 @@
                     <th class="sortable-th" data-sort="name">Task Name / Description <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="designer">Creative <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="assignedBy">Assigned By <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="brand">For Brand <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="date">Date / Time <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="urgency">Need Within <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="status">Status <span class="sort-icon">↕</span></th>
@@ -378,6 +410,7 @@
                     <th class="sortable-th" data-sort="name">Task Name / Description <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="designer">Creative <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="assignedBy">Assigned By <span class="sort-icon">↕</span></th>
+                    <th class="sortable-th" data-sort="brand">For Brand <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="date">Date / Time <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="urgency">Need Within <span class="sort-icon">↕</span></th>
                     <th class="sortable-th" data-sort="status">Status <span class="sort-icon">↕</span></th>
@@ -1253,6 +1286,15 @@
               <label for="task-form-comments">Comments (Legacy)</label>
               <textarea id="task-form-comments" class="form-control"></textarea>
             </div>
+
+            <div class="form-group" id="task-notes-group">
+              <label>Notes</label>
+              <div id="task-notes-feed" class="modal-comments-feed task-notes-feed"></div>
+              <div id="task-notes-composer" class="task-notes-composer">
+                <textarea id="task-note-input" class="form-control" rows="2" placeholder="Add a note for this task…"></textarea>
+                <button type="button" class="btn-secondary" id="task-note-add-btn">Add Note</button>
+              </div>
+            </div>
           </div>
 
           <div class="modal-footer">
@@ -1261,6 +1303,26 @@
             <button type="submit" class="btn-primary">Save Task</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Read-only Task detail view (opened by clicking a task row) -->
+    <div id="task-view-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="task-view-modal-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="task-view-modal-title">Task Details</h3>
+          <button class="close-btn" id="task-view-modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" id="task-view-modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary modal-cancel" id="task-view-modal-cancel-btn">Close</button>
+          <button type="button" class="btn-primary" id="task-view-modal-edit-btn">Edit Task</button>
+        </div>
       </div>
     </div>
 
