@@ -4113,45 +4113,82 @@ table.leave-grid th.lv-total-head {
 
 html { scroll-behavior: smooth; }
 
-/* Fit the table to the card instead of riding a 900px floor, and stop the
-   container from ever scrolling sideways. */
-#tasks-view .tasks-table { min-width: 0; }
-#tasks-view .tasks-table-container { overflow-x: hidden; }
+/* Fixed layout + width:100% means the table is always exactly the card width
+   — never wider (no sideways scroll) and never leaving a dead gap after a
+   short cell. Every column gets a fair proportional share instead of Task
+   Name hoarding the slack. */
+#tasks-view .tasks-table {
+  min-width: 0;
+  width: 100%;
+  table-layout: fixed;
+  /* Chrome renders body rows *over* a sticky <th> when the table uses
+     border-collapse: collapse — separate borders make the frozen header
+     reliably paint on top. */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* No internal scroll box on the Task Tracker: the page scrolls, and the
+   header freezes against the viewport (see the sticky block further down).
+   An overflow other than visible here would trap the sticky header. */
+#tasks-view .tasks-table-container {
+  max-height: none;
+  overflow: visible;
+}
 
 /* Tighter cells across the Task Tracker only */
 #tasks-view .tasks-table th,
 #tasks-view .tasks-table td {
-  padding: 9px 10px;
+  padding: 10px 12px;
   font-size: 0.78rem;
+  vertical-align: middle;
 }
 #tasks-view .tasks-table th {
   font-size: 0.62rem;
-  padding-top: 11px;
-  padding-bottom: 11px;
+  padding-top: 12px;
+  padding-bottom: 12px;
   letter-spacing: 0.4px;
 }
+#tasks-view .tasks-table td { overflow: hidden; text-overflow: ellipsis; }
 
-/* Column budget. Columns 1-9 are identical in all three tables; Task Name
-   soaks up whatever is left. Names / brand / date / need-within wrap. */
+/* Proportional column budget — columns 1-9 are identical in all three
+   tables; 10/11 (Posted / Actions, or just Actions) share the remainder. */
 #tasks-view .tasks-table th:nth-child(1),
-#tasks-view .tasks-table td:nth-child(1) { width: 42px; }                        /* ID */
-#tasks-view .tasks-table td:nth-child(2) { white-space: normal; min-width: 150px; } /* Task Name */
+#tasks-view .tasks-table td:nth-child(1) { width: 4%; }                          /* ID */
+#tasks-view .tasks-table th:nth-child(2),
+#tasks-view .tasks-table td:nth-child(2) { width: 21%; white-space: normal; }    /* Task Name */
 #tasks-view .tasks-table th:nth-child(3),
 #tasks-view .tasks-table td:nth-child(3),
 #tasks-view .tasks-table th:nth-child(4),
-#tasks-view .tasks-table td:nth-child(4) { width: 96px; white-space: normal; }   /* Creative / Assigned By */
+#tasks-view .tasks-table td:nth-child(4) { width: 12%; white-space: normal; }    /* Creative / Assigned By */
 #tasks-view .tasks-table th:nth-child(5),
-#tasks-view .tasks-table td:nth-child(5) { width: 58px; }                        /* For Brand */
+#tasks-view .tasks-table td:nth-child(5) { width: 7%; }                          /* For Brand */
 #tasks-view .tasks-table th:nth-child(6),
-#tasks-view .tasks-table td:nth-child(6) { width: 66px; white-space: normal; }   /* Date / Time */
+#tasks-view .tasks-table td:nth-child(6) { width: 8%; white-space: normal; }     /* Date / Time */
 #tasks-view .tasks-table th:nth-child(7),
-#tasks-view .tasks-table td:nth-child(7) { width: 62px; white-space: normal; }   /* Need Within */
+#tasks-view .tasks-table td:nth-child(7) { width: 7%; white-space: normal; }     /* Need Within */
 #tasks-view .tasks-table th:nth-child(8),
-#tasks-view .tasks-table td:nth-child(8) { width: 84px; }                        /* Status */
+#tasks-view .tasks-table td:nth-child(8) { width: 10%; }                         /* Status */
 #tasks-view .tasks-table th:nth-child(9),
-#tasks-view .tasks-table td:nth-child(9) { width: 40px; }                        /* Links */
+#tasks-view .tasks-table td:nth-child(9) { width: 4%; }                          /* Links */
 #tasks-view .tasks-table th:last-child,
-#tasks-view .tasks-table td:last-child { width: 78px; }                          /* Actions */
+#tasks-view .tasks-table td:last-child { width: 8%; }                            /* Actions */
+
+/* Frozen header for the Task Tracker. The page's own title bar (.header) is
+   sticky, 80px tall, z-index 5 — so the table header must park *below* it
+   (top: 80px) and *under* it (z-index 4) or it tucks behind the translucent
+   title and rows bleed through, which is the collision the old rule caused.
+   The Pinned group's header stays static — it's only a row or two and two
+   floating headers fighting for top:0 was half the problem. */
+#tasks-view .tasks-table thead th {
+  top: 80px;
+  z-index: 4;
+  box-shadow: inset 0 -1px 0 var(--border-color), 0 10px 16px -10px rgba(0, 0, 0, 0.75);
+}
+#tasks-section-pinned .tasks-table thead th {
+  position: static;
+  box-shadow: inset 0 -1px 0 var(--border-color);
+}
 
 /* Smaller inline avatars in the Creative / Assigned By cells */
 #tasks-view .tasks-table td:nth-child(3) img,
@@ -4235,10 +4272,13 @@ html { scroll-behavior: smooth; }
   }
 }
 
-/* On phones the tracker can still scroll sideways rather than crush columns */
-@media (max-width: 720px) {
-  #tasks-view .tasks-table { min-width: 720px; }
-  #tasks-view .tasks-table-container { overflow-x: auto; }
+/* On phones, 11 fixed columns would be unreadable — fall back to a natural
+   layout that scrolls sideways within its card (the frozen header is a
+   desktop nicety and can lapse here). */
+@media (max-width: 900px) {
+  #tasks-view .tasks-table { table-layout: auto; min-width: 840px; }
+  #tasks-view .tasks-table-container { overflow-x: auto; overflow-y: visible; }
+  #tasks-view .tasks-table thead th { position: static; top: 0; box-shadow: inset 0 -1px 0 var(--border-color); }
 }
 
 /* Pinned group easing in when it first appears */
@@ -4251,7 +4291,6 @@ html { scroll-behavior: smooth; }
   transform-origin: top center;
 }
 
-/* Rows being FLIP-animated shouldn't be clipped by the container as they
-   travel between the Pinned group and the list below. */
-#tasks-view .tasks-table-container { overflow-y: auto; }
-#tasks-view .tasks-table tr { will-change: transform; }
+/* (no persistent will-change on rows — it promotes every row to its own
+   layer and lets them paint over the sticky header; WAAPI handles the
+   compositing during the pin FLIP on its own.) */
