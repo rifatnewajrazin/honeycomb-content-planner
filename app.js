@@ -16,6 +16,12 @@ let supabase = null;
 let db = null;
 
 async function initSupabase() {
+  // Idempotent: the boot sequence calls this once before the session check
+  // and again inside runAppInit(). A second createClient() spins up a second
+  // GoTrue auth client on the same storage key ("Multiple GoTrueClient
+  // instances detected" console warning, and undefined behaviour if both
+  // touch the session concurrently), so bail once the client exists.
+  if (supabase) return;
   try {
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -480,7 +486,20 @@ const EMPLOYEE_FIELD_DEFS = [
 // some steps also carry an optional Google Drive link.
 const DELIVERABLE_DEFS = [
   {
-    key: 'idCard', label: 'ID Card',
+    key: 'idCard', label: 'Honeycomb ID Card',
+    steps: [
+      { key: 'name',       label: 'Name',                 auto: r => !!empVal(r.fullName) },
+      { key: 'phone',      label: 'Phone Number',         auto: r => !!empVal(r.phone) },
+      { key: 'email',      label: 'Email Address',        auto: r => !!empVal(r.personalEmail) },
+      { key: 'dob',        label: 'Date of Birth',        auto: r => !!empVal(r.dob) },
+      { key: 'bloodGroup', label: 'Blood Group',          auto: r => !!empVal(r.bloodGroup) },
+      { key: 'photo',      label: 'Formal/Casual Photo',   link: true }
+    ]
+  },
+  {
+    // Some employees also carry a Tahams-branded ID card. Same checklist as
+    // the Honeycomb card; mark its steps N/A on employees who don't need one.
+    key: 'idCardTahams', label: 'Tahams ID Card',
     steps: [
       { key: 'name',       label: 'Name',                 auto: r => !!empVal(r.fullName) },
       { key: 'phone',      label: 'Phone Number',         auto: r => !!empVal(r.phone) },
@@ -2579,20 +2598,6 @@ function renderUserProfile() {
     }
   }
 
-  // Toggle Publishing Queue (Kanban) link in sidebar (Restricted to Admins & Social Media Manager)
-  const kanbanLink = document.getElementById('nav-kanban-link');
-  if (kanbanLink) {
-    const isQueueAuthorized = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
-    if (isQueueAuthorized) {
-      kanbanLink.style.display = 'flex';
-    } else {
-      kanbanLink.style.display = 'none';
-      if (state.currentView === 'kanban') {
-        switchView('dashboard');
-      }
-    }
-  }
-
   // Toggle Priority Board link in sidebar (Restricted to canAccessPriorityBoard accounts)
   const priorityBoardLink = document.getElementById('nav-priority-board-link');
   if (priorityBoardLink) {
@@ -2650,9 +2655,9 @@ function renderUserProfile() {
   // to just the Priority Board plus People & Roles — they don't get Task
   // Tracker, Idea Board, Analytics, Calendar, Content Links, etc.
   const boardOnly = currentUser && isCurrentUserBoardOnly();
-  // Items already gated individually above (logs/kanban) keep whatever those
+  // Items already gated individually above (logs, etc.) keep whatever those
   // gates decided; People & Roles stays visible for board-only accounts too.
-  const individuallyGatedIds = ['nav-logs-link', 'nav-kanban-link', 'nav-priority-board-link', 'nav-employee-db-link', 'nav-onboarding-link', 'nav-leave-link'];
+  const individuallyGatedIds = ['nav-logs-link', 'nav-priority-board-link', 'nav-employee-db-link', 'nav-onboarding-link', 'nav-leave-link'];
   document.querySelectorAll('.nav-item').forEach(item => {
     if (individuallyGatedIds.includes(item.id)) return;
     if (boardOnly && item.getAttribute('data-view') === 'team') {
@@ -3615,16 +3620,6 @@ function handleCSVImport(e) {
     }
   };
   reader.readAsText(file);
-}
-
-function renderUnscheduledIdeas() {
-  const container = document.getElementById('unscheduled-ideas-list');
-  if (!container) return;
-  container.innerHTML = '<div style="color: #a89297; font-style: italic; text-align: center; margin-top: 40px;">No unscheduled items.</div>';
-}
-
-async function convertIdeaToPost(ideaId, kanbanStatus) {
-  return;
 }
 
 // Navigation & Event Listeners
@@ -5011,7 +5006,7 @@ function renderOnboarding() {
   const tbody = document.getElementById('onboarding-list-body');
   if (!tbody) return;
   if (!canCurrentUserAccessOnboarding()) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:32px; color:#64748b;">Access denied.</td></tr>';
     return;
   }
 
@@ -5035,7 +5030,7 @@ function renderOnboarding() {
 
   if (!rows.length) {
     const msg = all.length === 0 ? 'No employees yet — add them in the Employee Database.' : 'No employees match the current filters.';
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">${msg}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:32px; color:#64748b;">${msg}</td></tr>`;
     return;
   }
 
@@ -7123,7 +7118,7 @@ function switchView(viewName) {
     team: ['People & Roles', 'Team roster, roles, and login permissions'],
     logs: ['System Log Report', 'Audit trail of all actions and state updates (Admin Only)'],
     'employee-database': ['Employee Database', 'HR directory — employee records, contact details, and seating (HR & Admins only)'],
-    'onboarding': ['Onboarding', 'Formal deliverables for every employee — ID Card, Mug, Bank Account'],
+    'onboarding': ['Onboarding', 'Formal deliverables for every employee — ID Cards, Mug, Bank Account, Royalty Card'],
     'leave': ['Leave', 'Vacation, sickness and work-from-home days, entitlements and balances (HR & Admins only)']
   };
   const headerTitleEl = document.querySelector('.header-title');
@@ -7159,11 +7154,6 @@ function switchView(viewName) {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
-  }
-
-  const toggleIdeasBtn = document.getElementById('toggle-ideas-btn');
-  if (toggleIdeasBtn) {
-    toggleIdeasBtn.style.display = viewName === 'kanban' ? 'flex' : 'none';
   }
 
   // Trigger view renderers
@@ -7211,9 +7201,8 @@ function initFilterDropdowns() {
 }
 
 // Renderer for whichever view is actually on screen. refreshViews() used to
-// unconditionally re-render all 11 views (plus two that no longer exist in
-// the nav at all — renderKanban/renderAnalytics, dead since the kanban/
-// analytics/ideas views were folded into the dashboard) on every single
+// unconditionally re-render every view (including the since-removed kanban/
+// analytics/ideas views, folded into the dashboard) on every single
 // realtime data event, i.e. up to ~13 full innerHTML table/card rebuilds
 // for views nobody is even looking at. switchView() already does a fresh
 // render of a view the moment someone navigates to it, so re-rendering the
@@ -7676,169 +7665,6 @@ function renderDashboard() {
   }
 }
 
-// Render Kanban Board View
-function renderKanban() {
-  const columns = ['ideation', 'development', 'ready', 'scheduled', 'published'];
-  
-  columns.forEach(col => {
-    const colArea = document.querySelector(`.column-cards-area[data-status="${col}"]`);
-    if (!colArea) return;
-    colArea.innerHTML = '';
-
-    let colPosts = state.posts.filter(p => p.status === col && !isItemArchived(p));
-    if (state.selectedBrandFilter !== 'all') {
-      colPosts = colPosts.filter(p => p.brandId === state.selectedBrandFilter);
-    }
-
-    let colTasks = state.tasks.filter(t => {
-      let colStatus = '';
-      if (t.status === 'Not Started') colStatus = 'ideation';
-      else if (t.status === 'On Progress') colStatus = 'development';
-      else if (t.status === 'Delayed') colStatus = 'ready';
-      else if (t.status === 'Finished') colStatus = 'published';
-      return colStatus === col && t.taskType !== 'post' && !isItemArchived(t); // Hide duplicate social media post tasks from kanban to avoid redundancy
-    });
-
-    if (state.selectedBrandFilter !== 'all') {
-      const selectedBrand = state.brands.find(b => b.id === state.selectedBrandFilter);
-      if (selectedBrand) {
-        const brandNameLower = selectedBrand.name.toLowerCase();
-        colTasks = colTasks.filter(t => 
-          t.name.toLowerCase().includes(brandNameLower) || 
-          (t.comments || '').toLowerCase().includes(brandNameLower)
-        );
-      }
-    }
-
-    // Update count indicator
-    const kanbanCol = (colArea && colArea.closest) ? colArea.closest('.kanban-column') : null;
-    const countBadge = kanbanCol ? kanbanCol.querySelector('.column-count') : null;
-    if (countBadge) {
-      countBadge.textContent = colPosts.length + colTasks.length;
-    }
-
-    // Render Posts
-    colPosts.forEach(post => {
-      const brand = state.brands.find(b => b.id === post.brandId);
-      if (!brand) return;
-
-      const card = document.createElement('div');
-      card.className = post.status === 'correction' ? 'post-card correction' : 'post-card';
-      card.setAttribute('draggable', 'true');
-      card.setAttribute('data-id', post.id);
-      card.style.setProperty('--brand-grad', brand.grad);
-      card.style.setProperty('--brand-color', brand.color);
-      card.style.setProperty('--brand-glow', brand.glow);
-
-      const platformBadgesHtml = (post.platforms || []).map(p => {
-        const platformIcon = getPlatformIcon(p);
-        return `
-          <span class="card-platform-badge" title="${p.toUpperCase()}">
-            ${platformIcon}
-          </span>
-        `;
-      }).join('');
-      
-      const isOverdue = post.status !== 'published' && new Date(post.date + 'T00:00:00') < new Date('2026-07-05T00:00:00');
-      const dateClass = isOverdue ? 'card-due-date overdue' : 'card-due-date';
-      const assigneeInitials = getAssigneeInitials(post.assignee);
-
-      card.innerHTML = `
-        <div class="card-top">
-          <span class="card-brand-tag">
-            ${brand.logo ? `<img src="${brand.logo}" class="card-brand-logo" alt="">` : ''}
-            <span>${brand.name}</span>
-          </span>
-          <div style="display: flex; gap: 6px; align-items: center">
-            ${platformBadgesHtml}
-          </div>
-        </div>
-        <div class="card-title">${post.title}</div>
-        <div class="card-meta">
-          <div class="card-assignee">
-            ${(findTeamMember(post.assignee) || {}).photo 
-              ? `<img src="${(findTeamMember(post.assignee) || {}).photo}" class="card-assignee-avatar-img" title="${post.assignee}">`
-              : `<div class="card-assignee-avatar" title="${post.assignee}">${assigneeInitials}</div>`}
-            <span>${post.assignee.split(' ')[0]}</span>
-          </div>
-          <div class="${dateClass}">
-            <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
-            <span>${formatCardDate(post.date)}</span>
-          </div>
-        </div>
-      `;
-
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.card-assignee-avatar')) return;
-        openPostModal(post);
-      });
-
-      card.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', post.id);
-        card.style.opacity = '0.5';
-      });
-
-      card.addEventListener('dragend', () => {
-        card.style.opacity = '1';
-      });
-
-      colArea.appendChild(card);
-    });
-
-    // Render Tasks
-    colTasks.forEach(task => {
-      const card = document.createElement('div');
-      card.className = 'post-card task-card';
-      card.setAttribute('draggable', 'true');
-      card.setAttribute('data-id', task.id);
-      card.style.borderLeft = '4px solid #8b5cf6';
-      
-      const designerPerson = findTeamMember(task.designer);
-      const designerName = designerPerson ? designerPerson.name : (task.designer || '');
-      const designerAvatar = designerPerson && designerPerson.photo 
-        ? `<img src="${designerPerson.photo}" class="card-assignee-avatar-img" title="${designerName}">`
-        : (task.designer
-            ? `<div class="card-assignee-avatar" style="background: #8b5cf6; color: #fff">${getAssigneeInitials(task.designer)}</div>`
-            : `<div class="card-assignee-avatar" style="background: rgba(255,255,255,0.05); color: #64748b">?</div>`);
-
-      card.innerHTML = `
-        <div class="card-top">
-          <span class="card-brand-tag" style="background: rgba(139, 92, 246, 0.1); color: #c084fc">
-            <svg viewBox="0 0 24 24" style="width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:2.5; margin-right:4px;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-            <span>Design Task (${task.id})</span>
-          </span>
-        </div>
-        <div class="card-title">${task.name}</div>
-        <div class="card-meta">
-          <div class="card-assignee">
-            ${designerAvatar}
-            <span>${(designerName || '').split(' ')[0]}</span>
-          </div>
-          <div class="card-due-date">
-            <svg viewBox="0 0 24 24"><path d="M19 4H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/></svg>
-            <span>${formatCardDate(task.date)}</span>
-          </div>
-        </div>
-      `;
-
-      card.addEventListener('click', (e) => {
-        openTaskModal(task);
-      });
-
-      card.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', task.id);
-        card.style.opacity = '0.5';
-      });
-
-      card.addEventListener('dragend', () => {
-        card.style.opacity = '1';
-      });
-
-      colArea.appendChild(card);
-    });
-  });
-}
-
 function normalizeDateString(dStr) {
   if (!dStr) return '';
   dStr = dStr.trim();
@@ -7987,143 +7813,6 @@ function renderCalendar() {
     dayCell.className = 'calendar-day-cell other-month';
     dayCell.innerHTML = `<span class="calendar-day-num">${i}</span>`;
     calDaysArea.appendChild(dayCell);
-  }
-}
-
-// Render Analytics View
-function renderAnalytics() {
-  const totalPostsEl = document.getElementById('stat-total-posts');
-  const publishedPostsEl = document.getElementById('stat-published-posts');
-  const completionRateEl = document.getElementById('stat-completion-rate');
-  
-  if (!totalPostsEl) return;
-
-  // Filter calculations based on global filter
-  let analyticsPosts = state.posts;
-  if (state.selectedBrandFilter !== 'all') {
-    analyticsPosts = analyticsPosts.filter(p => p.brandId === state.selectedBrandFilter);
-  }
-
-  const totalCount = analyticsPosts.length;
-  const publishedCount = analyticsPosts.filter(p => p.status === 'published').length;
-  const completionRate = totalCount > 0 ? Math.round((publishedCount / totalCount) * 100) : 0;
-
-  // Update top metrics
-  totalPostsEl.textContent = totalCount;
-  publishedPostsEl.textContent = publishedCount;
-  completionRateEl.textContent = `${completionRate}%`;
-
-  // Render Chart (Bar chart by Brand/Subsection)
-  const chartContainer = document.getElementById('analytics-chart');
-  const legendList = document.getElementById('analytics-legend');
-  if (!chartContainer || !legendList) return;
-
-  chartContainer.innerHTML = '';
-  legendList.innerHTML = '';
-
-  state.brands.forEach(brand => {
-    const brandPosts = state.posts.filter(p => p.brandId === brand.id);
-    const publishedBrandCount = brandPosts.filter(p => p.status === 'published').length;
-    
-    // Scale height based on posts (assume max 10 posts for layout scale)
-    const maxScale = Math.max(...state.brands.map(b => state.posts.filter(p => p.brandId === b.id && p.status === 'published').length), 1);
-    const pctHeight = Math.round((publishedBrandCount / maxScale) * 80); // scale up to 80% of area
-
-    // Create Bar
-    const barWrap = document.createElement('div');
-    barWrap.className = 'chart-bar-wrap';
-    barWrap.innerHTML = `
-      <div class="chart-bar-fill" data-value="${publishedBrandCount}" style="height: ${pctHeight}%; background: ${brand.grad}"></div>
-      <div class="chart-bar-label">${brand.name}</div>
-    `;
-    chartContainer.appendChild(barWrap);
-
-    // Create Legend Item
-    const legendItem = document.createElement('div');
-    legendItem.className = 'legend-item';
-    legendItem.innerHTML = `
-      <div class="legend-info">
-        <div class="legend-color" style="background: ${brand.grad}"></div>
-        <span class="legend-name">${brand.name}</span>
-      </div>
-      <span class="legend-value">${publishedBrandCount} / ${brandPosts.length} published</span>
-    `;
-    legendList.appendChild(legendItem);
-  });
-
-  // 1. Creative Workload Stacked Chart
-  const workloadChart = document.getElementById('creative-workload-chart');
-  if (workloadChart) {
-    workloadChart.innerHTML = '';
-    const creatives = state.team.filter(p => p.isDesigner);
-    
-    let maxTasks = 1;
-    const creativeStats = creatives.map(c => {
-      const tasks = state.tasks.filter(t => t.designer === c.name || (c.aliases && c.aliases.includes(t.designer)));
-      const notStarted = tasks.filter(t => t.status === 'Not Started').length;
-      const onProgress = tasks.filter(t => t.status === 'On Progress').length;
-      const finished = tasks.filter(t => t.status === 'Finished').length;
-      const delayed = tasks.filter(t => t.status === 'Delayed').length;
-      const total = tasks.length;
-      if (total > maxTasks) maxTasks = total;
-      
-      return { c, notStarted, onProgress, finished, delayed, total };
-    });
-
-    creativeStats.forEach(stat => {
-      const nsPct = Math.round((stat.notStarted / maxTasks) * 100);
-      const opPct = Math.round((stat.onProgress / maxTasks) * 100);
-      const fPct = Math.round((stat.finished / maxTasks) * 100);
-      const dPct = Math.round((stat.delayed / maxTasks) * 100);
-      
-      const col = document.createElement('div');
-      col.className = 'workload-column';
-      col.innerHTML = `
-        <div class="workload-stack" title="${stat.c.name}: ${stat.total} Tasks (${stat.finished} Finished, ${stat.onProgress} In Progress, ${stat.notStarted} Not Started, ${stat.delayed} Delayed)">
-          <div class="workload-segment" style="height: ${nsPct}%; background: #64748b;"></div>
-          <div class="workload-segment" style="height: ${opPct}%; background: #f59e0b;"></div>
-          <div class="workload-segment" style="height: ${fPct}%; background: #10b981;"></div>
-          <div class="workload-segment" style="height: ${dPct}%; background: #ef4444;"></div>
-        </div>
-        <div class="workload-label" title="${stat.c.name}">${stat.c.name.split(' ')[0]}</div>
-      `;
-      workloadChart.appendChild(col);
-    });
-  }
-
-  // 2. Platform Breakdown Legend list
-  const platformList = document.getElementById('platform-breakdown-list');
-  if (platformList) {
-    platformList.innerHTML = '';
-    const counts = { facebook: 0, instagram: 0, youtube: 0, tiktok: 0 };
-    state.posts.forEach(p => {
-      if (p.platforms) {
-        p.platforms.forEach(plat => {
-          const lPlat = plat.toLowerCase();
-          if (counts[lPlat] !== undefined) counts[lPlat]++;
-        });
-      }
-    });
-
-    const platformsData = [
-      { id: 'facebook', name: 'Facebook', color: '#1877f2', count: counts.facebook },
-      { id: 'instagram', name: 'Instagram', color: '#e1306c', count: counts.instagram },
-      { id: 'youtube', name: 'YouTube', color: '#ff0000', count: counts.youtube },
-      { id: 'tiktok', name: 'TikTok', color: '#00f2fe', count: counts.tiktok }
-    ];
-
-    platformsData.forEach(p => {
-      const legendItem = document.createElement('div');
-      legendItem.className = 'legend-item';
-      legendItem.innerHTML = `
-        <div class="legend-info">
-          <div class="legend-color" style="background: ${p.color}; border-radius: 4px;"></div>
-          <span class="legend-name">${p.name}</span>
-        </div>
-        <span class="legend-value">${p.count} posts scheduled</span>
-      `;
-      platformList.appendChild(legendItem);
-    });
   }
 }
 
@@ -9812,29 +9501,6 @@ function updateModalDropdowns() {
   }
 }
 
-function navigateToKanbanCard(itemId) {
-  const currentUser = localStorage.getItem('hc_logged_in_user');
-  const person = findTeamMember(currentUser);
-  const canAccessQueue = currentUser && person && (person.access === 'admin' || (person.role && person.role.toLowerCase().includes('social media manager')));
-  
-  if (!canAccessQueue) {
-    showToast('Access Denied: Publishing Queue is restricted to Admins and Social Media Manager', 'error');
-    return;
-  }
-
-  switchView('kanban');
-  setTimeout(() => {
-    const cardEl = document.querySelector(`.post-card[data-id="${itemId}"]`);
-    if (cardEl) {
-      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      cardEl.classList.add('flash-outline-kanban');
-      setTimeout(() => {
-        cardEl.classList.remove('flash-outline-kanban');
-      }, 5000);
-    }
-  }, 350);
-}
-
 /* ==========================================================================
    CONTENT PLANNER (IDEAS) CORE LOGIC & CONTROLLERS
    ========================================================================== */
@@ -10899,41 +10565,6 @@ function updatePublishingQueueBadge() {
   } else {
     badge.style.display = 'none';
   }
-}
-
-function renderPublishingQueue() {
-  const list = document.getElementById('publishing-queue-list');
-  if (!list) return;
-
-  const pendingPublishing = state.tasks.filter(t => t.taskType === 'post' && t.status === 'Finished' && !isTaskFullyPosted(t));
-
-  if (pendingPublishing.length === 0) {
-    list.innerHTML = `<div style="padding: 20px; text-align: center; color: #64748b;">No pending posts to publish.</div>`;
-    return;
-  }
-
-  list.innerHTML = pendingPublishing.map(task => {
-    const postInfo = '';
-
-    return `
-      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-        <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">${task.name}</div>
-        <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 8px;">Delivery Link: <a href="${task.deliveryLink || '#'}" target="_blank" style="color: var(--honey-gold); text-decoration: none;">${task.deliveryLink ? 'Open Asset' : 'None'}</a></div>
-        ${postInfo}
-        <button class="mark-posted-btn" data-task-id="${task.id}" style="margin-top: 10px; width: 100%; background: var(--honey-gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer;">Mark as Posted</button>
-      </div>
-    `;
-  }).join('');
-
-  list.querySelectorAll('.mark-posted-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const taskId = e.currentTarget.getAttribute('data-task-id');
-      if (taskId) {
-        window.markTaskPosted(taskId);
-      }
-    });
-  });
 }
 
 window.markTaskPosted = async function(taskId) {
