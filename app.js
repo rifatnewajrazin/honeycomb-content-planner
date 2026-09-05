@@ -446,7 +446,7 @@ const EMPLOYEE_STATUSES = ['Active', 'Inactive'];
 // Field keys required when adding/editing an employee. Everything else is
 // optional for now (per HR — only the essentials are enforced).
 const EMPLOYEE_REQUIRED_FIELDS = [
-  'employeeId', 'fullName', 'designation', 'phone', 'personalEmail', 'dob', 'bloodGroup'
+  'employeeId', 'fullName', 'designation', 'phone', 'dob', 'bloodGroup'
 ];
 
 // Human-readable labels + CSV header names for every employee record field,
@@ -2489,6 +2489,32 @@ async function runAppInit() {
   }
 }
 
+// Swaps a broken avatar <img> (bad URL, or a share-page link that isn't a
+// direct image — see checkPersonPhotoPreview()) for the plain initials
+// avatar, instead of leaving a broken-image icon on screen. Takes the
+// initials/kind from data attributes and builds the replacement via the DOM
+// API (not an HTML string), so nothing in the photo URL or person's name can
+// break out of the onerror attribute it's called from.
+function handleAvatarImgError(imgEl) {
+  const initials = imgEl.dataset.initials || '?';
+  const kind = imgEl.dataset.avatarKind || 'team';
+  const div = document.createElement('div');
+  if (kind === 'user') {
+    div.className = 'user-avatar';
+    div.style.cssText = 'background: var(--honey-gold); color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-size: 1.1rem; border: 2px solid rgba(255, 255, 255, 0.1); box-shadow: var(--shadow-sm);';
+  } else {
+    div.className = 'team-avatar-initials';
+    div.style.cssText = 'background: rgba(245, 158, 11, 0.1); color: var(--honey-gold); border: 1px solid rgba(245, 158, 11, 0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;';
+  }
+  div.textContent = initials;
+  imgEl.replaceWith(div);
+}
+// app.js is a module script, so its top-level functions aren't on `window`
+// and an inline onerror="handleAvatarImgError(this)" attribute — which runs
+// in global scope — can't see it unless explicitly exposed, same as
+// markTaskPosted below.
+window.handleAvatarImgError = handleAvatarImgError;
+
 // Hides the initial-load overlay once real data is in. Guarded so it only
 // ever runs once (repeated onSnapshot events shouldn't re-trigger it).
 let appLoadingOverlayHidden = false;
@@ -2633,9 +2659,16 @@ function renderUserProfile() {
 
   if (currentUser && person) {
     const account = person;
-    const avatarHtml = account.photo 
-      ? `<img src="${account.photo}" class="user-avatar-img" alt="${currentUser}">`
-      : `<div class="user-avatar" style="background: var(--honey-gold); color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-size: 1.1rem; border: 2px solid rgba(255, 255, 255, 0.1); box-shadow: var(--shadow-sm);">${currentUser.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}</div>`;
+    const userInitials = currentUser.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const avatarHtml = account.photo
+      // A broken/unreachable photo URL (e.g. a share link that doesn't
+      // point at raw image bytes) used to just show a broken-image icon
+      // with no fallback — handleAvatarImgError() degrades it to the
+      // initials avatar instead. Built via a real function call (not an
+      // inline HTML string in the onerror attribute) so quoting in the
+      // fallback markup can't break out of the attribute.
+      ? `<img src="${escapeHtml(account.photo)}" class="user-avatar-img" alt="${escapeHtml(currentUser)}" data-initials="${escapeHtml(userInitials)}" data-avatar-kind="user" onerror="handleAvatarImgError(this)">`
+      : `<div class="user-avatar" style="background: var(--honey-gold); color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-size: 1.1rem; border: 2px solid rgba(255, 255, 255, 0.1); box-shadow: var(--shadow-sm);">${userInitials}</div>`;
        
     userSection.innerHTML = `
       <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
@@ -4010,6 +4043,15 @@ function setupEventListeners() {
   const personForm = document.getElementById('person-form');
   if (personForm) {
     personForm.addEventListener('submit', handlePersonFormSubmit);
+  }
+
+  const personPhotoInput = document.getElementById('person-form-photo');
+  if (personPhotoInput) {
+    let photoCheckDebounce;
+    personPhotoInput.addEventListener('input', () => {
+      clearTimeout(photoCheckDebounce);
+      photoCheckDebounce = setTimeout(checkPersonPhotoPreview, 300);
+    });
   }
 
   const deletePersonBtn = document.getElementById('person-modal-delete-btn');
@@ -7117,20 +7159,32 @@ function initFilterDropdowns() {
   }
 }
 
+// Renderer for whichever view is actually on screen. refreshViews() used to
+// unconditionally re-render all 11 views (plus two that no longer exist in
+// the nav at all — renderKanban/renderAnalytics, dead since the kanban/
+// analytics/ideas views were folded into the dashboard) on every single
+// realtime data event, i.e. up to ~13 full innerHTML table/card rebuilds
+// for views nobody is even looking at. switchView() already does a fresh
+// render of a view the moment someone navigates to it, so re-rendering the
+// other 10 here was pure wasted work that scales with team activity.
+const VIEW_RENDERERS = {
+  dashboard: renderDashboard,
+  calendar: renderCalendar,
+  tasks: renderTasks,
+  team: renderTeam,
+  logs: renderLogs,
+  'content-links': renderContentLinks,
+  'idea-board': renderIdeaBoard,
+  'priority-board': renderPriorityBoard,
+  'employee-database': renderEmployeeDatabase,
+  'onboarding': renderOnboarding,
+  'leave': renderLeave,
+};
+
 function refreshViews() {
-  try { renderDashboard(); } catch(e) { console.error("renderDashboard error:", e); }
-  try { renderKanban(); } catch(e) { console.error("renderKanban error:", e); }
-  try { renderCalendar(); } catch(e) { console.error("renderCalendar error:", e); }
-  try { renderAnalytics(); } catch(e) { console.error("renderAnalytics error:", e); }
-  try { renderTasks(); } catch(e) { console.error("renderTasks error:", e); }
-  try { renderTeam(); } catch(e) { console.error("renderTeam error:", e); }
-  try { renderLogs(); } catch(e) { console.error("renderLogs error:", e); }
-  try { renderContentLinks(); } catch(e) { console.error("renderContentLinks error:", e); }
-  try { renderIdeaBoard(); } catch(e) { console.error("renderIdeaBoard error:", e); }
-  try { renderPriorityBoard(); } catch(e) { console.error("renderPriorityBoard error:", e); }
-  try { renderEmployeeDatabase(); } catch(e) { console.error("renderEmployeeDatabase error:", e); }
-  try { renderOnboarding(); } catch(e) { console.error("renderOnboarding error:", e); }
-  try { renderLeave(); } catch(e) { console.error("renderLeave error:", e); }
+  const view = state.currentView || 'dashboard';
+  const renderActive = VIEW_RENDERERS[view] || renderDashboard;
+  try { renderActive(); } catch(e) { console.error(`render error for view "${view}":`, e); }
   try { updateOnboardingBadge(); } catch(e) { console.error("updateOnboardingBadge error:", e); }
   try { updateLeaveBadge(); } catch(e) { console.error("updateLeaveBadge error:", e); }
   try { updatePublishingQueueBadge(); } catch(e) { console.error("updatePublishingQueueBadge error:", e); }
@@ -9816,8 +9870,11 @@ function renderTeam() {
     // Generate initials avatar
     const safeName = p.name || 'Unknown';
     const initials = safeName.split(' ').map(n => (n[0] || '')).join('').toUpperCase().substring(0, 2);
-    const avatar = p.photo 
-      ? `<img src="${p.photo}" class="team-avatar-img" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="${safeName}">`
+    const avatar = p.photo
+      // Falls back to the initials avatar if the URL doesn't load (broken
+      // link, or a share-page URL that isn't a direct image) instead of
+      // showing a broken-image icon.
+      ? `<img src="${escapeHtml(p.photo)}" class="team-avatar-img" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="${safeName}" data-initials="${escapeHtml(initials)}" data-avatar-kind="team" onerror="handleAvatarImgError(this)">`
       : `<div class="team-avatar-initials" style="background: rgba(245, 158, 11, 0.1); color: var(--honey-gold); border: 1px solid rgba(245, 158, 11, 0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">${initials}</div>`;
 
     // Roles tags
@@ -9910,6 +9967,7 @@ function openPersonModal(personId = null) {
       document.getElementById('person-form-auth-email').value = person.authEmail || '';
       document.getElementById('person-form-access').value = person.access || 'none';
       document.getElementById('person-form-photo').value = person.photo || '';
+      checkPersonPhotoPreview();
       
       document.getElementById('person-role-designer').checked = !!person.isDesigner;
       document.getElementById('person-role-assigner').checked = !!person.isAssigner;
@@ -9925,9 +9983,61 @@ function openPersonModal(personId = null) {
     modalTitle.textContent = 'Add New Person';
     document.getElementById('person-form-name').disabled = false;
     if (deleteBtn) deleteBtn.style.display = 'none';
+    const previewEl = document.getElementById('person-form-photo-preview');
+    if (previewEl) previewEl.style.display = 'none';
   }
   
   if (modal) modal.classList.add('active');
+}
+
+// Live-checks the pasted photo URL as the admin types it, instead of only
+// finding out it doesn't render after saving. The single most common way
+// this "doesn't work" in practice: someone pastes a Google Drive/Dropbox/
+// Facebook *share* link, which loads a viewer webpage, not raw image bytes
+// — an <img src="..."> can't render that, so it looks broken with zero
+// feedback about why.
+function checkPersonPhotoPreview() {
+  const input = document.getElementById('person-form-photo');
+  const preview = document.getElementById('person-form-photo-preview');
+  const previewImg = document.getElementById('person-form-photo-preview-img');
+  const statusEl = document.getElementById('person-form-photo-preview-status');
+  if (!input || !preview || !previewImg || !statusEl) return;
+
+  const url = input.value.trim();
+  if (!url) {
+    preview.style.display = 'none';
+    return;
+  }
+
+  const shareLinkHosts = [
+    { test: /drive\.google\.com/i, name: 'Google Drive', hint: 'use File > Share > "Anyone with the link", then a direct-image proxy — Drive share links never render as <img>.' },
+    { test: /dropbox\.com/i, name: 'Dropbox', hint: 'swap the trailing "?dl=0" for "?raw=1", or use a Dropbox direct-content link.' },
+    { test: /facebook\.com|fbcdn/i, name: 'Facebook', hint: 'right-click the photo itself and "Copy image address", not the post/profile URL.' },
+    { test: /photos\.google\.com|photos\.app\.goo\.gl/i, name: 'Google Photos', hint: 'Google Photos share links are viewer pages too — use "Download" and host the file, or a direct image URL.' },
+  ];
+  const matchedHost = shareLinkHosts.find(h => h.test.test(url));
+
+  preview.style.display = 'flex';
+  if (matchedHost) {
+    previewImg.style.visibility = 'hidden';
+    statusEl.style.color = '#f87171';
+    statusEl.textContent = `⚠ This looks like a ${matchedHost.name} share link — it won't render as an image. ${matchedHost.hint}`;
+    return;
+  }
+
+  statusEl.style.color = '#94a3b8';
+  statusEl.textContent = 'Checking...';
+  previewImg.style.visibility = 'visible';
+  previewImg.onload = () => {
+    statusEl.style.color = '#4ade80';
+    statusEl.textContent = '✓ Image loads correctly';
+  };
+  previewImg.onerror = () => {
+    previewImg.style.visibility = 'hidden';
+    statusEl.style.color = '#f87171';
+    statusEl.textContent = '✗ This URL did not load as an image — double-check the link.';
+  };
+  previewImg.src = url;
 }
 
 function closePersonModal() {
