@@ -2344,8 +2344,31 @@ function initAuth() {
     });
   }
 
-  // Always load application immediately (Guest View enabled)
-  runAppInit();
+  // Data is authenticated-only (Supabase RLS requires a signed-in session on
+  // every table — see supabase_migration.sql), so the app itself must not
+  // fetch or subscribe to anything until a session actually exists. Loading
+  // the app "for guests" used to mean initData() ran unconditionally, which
+  // pulled the full dataset into the page for anyone with the URL.
+  (async () => {
+    await initSupabase();
+    let signedIn = false;
+    if (supabase) {
+      try {
+        const { data } = await supabase.auth.getSession();
+        signedIn = !!(data && data.session);
+      } catch (err) {
+        console.warn('Session check failed:', err);
+      }
+    }
+    if (signedIn) {
+      runAppInit();
+    } else {
+      localStorage.removeItem('hc_logged_in_user');
+      hideAppLoadingOverlay();
+      populateLoginOptions();
+      showLoginOverlay();
+    }
+  })();
 }
 
 // The sign-in dropdown used to be a hardcoded list of five names in
@@ -2358,7 +2381,11 @@ function initAuth() {
 function populateLoginOptions() {
   const sel = document.getElementById('login-user');
   if (!sel) return;
-  const eligible = (state.team || [])
+  // Pre-login, state.team hasn't loaded (the team table now requires an
+  // authenticated session to read), so fall back to the hardcoded roster —
+  // it's already shipped in this file regardless, so this adds no exposure.
+  const source = (state.team && state.team.length > 0) ? state.team : DEFAULT_TEAM;
+  const eligible = source
     .filter(p => p.canLogin && p.authEmail)
     .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
   if (!eligible.length) return;   // roster not loaded yet — keep the markup fallback

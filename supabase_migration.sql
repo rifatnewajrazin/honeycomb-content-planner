@@ -11,10 +11,12 @@
 -- exactly so the app's existing data shapes don't need to change.
 --
 -- Security model:
---   - Anyone (anon) can SELECT — the app has a deliberate public read-only
---     "view without signing in" mode.
 --   - Only an authenticated Supabase session (i.e. someone who signed in
---     through the app's login form) can INSERT / UPDATE / DELETE.
+--     through the app's login form) can SELECT, INSERT, UPDATE, or DELETE.
+--     There is no public/anon read on any table — the "Guest View" mode was
+--     removed because the anon key is necessarily public (it ships in the
+--     client bundle), so a `using (true)` read policy meant anyone with the
+--     URL could read the full dataset without ever signing in.
 
 create table if not exists public.posts (
   id text primary key,
@@ -109,7 +111,8 @@ begin
   end loop;
 end $$;
 
--- Row Level Security: same policy shape on every table.
+-- Row Level Security: same policy shape on every table — authenticated-only
+-- for both read and write. No table is publicly readable.
 do $$
 declare
   t text;
@@ -119,7 +122,8 @@ begin
     execute format('alter table public.%I enable row level security;', t);
 
     execute format('drop policy if exists "Public read access" on public.%I;', t);
-    execute format('create policy "Public read access" on public.%I for select using (true);', t);
+    execute format('drop policy if exists "Authenticated read access" on public.%I;', t);
+    execute format('create policy "Authenticated read access" on public.%I for select using (auth.role() = ''authenticated'');', t);
 
     execute format('drop policy if exists "Authenticated write access" on public.%I;', t);
     execute format(

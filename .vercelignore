@@ -1,0 +1,10 @@
+node_modules
+scratch
+.claude
+*.py
+*.csv
+*.sql
+*.md
+server.mjs
+package.json
+package-lock.json
