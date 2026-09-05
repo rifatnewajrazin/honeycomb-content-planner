@@ -516,21 +516,37 @@ const DELIVERABLE_DEFS = [
 // Days after Join Date before an incomplete deliverable is flagged overdue.
 const ONBOARDING_OVERDUE_DAYS = 14;
 
-// A manual step can be marked "Not required" (N/A) for a given employee.
-// Auto steps (from the record) can't be N/A.
+// Any step — including "from record" auto steps — can be marked "Not
+// required" (N/A) for a given employee, and ticked/unticked freely. Auto
+// steps used to be permanently locked to whatever the record said (e.g. an
+// employee with no email on file could never satisfy or dismiss "Email
+// Address"), which is a dead end now that some employee fields are optional
+// — there was no way to say "this one genuinely doesn't apply."
 function isDeliverableStepNA(rec, dKey, step) {
-  if (step.auto) return false;
   return !!(rec && rec.deliverables && rec.deliverables[dKey] &&
            rec.deliverables[dKey].na && rec.deliverables[dKey].na[step.key]);
 }
 
-// Whether a single step is satisfied for a record (auto steps read the record;
-// manual steps read the stored deliverables object). An N/A step doesn't count
-// as "done" but it's excluded from the progress total.
+// Whether a single step is satisfied for a record. Manual steps just read
+// the stored deliverables object. Auto steps read the record by default,
+// but a manual tick/untick (stored the same way) overrides that default —
+// distinguished from "never touched" via hasOwnProperty, since both a
+// manual "off" and "not yet set" are falsy. An N/A step doesn't count as
+// "done" but it's excluded from the progress total.
 function isDeliverableStepDone(rec, dKey, step) {
-  if (step.auto) return !!step.auto(rec);
-  return !!(rec && rec.deliverables && rec.deliverables[dKey] &&
-           rec.deliverables[dKey].steps && rec.deliverables[dKey].steps[step.key]);
+  const stored = rec && rec.deliverables && rec.deliverables[dKey] && rec.deliverables[dKey].steps;
+  if (step.auto) {
+    if (stored && Object.prototype.hasOwnProperty.call(stored, step.key)) return !!stored[step.key];
+    return !!step.auto(rec);
+  }
+  return !!(stored && stored[step.key]);
+}
+
+// Whether an auto step has a manual tick/untick stored, i.e. it's no longer
+// just following the employee record.
+function isDeliverableStepOverridden(rec, dKey, step) {
+  const stored = rec && rec.deliverables && rec.deliverables[dKey] && rec.deliverables[dKey].steps;
+  return !!(stored && Object.prototype.hasOwnProperty.call(stored, step.key));
 }
 
 function deliverableProgress(rec, def) {
@@ -4898,17 +4914,17 @@ function mergeDeliverables(rec) {
 }
 
 // Auto-stamp / clear each deliverable's deliveredOn based on completion.
-// A step marked N/A counts as satisfied for the completion check.
+// A step marked N/A doesn't count toward completion at all (same rule as
+// deliverableProgress) — including an auto step marked N/A, now that those
+// can be overridden/dismissed too. Reads through a { ...rec, deliverables }
+// view so it sees the in-progress edit, not whatever's still on `rec` at the
+// point every caller calls this (rec.deliverables is only reassigned after).
 function applyDeliveredDates(deliverables, rec) {
   const today = new Date().toISOString().slice(0, 10);
+  const draftRec = { ...rec, deliverables };
   DELIVERABLE_DEFS.forEach(def => {
-    const na = deliverables[def.key].na || {};
-    const anyRequired = def.steps.some(s => s.auto || !na[s.key]);
-    const complete = anyRequired && def.steps.every(s => {
-      if (s.auto) return !!s.auto(rec);
-      if (na[s.key]) return true;
-      return !!deliverables[def.key].steps[s.key];
-    });
+    const required = def.steps.filter(s => !isDeliverableStepNA(draftRec, def.key, s));
+    const complete = required.length > 0 && required.every(s => isDeliverableStepDone(draftRec, def.key, s));
     if (complete && !deliverables[def.key].deliveredOn) deliverables[def.key].deliveredOn = today;
     if (!complete) deliverables[def.key].deliveredOn = null;
   });
@@ -5126,19 +5142,24 @@ function renderOnboardingDetail(rec) {
 
     def.steps.forEach(step => {
       const auto = !!step.auto;
+      const overridden = auto && isDeliverableStepOverridden(rec, def.key, step);
       const na = isDeliverableStepNA(rec, def.key, step);
       const done = !na && isDeliverableStepDone(rec, def.key, step);
       const labelStyle = na ? 'color:#64748b; font-size:0.88rem; text-decoration:line-through;' : 'color:#e2e8f0; font-size:0.88rem;';
-      const rowTappable = !auto && canEdit && !na;
+      const rowTappable = canEdit && !na;
       html += `<div style="padding:8px 0; border-top:1px solid rgba(255,255,255,0.04);">
         <div style="display:flex; align-items:center; gap:10px; min-height:36px;">
           <label style="display:flex; align-items:center; gap:12px; flex:1; min-width:0; ${rowTappable ? 'cursor:pointer;' : ''}">
-            <input type="checkbox" ${done ? 'checked' : ''} ${(auto || !canEdit || na) ? 'disabled' : ''}
+            <input type="checkbox" ${done ? 'checked' : ''} ${(!canEdit || na) ? 'disabled' : ''}
               data-onb-step="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
               style="width:18px; height:18px; accent-color: var(--honey-gold); flex:none;">
-            <span style="${labelStyle}">${escapeHtml(step.label)}${auto ? `<span style="color:#64748b; font-size:0.75rem;"> — from record</span>` : ''}${na ? `<span style="color:#64748b; font-size:0.75rem;"> — not required</span>` : ''}</span>
+            <span style="${labelStyle}">${escapeHtml(step.label)}${auto ? `<span style="color:#64748b; font-size:0.75rem;"> — ${overridden ? 'manually set' : 'from record'}</span>` : ''}${na ? `<span style="color:#64748b; font-size:0.75rem;"> — not required</span>` : ''}</span>
           </label>
-          ${(!auto && canEdit) ? `<button type="button" data-onb-na="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+          ${(overridden && canEdit && !na) ? `<button type="button" data-onb-reset="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
+            title="Undo the manual override and go back to following the employee record"
+            style="flex:none; height:32px; min-width:32px; padding:0 10px; font-size:0.85rem; font-weight:600; border-radius:6px; cursor:pointer;
+            background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.12);">↺</button>` : ''}
+          ${canEdit ? `<button type="button" data-onb-na="${escapeHtml(def.key)}|${escapeHtml(step.key)}"
             style="flex:none; height:32px; min-width:52px; padding:0 12px; font-size:0.75rem; font-weight:600; border-radius:6px; cursor:pointer;
             background:${na ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.05)'}; color:${na ? '#38bdf8' : '#94a3b8'};
             border:1px solid ${na ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.12)'};">${na ? 'Required' : 'N/A'}</button>` : ''}
@@ -5174,6 +5195,12 @@ function renderOnboardingDetail(rec) {
     btn.addEventListener('click', () => {
       const [dKey, stepKey] = btn.getAttribute('data-onb-na').split('|');
       setOnboardingStepNA(rec.id, dKey, stepKey, !isDeliverableStepNA(rec, dKey, DELIVERABLE_DEFS.find(d => d.key === dKey).steps.find(s => s.key === stepKey)));
+    });
+  });
+  body.querySelectorAll('button[data-onb-reset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const [dKey, stepKey] = btn.getAttribute('data-onb-reset').split('|');
+      setOnboardingStepReset(rec.id, dKey, stepKey);
     });
   });
 }
@@ -5264,6 +5291,30 @@ function setOnboardingStepNA(empId, dKey, stepKey, na) {
   scheduleOnboardingWrite(empId);
   logEmployeeDbActivity(`${na ? 'marked not required' : 'marked required again'}: "${def.label} › ${step.label}" for ${rec.fullName} (${rec.employeeId})`);
   showToast(`${na ? 'Not required' : 'Required again'}: ${def.label} › ${step.label}`, 'info');
+
+  updateOnboardingBadge();
+  if (state.currentView === 'onboarding') renderOnboarding();
+  if (state.viewingOnboardingId === empId) renderOnboardingDetail(rec);
+}
+
+// Clears a manual tick/untick on an auto ("from record") step, so it goes
+// back to following the employee record automatically.
+function setOnboardingStepReset(empId, dKey, stepKey) {
+  if (!canCurrentUserAccessOnboarding()) { showToast('Access denied', 'error'); return; }
+  const rec = (state.employeeRecords || []).find(r => r.id === empId);
+  if (!rec) return;
+  const def = DELIVERABLE_DEFS.find(d => d.key === dKey);
+  const step = def.steps.find(s => s.key === stepKey);
+
+  const deliverables = mergeDeliverables(rec);
+  delete deliverables[dKey].steps[stepKey];
+  applyDeliveredDates(deliverables, rec);
+  rec.deliverables = deliverables;
+
+  _onbDirtyIds.add(empId);
+  scheduleOnboardingWrite(empId);
+  logEmployeeDbActivity(`reset "${def.label} › ${step.label}" to follow the employee record for ${rec.fullName} (${rec.employeeId})`);
+  showToast(`Reset to record: ${def.label} › ${step.label}`, 'info');
 
   updateOnboardingBadge();
   if (state.currentView === 'onboarding') renderOnboarding();
