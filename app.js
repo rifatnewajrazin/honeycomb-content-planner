@@ -23,7 +23,10 @@ async function initSupabase() {
   // touch the session concurrently), so bail once the client exists.
   if (supabase) return;
   try {
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    // Bundled + version-pinned locally (assets/vendor/, produced by build.mjs).
+    // Was `https://esm.sh/@supabase/supabase-js@2` — a cold load fanned out to
+    // ~20 chained requests against a third-party CDN in the critical path.
+    const { createClient } = await import('./assets/vendor/supabase-js.min.js');
     supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     db = supabase;
   } catch (err) {
@@ -2550,6 +2553,19 @@ function handleAvatarImgError(imgEl) {
 // markTaskPosted below.
 window.handleAvatarImgError = handleAvatarImgError;
 
+// Local avatar / brand-logo / profile assets ship as small WebP files
+// (scripts/convert-images.mjs). Seed data and Supabase rows still carry the
+// original assets/**.png / .jpg paths — resolve those to .webp at render time
+// so no stored data changes and the big originals are never downloaded.
+// Remote URLs, data: URIs and already-.webp paths pass straight through.
+function honeyAsset(url) {
+  if (typeof url !== 'string') return url;
+  return url.replace(
+    /^(assets\/(?:avatars|logos)\/[^?"']+|assets\/[a-z-]+-profile)\.(?:png|jpe?g)$/i,
+    '$1.webp'
+  );
+}
+
 // Hides the initial-load overlay once real data is in. Guarded so it only
 // ever runs once (repeated onSnapshot events shouldn't re-trigger it).
 let appLoadingOverlayHidden = false;
@@ -2688,7 +2704,7 @@ function renderUserProfile() {
       // initials avatar instead. Built via a real function call (not an
       // inline HTML string in the onerror attribute) so quoting in the
       // fallback markup can't break out of the attribute.
-      ? `<img src="${escapeHtml(account.photo)}" class="user-avatar-img" alt="${escapeHtml(currentUser)}" data-initials="${escapeHtml(userInitials)}" data-avatar-kind="user" onerror="handleAvatarImgError(this)">`
+      ? `<img src="${escapeHtml(honeyAsset(account.photo))}" class="user-avatar-img" width="44" height="44" decoding="async" alt="${escapeHtml(currentUser)}" data-initials="${escapeHtml(userInitials)}" data-avatar-kind="user" onerror="handleAvatarImgError(this)">`
       : `<div class="user-avatar" style="background: var(--honey-gold); color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-size: 1.1rem; border: 2px solid rgba(255, 255, 255, 0.1); box-shadow: var(--shadow-sm);">${userInitials}</div>`;
        
     userSection.innerHTML = `
@@ -7394,13 +7410,13 @@ function renderContentLinks() {
     const creativePerson = findTeamMember(item.designer);
     const creativeName = creativePerson ? creativePerson.name : (item.designer || 'Unassigned');
     const creativePhoto = creativePerson && creativePerson.photo
-      ? `<img src="${creativePerson.photo}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="${creativeName}" title="${creativeName}">`
+      ? `<img src="${honeyAsset(creativePerson.photo)}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" width="28" height="28" loading="lazy" decoding="async" alt="${creativeName}" title="${creativeName}">`
       : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(creativeName)}</div>`;
 
     const assignerPerson = findTeamMember(item.assignedBy);
     const assignerName = assignerPerson ? assignerPerson.name : (item.assignedBy || 'Unassigned');
     const assignerPhoto = assignerPerson && assignerPerson.photo
-      ? `<img src="${assignerPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${assignerName}" title="${assignerName}">`
+      ? `<img src="${honeyAsset(assignerPerson.photo)}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" width="24" height="24" loading="lazy" decoding="async" alt="${assignerName}" title="${assignerName}">`
       : '';
 
     const dateFormatted = formatCardDate(item.date);
@@ -7585,7 +7601,7 @@ function renderDashboard() {
       <div class="brand-header">
         <div class="brand-info-wrap">
           ${brand.logo 
-            ? `<img src="${brand.logo}" class="brand-badge-img" alt="${brand.name} logo">`
+            ? `<img src="${honeyAsset(brand.logo)}" class="brand-badge-img" width="44" height="44" loading="lazy" decoding="async" alt="${brand.name} logo">`
             : `<div class="brand-badge-icon" style="background: ${brand.grad}">${brand.name.substring(0,2).toUpperCase()}</div>`}
           <div class="brand-title-wrap">
             <h3 class="brand-name-row">
@@ -8433,13 +8449,13 @@ function renderTasks() {
     const creativePerson = findTeamMember(task.designer);
     const creativeName = creativePerson ? creativePerson.name : (task.designer || 'Unassigned');
     const creativePhoto = creativePerson && creativePerson.photo 
-      ? `<img src="${creativePerson.photo}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="${creativeName}" title="${creativeName}">`
+      ? `<img src="${honeyAsset(creativePerson.photo)}" class="team-avatar-img" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" width="28" height="28" loading="lazy" decoding="async" alt="${creativeName}" title="${creativeName}">`
       : `<div class="card-assignee-avatar" style="width: 28px; height: 28px; font-size: 0.75rem">${getAssigneeInitials(creativeName)}</div>`;
 
     const assignerPerson = findTeamMember(task.assignedBy);
     const assignerName = assignerPerson ? assignerPerson.name : (task.assignedBy || 'Unassigned');
     const assignerPhoto = assignerPerson && assignerPerson.photo 
-      ? `<img src="${assignerPerson.photo}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="${assignerName}" title="${assignerName}">`
+      ? `<img src="${honeyAsset(assignerPerson.photo)}" class="team-avatar-img" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" width="24" height="24" loading="lazy" decoding="async" alt="${assignerName}" title="${assignerName}">`
       : '';
 
     const _bId = taskEffectiveBrandId(task);
@@ -8451,7 +8467,7 @@ function renderTasks() {
         || (_brandObj.name || '').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase()
         || _brandObj.name;
       const _logo = _brandObj.logo
-        ? `<img src="${_brandObj.logo}" alt="" class="task-brand-logo" loading="lazy">`
+        ? `<img src="${honeyAsset(_brandObj.logo)}" alt="" class="task-brand-logo" width="15" height="15" decoding="async" loading="lazy">`
         : '';
       brandCellHtml = `<span class="task-brand-tag" title="${_brandObj.name}">${_logo}<span class="task-brand-code">${_code}</span></span>`;
     }
@@ -9591,7 +9607,7 @@ function renderTeam() {
       // Falls back to the initials avatar if the URL doesn't load (broken
       // link, or a share-page URL that isn't a direct image) instead of
       // showing a broken-image icon.
-      ? `<img src="${escapeHtml(p.photo)}" class="team-avatar-img" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="${safeName}" data-initials="${escapeHtml(initials)}" data-avatar-kind="team" onerror="handleAvatarImgError(this)">`
+      ? `<img src="${escapeHtml(honeyAsset(p.photo))}" class="team-avatar-img" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" width="36" height="36" loading="lazy" decoding="async" alt="${safeName}" data-initials="${escapeHtml(initials)}" data-avatar-kind="team" onerror="handleAvatarImgError(this)">`
       : `<div class="team-avatar-initials" style="background: rgba(245, 158, 11, 0.1); color: var(--honey-gold); border: 1px solid rgba(245, 158, 11, 0.2); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">${initials}</div>`;
 
     // Roles tags

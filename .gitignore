@@ -1,3 +1,7 @@
 .DS_Store
 scratch/
 node_modules/
+
+# Redundant pristine copies made by scripts/convert-images.mjs.
+# The real originals still live at their normal assets/ paths.
+assets/_originals/

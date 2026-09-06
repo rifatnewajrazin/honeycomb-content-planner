@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HoneyComb Inc. Content Tracker & Planner</title>
   <meta name="description" content="Central tracking and scheduling system for HoneyComb Inc. and its active business pages. Managed by the Head of Multimedia & Creative.">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+  <meta name="theme-color" content="#070a0e">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3.28.0">
+  <!-- Font CSS as a direct <link> (was an @import at the top of style.css, which
+       chained behind style.css and blocked render). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="style.min.css?v=3.29.0">
   <style>
     /* Date field: word-month display text with a native calendar picker layered on top */
     .date-field { position: relative; }
@@ -72,7 +73,7 @@
 
       <div class="logo-wrap">
         <div class="logo-section">
-          <img src="assets/logos/honeycomb.png" class="sidebar-logo-img" alt="HoneyComb logo">
+          <img src="assets/logos/honeycomb.webp" class="sidebar-logo-img" width="40" height="40" decoding="async" alt="HoneyComb logo">
           <div class="logo-text">
             <h1>HoneyComb Inc.</h1>
             <span>Media Desk</span>
@@ -1549,7 +1550,7 @@
     <!-- Login Overlay Panel -->
     <div id="login-overlay" class="login-overlay-panel" style="display: none;">
       <div class="login-card">
-        <img src="assets/logos/honeycomb.png" class="login-logo" alt="HoneyComb logo">
+        <img src="assets/logos/honeycomb.webp" class="login-logo" width="64" height="64" decoding="async" alt="HoneyComb logo">
         <h2>HoneyComb Content Hub</h2>
         <p>Sign in to manage and schedule creative contents</p>
         
@@ -1608,6 +1609,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=3.28.0"></script>
+  <script type="module" src="app.min.js?v=3.29.0"></script>
 </body>
 </html>

@@ -8,3 +8,10 @@ scratch
 server.mjs
 package.json
 package-lock.json
+
+# Build-only + unminified sources. The deploy serves app.min.js / style.min.css
+# / assets/vendor/*, which are built by `npm run build` and committed.
+build.mjs
+app.js
+style.css
+assets/_originals

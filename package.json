@@ -1,5 +1,15 @@
 {
+  "scripts": {
+    "build": "node build.mjs",
+    "images": "node scripts/convert-images.mjs",
+    "start": "node server.mjs"
+  },
   "dependencies": {
     "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.115.0",
+    "esbuild": "^0.24.2",
+    "sharp": "^0.33.5"
   }
 }
