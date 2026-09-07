@@ -2690,7 +2690,12 @@ function renderUserProfile() {
     item.style.display = boardOnly ? 'none' : 'flex';
   });
   const boardOnlyCanViewIdeaBoard = person && person.canPlanContent;
-  if (boardOnly && state.currentView !== 'priority-board' && state.currentView !== 'team' && !(boardOnlyCanViewIdeaBoard && state.currentView === 'idea-board')) {
+  const boardOnlyExtraView =
+    (state.currentView === 'idea-board' && boardOnlyCanViewIdeaBoard) ||
+    (state.currentView === 'employee-database' && canCurrentUserAccessEmployeeDb()) ||
+    (state.currentView === 'onboarding' && canCurrentUserAccessOnboarding()) ||
+    (state.currentView === 'leave' && canCurrentUserAccessLeave());
+  if (boardOnly && state.currentView !== 'priority-board' && state.currentView !== 'team' && !boardOnlyExtraView) {
     switchView('priority-board');
   }
 
@@ -7104,9 +7109,15 @@ function switchView(viewName) {
     viewName = 'dashboard';
   }
   // Board-only accounts (Orthee) may only ever land on the Priority Board or
-  // People & Roles.
+  // People & Roles — plus any view they've been granted an explicit
+  // permission for (Idea Board, Employee Database, Onboarding, Leave).
   if (viewName !== 'priority-board' && viewName !== 'team' && isCurrentUserBoardOnly()) {
-    viewName = 'priority-board';
+    const boardOnlyAllowed =
+      (viewName === 'idea-board' && canCurrentUserPlanContent()) ||
+      (viewName === 'employee-database' && canCurrentUserAccessEmployeeDb()) ||
+      (viewName === 'onboarding' && canCurrentUserAccessOnboarding()) ||
+      (viewName === 'leave' && canCurrentUserAccessLeave());
+    if (!boardOnlyAllowed) viewName = 'priority-board';
   }
   // Employee Database and Onboarding are HR/admin only — bounce anyone else.
   if (viewName === 'employee-database' && !canCurrentUserAccessEmployeeDb()) {

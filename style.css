@@ -2880,6 +2880,27 @@ body.minimal-theme .brand-badge-img {
    fits and stays tappable on a phone.
    ========================================================================== */
 @media (max-width: 900px) {
+  /* Kill decorative backdrop blur on every surface for phones/tablets.
+     Stacked and nested backdrop-filter layers (sidebar, header, cards,
+     modals, the login panel+card) overwhelm the Android Chrome compositor
+     and paint as black voids that flicker — especially through a transform
+     animation or a soft-keyboard viewport resize (reported 2026-09-07).
+     The translucent surfaces below already read fine without the blur. */
+  *,
+  body.minimal-theme .sidebar,
+  body.minimal-theme .header,
+  body.minimal-theme .brand-card,
+  body.minimal-theme .chart-panel,
+  body.minimal-theme .task-stat-box,
+  body.minimal-theme .activity-drawer,
+  body.minimal-theme .modal-content,
+  body.minimal-theme .tasks-table-container,
+  body.minimal-theme .calendar-grid,
+  body.minimal-theme .post-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
   /* Let the whole page scroll naturally instead of trapping scroll inside
      .main-content — the sidebar is an overlay (position: fixed) now, so it
      no longer needs the parent flex row to be viewport-height. */
@@ -3314,6 +3335,25 @@ body.minimal-theme .brand-badge-img {
   .login-card {
     padding: 32px 22px;
     border-radius: 18px;
+  }
+
+  /* Android Chrome cannot reliably composite stacked / nested backdrop-filter
+     layers: the login panel (blur 24) wrapping the login card (blur 16), then
+     a transform keyframe (wrong-password shake) and a soft-keyboard viewport
+     resize on top, made whole sections of the card paint as black voids that
+     flickered (reported 2026-09-07). Drop the blur on the auth surfaces and
+     make them fully opaque on mobile so there is no backdrop to composite. */
+  .login-overlay-panel {
+    background: #0a0a0c;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .login-card,
+  body.minimal-theme .login-card {
+    background: var(--bg-surface-solid, #160a0f) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   /* Toasts shouldn't overrun the viewport edge to edge */
