@@ -9942,7 +9942,7 @@ function renderIdeaBoard() {
         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(idea.name)}"><strong>${escapeHtml(idea.name)}</strong></td>
         <td>${escapeHtml(idea.date)}</td>
         <td>${linksHtml}</td>
-        <td style="padding-top: 18px; padding-bottom: 18px;" title="${escapeHtml(idea.notes || '')}"><div style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(idea.notes || '')}</div></td>
+        <td style="padding-top: 18px; padding-bottom: 18px;">${idea.notes ? `<div class="idea-notes-cell" data-id="${idea.id}" title="Click to expand / collapse" style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; cursor: pointer;">${escapeHtml(idea.notes)}</div>` : `<span style="color:#64748b; font-size: 0.8rem;">—</span>`}</td>
         <td>${initiatorHtml}</td>
         <td style="text-align:center;">
           <input type="checkbox" class="idea-handled-checkbox" data-id="${idea.id}" ${idea.handled ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: var(--honey-gold); cursor: pointer;">
@@ -9954,6 +9954,17 @@ function renderIdeaBoard() {
 
   tbody.querySelectorAll('.idea-edit-btn').forEach(btn => {
     btn.addEventListener('click', () => openIdeaModal(btn.dataset.id));
+  });
+
+  // Click any notes cell to expand/collapse the full text inline — lets
+  // everyone read an idea without opening the edit modal (which needs
+  // planner permission anyway).
+  tbody.querySelectorAll('.idea-notes-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const expanded = cell.style.webkitLineClamp === 'unset';
+      cell.style.webkitLineClamp = expanded ? '3' : 'unset';
+      cell.style.cursor = expanded ? 'pointer' : 'zoom-out';
+    });
   });
 
   // Toggling "Handled" is open to any logged-in user, per the agreed
