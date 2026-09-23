@@ -347,6 +347,23 @@ function pageKeysForTask(task) {
   return taskIsSubBrandBucket(task) ? ['sub', 'parent'] : ['main'];
 }
 
+// Which brand's page a posted-status key refers to: 'main' and 'sub' are the
+// task's own brand, 'parent' is its BRAND_HIERARCHY parent (the Tahams
+// mother page). Used to credit each posted page to the right Dashboard card
+// and to name the page in the Activity Log.
+function brandForPageKey(task, pageKey) {
+  const brands = (state.brands && state.brands.length > 0) ? state.brands : DEFAULT_BRANDS;
+  const own = brands.find(b => b.id === taskEffectiveBrandId(task));
+  if (pageKey !== 'parent') return own || null;
+  const parentName = own && BRAND_HIERARCHY[own.name];
+  return (parentName && brands.find(b => b.name === parentName)) || null;
+}
+
+function pageLabelForLog(task, pageKey) {
+  const brand = brandForPageKey(task, pageKey);
+  return brand ? `${brand.name} page` : `${pageKey} page`;
+}
+
 // A task counts as fully posted only once every page it needs to be posted
 // on (see pageKeysForTask) has been marked true — a Tahams sub-brand task
 // posted only on its own page but not yet on the Tahams parent page is NOT
@@ -7560,14 +7577,24 @@ function renderDashboard() {
     // posted in week 2 belongs to week 2. Tasks marked posted before
     // postedAt existed have no timestamp to go on, so they fall back to
     // their scheduled date.
-    const publishedCount = (state.tasks || []).filter(t => {
-      if (t.taskType !== 'post' || !isTaskFullyPosted(t)) return false;
-      const postedDateStr = t.postedAt ? t.postedAt.slice(0, 10) : t.date;
-      if (!postedDateStr) return false;
-      const postedDate = new Date(postedDateStr + 'T00:00:00');
-      if (!(postedDate >= weekStart && postedDate <= weekEnd)) return false;
-      return taskEffectiveBrandId(t) === brand.id;
-    }).length;
+    // Counted per page, not per task: a Tahams sub-brand task posted on both
+    // its own page and the Tahams mother page counts once for the sub-brand
+    // and once for Tahams. Each page uses its own postedAtByPage time when
+    // present (older marks only have the task-level postedAt).
+    let publishedCount = 0;
+    (state.tasks || []).forEach(t => {
+      if (t.taskType !== 'post' || !t.posted || typeof t.posted !== 'object') return;
+      pageKeysForTask(t).forEach(key => {
+        if (t.posted[key] !== true) return;
+        const pageBrand = brandForPageKey(t, key);
+        if (!pageBrand || pageBrand.id !== brand.id) return;
+        const stamp = (t.postedAtByPage && t.postedAtByPage[key]) || t.postedAt;
+        const postedDateStr = stamp ? stamp.slice(0, 10) : t.date;
+        if (!postedDateStr) return;
+        const postedDate = new Date(postedDateStr + 'T00:00:00');
+        if (postedDate >= weekStart && postedDate <= weekEnd) publishedCount++;
+      });
+    });
     const goal = brand.frequencyGoal;
     const progressPct = goal > 0 ? Math.min(Math.round((publishedCount / goal) * 100), 100) : 0;
 
@@ -8732,26 +8759,32 @@ async function markTasksPostedBulk(selections) {
     const task = state.tasks.find(t => t.id === taskId);
     if (!task) continue;
 
+    const now = new Date().toISOString();
     const posted = { ...(task.posted || {}) };
-    let changed = false;
+    const postedAtByPage = { ...(task.postedAtByPage || {}) };
+    const newlyPosted = [];
     pageKeys.forEach(key => {
-      if (!posted[key]) { posted[key] = true; changed = true; }
+      if (!posted[key]) { posted[key] = true; postedAtByPage[key] = now; newlyPosted.push(key); }
     });
-    if (!changed) continue;
+    if (newlyPosted.length === 0) continue;
 
     task.posted = posted;
-    task.postedAt = new Date().toISOString();
+    task.postedAtByPage = postedAtByPage;
+    task.postedAt = now;
 
     try {
       await setDoc(doc(db, "tasks", taskId), task);
       successCount++;
+      // One entry per task, naming the task and each page, so the Log
+      // Report shows exactly what was marked and where.
+      const pages = newlyPosted.map(key => pageLabelForLog(task, key)).join(' and ');
+      logActivity(`marked Task ${task.id}: "${task.name}" as posted on ${pages}`, db);
     } catch (err) {
       console.error(`Failed to mark task ${taskId} as posted:`, err);
     }
   }
 
   if (successCount > 0) {
-    logActivity(`Marked ${successCount} post${successCount === 1 ? '' : 's'} as posted`, db);
     showToast(`Marked ${successCount} post${successCount === 1 ? '' : 's'} as posted`, 'success');
   }
 
@@ -8780,11 +8813,15 @@ async function unpostTaskPage(taskId, pageKey) {
 
   const posted = { ...task.posted, [pageKey]: false };
   const updatedTask = { ...task, posted };
+  if (task.postedAtByPage) {
+    updatedTask.postedAtByPage = { ...task.postedAtByPage };
+    delete updatedTask.postedAtByPage[pageKey];
+  }
 
   try {
     await setDoc(doc(db, "tasks", taskId), updatedTask);
     Object.assign(task, updatedTask);
-    logActivity(`Undid posted mark (${pageKey}) on task "${task.name}"`, db);
+    logActivity(`undid posted mark on Task ${task.id}: "${task.name}" (${pageLabelForLog(task, pageKey)})`, db);
     showToast(`Undid posted mark for ${label}`, 'info');
     refreshViews();
   } catch (err) {
@@ -10623,13 +10660,20 @@ window.markTaskPosted = async function(taskId) {
   // button) marks the task fully posted — both pages for a Tahams sub-brand
   // task, the one page for everyone else. Marking just one page of a
   // sub-brand task is done via the Task Tracker table's per-page checkboxes.
+  const now = new Date().toISOString();
   const posted = { ...(task.posted || {}) };
-  pageKeysForTask(task).forEach(key => { posted[key] = true; });
-  const updatedTask = { ...task, posted, postedAt: new Date().toISOString() };
+  const postedAtByPage = { ...(task.postedAtByPage || {}) };
+  const newlyPosted = [];
+  pageKeysForTask(task).forEach(key => {
+    if (!posted[key]) { postedAtByPage[key] = now; newlyPosted.push(key); }
+    posted[key] = true;
+  });
+  const updatedTask = { ...task, posted, postedAtByPage, postedAt: now };
   try {
     await setDoc(doc(db, "tasks", taskId), updatedTask);
     Object.assign(task, updatedTask);
-    logActivity(`Marked task "${task.name}" as posted`, db);
+    const pages = (newlyPosted.length ? newlyPosted : pageKeysForTask(task)).map(key => pageLabelForLog(task, key)).join(' and ');
+    logActivity(`marked Task ${task.id}: "${task.name}" as posted on ${pages}`, db);
     showToast(`Marked "${task.name}" as posted`, 'success');
     renderActivityLog();
     updateActivityBadge();
