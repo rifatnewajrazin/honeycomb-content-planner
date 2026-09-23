@@ -11,7 +11,7 @@
   <!-- Font CSS as a direct <link> (was an @import at the top of style.css, which
        chained behind style.css and blocked render). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="style.min.css?v=3.30.2">
+  <link rel="stylesheet" href="style.min.css?v=3.31.0">
   <style>
     /* Date field: word-month display text with a native calendar picker layered on top */
     .date-field { position: relative; }
@@ -134,6 +134,13 @@
               <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
             </svg>
             Content Links
+          </a>
+          <a href="#" class="nav-item" id="nav-catalogue-link" data-view="catalogue" style="display: none;">
+            <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+              <circle cx="7" cy="7" r="1.5"/>
+            </svg>
+            Product Catalogue
           </a>
           <a href="#" class="nav-item" data-view="team">
             <svg viewBox="0 0 24 24">
@@ -574,6 +581,27 @@
           </div>
         </section>
 
+        <!-- View: Product Catalogue (Tahams family). Draft: bundled data,
+             read-only, see DEFAULT_CATALOG in app.js. -->
+        <section id="catalogue-view" class="view-panel">
+          <div class="catalog-draft-banner" role="note">
+            <strong>Draft.</strong> Product data is not yet verified by the office, and SKUs are provisional.
+          </div>
+
+          <div class="catalog-toolbar">
+            <input type="search" id="catalog-search" class="search-input catalog-search" placeholder="Search a product, colour, design or SKU, e.g. lavender" aria-label="Search the catalogue" autocomplete="off">
+            <select id="catalog-filter-category" class="filter-select" aria-label="Category"></select>
+            <select id="catalog-filter-type" class="filter-select" aria-label="Product"></select>
+            <select id="catalog-filter-colour" class="filter-select" aria-label="Colour"></select>
+            <select id="catalog-filter-segment" class="filter-select" aria-label="Segment"></select>
+          </div>
+
+          <div id="catalog-name-matches" class="catalog-name-matches" aria-live="polite"></div>
+
+          <p id="catalog-count" class="catalog-count"></p>
+          <div id="catalog-grid" class="catalog-grid"></div>
+        </section>
+
         <!-- View 10: Idea Board (Content Planning) -->
         <section id="idea-board-view" class="view-panel">
           <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
@@ -899,6 +927,19 @@
             <button type="submit" class="btn-primary">Save Idea</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal: Product Catalogue detail (read-only draft) -->
+    <div id="catalog-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="catalog-modal-title">
+      <div class="modal-content catalog-modal-content">
+        <div class="modal-header">
+          <h3 id="catalog-modal-title">Product</h3>
+          <button class="close-btn" id="catalog-modal-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="modal-body" id="catalog-modal-body"></div>
       </div>
     </div>
 
@@ -1422,6 +1463,10 @@
                   <input type="checkbox" id="person-role-leave" style="flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--honey-gold);">
                   Leave (HR)
                 </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #fff; line-height: 1;">
+                  <input type="checkbox" id="person-role-catalogue" style="flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--honey-gold);">
+                  Product Catalogue
+                </label>
               </div>
             </div>
           </div>
@@ -1609,6 +1654,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.min.js?v=3.30.5"></script>
+  <script type="module" src="app.min.js?v=3.31.0"></script>
 </body>
 </html>

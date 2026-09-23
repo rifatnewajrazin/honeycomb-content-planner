@@ -247,7 +247,7 @@ const DEFAULT_BRANDS = [
 
 // Default Team members (Only active team members with verified profile photos)
 const DEFAULT_TEAM = [
-  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', authEmail: 'rifat@honeycomb-hub.app', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, canAccessPriorityBoard: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
+  { id: 'p-1', name: 'Rifat Newaj Razin', role: 'Head of Multimedia and Creative Department', initial: 'RR', photo: 'assets/rifat-profile.jpg', authEmail: 'rifat@honeycomb-hub.app', access: 'admin', isDesigner: true, isAssigner: true, canLogin: true, canMarkPosted: true, canPlanContent: true, canAccessPriorityBoard: true, canAccessCatalogue: true, aliases: ['Razin', 'Razin Bhaia', 'Rifat', 'Rifat Razin'] },
   { id: 'p-2', name: 'Mizanur Rahman Mamun', role: 'Cinematographer and Video Editor', initial: 'MR', photo: 'assets/avatars/Md.-Mahim.png', authEmail: 'mamun@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, aliases: ['Mamun', 'Mahim', 'Md. Mahim', 'Mizanur Rahman Mamun'] },
   { id: 'p-3', name: 'Md. Yasin Arafat', role: 'Creative Design Associate', initial: 'YA', photo: 'assets/avatars/Md.-Yasin-Arafat-Rabby.png', authEmail: 'rabby@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Rabby', 'Yasin Arafat Rabby', 'Yasin Arafat', 'Md. Yasin Arafat Rabby'] },
   { id: 'p-4', name: 'Niaz Uddin', role: 'Junior Designer', initial: 'NU', photo: 'assets/avatars/Niaz-Uddin.png', authEmail: 'niaz@honeycomb-hub.app', access: 'limited', isDesigner: true, isAssigner: false, canLogin: true, canAccessPriorityBoard: true, aliases: ['Niaz'] },
@@ -456,6 +456,14 @@ function canCurrentUserAccessOnboarding() {
 function canCurrentUserAccessLeave() {
   const person = getCurrentUserPerson();
   return !!(person && (person.canAccessLeave || person.access === 'admin'));
+}
+
+// Gate for the Product Catalogue. Access is granted per person only
+// (canAccessCatalogue, the "Product Catalogue" box in People & Roles);
+// being an admin does not grant it automatically.
+function canCurrentUserAccessCatalogue() {
+  const person = getCurrentUserPerson();
+  return !!(person && person.canAccessCatalogue);
 }
 
 // The three physical office spaces employees can be seated in. Rename here
@@ -2644,6 +2652,19 @@ function renderUserProfile() {
     }
   }
 
+  // Toggle Product Catalogue link in sidebar (canAccessCatalogue only)
+  const catalogueLink = document.getElementById('nav-catalogue-link');
+  if (catalogueLink) {
+    if (currentUser && canCurrentUserAccessCatalogue()) {
+      catalogueLink.style.display = 'flex';
+    } else {
+      catalogueLink.style.display = 'none';
+      if (state.currentView === 'catalogue') {
+        switchView('dashboard');
+      }
+    }
+  }
+
   // Toggle Employee Database link in sidebar (HR / admins only)
   const employeeDbLink = document.getElementById('nav-employee-db-link');
   if (employeeDbLink) {
@@ -2689,7 +2710,7 @@ function renderUserProfile() {
   const boardOnly = currentUser && isCurrentUserBoardOnly();
   // Items already gated individually above (logs, etc.) keep whatever those
   // gates decided; People & Roles stays visible for board-only accounts too.
-  const individuallyGatedIds = ['nav-logs-link', 'nav-priority-board-link', 'nav-employee-db-link', 'nav-onboarding-link', 'nav-leave-link'];
+  const individuallyGatedIds = ['nav-logs-link', 'nav-priority-board-link', 'nav-catalogue-link', 'nav-employee-db-link', 'nav-onboarding-link', 'nav-leave-link'];
   document.querySelectorAll('.nav-item').forEach(item => {
     if (individuallyGatedIds.includes(item.id)) return;
     if (boardOnly && item.getAttribute('data-view') === 'team') {
@@ -2710,7 +2731,8 @@ function renderUserProfile() {
     (state.currentView === 'idea-board' && boardOnlyCanViewIdeaBoard) ||
     (state.currentView === 'employee-database' && canCurrentUserAccessEmployeeDb()) ||
     (state.currentView === 'onboarding' && canCurrentUserAccessOnboarding()) ||
-    (state.currentView === 'leave' && canCurrentUserAccessLeave());
+    (state.currentView === 'leave' && canCurrentUserAccessLeave()) ||
+    (state.currentView === 'catalogue' && canCurrentUserAccessCatalogue());
   if (boardOnly && state.currentView !== 'priority-board' && state.currentView !== 'team' && !boardOnlyExtraView) {
     switchView('priority-board');
   }
@@ -2968,6 +2990,7 @@ function initData() {
             if (data.isDesigner === undefined && defaultMatch.isDesigner) patch.isDesigner = true;
             if (data.isAssigner === undefined && defaultMatch.isAssigner) patch.isAssigner = true;
             if (data.canPlanContent === undefined && defaultMatch.canPlanContent) patch.canPlanContent = true;
+            if (data.canAccessCatalogue === undefined && defaultMatch.canAccessCatalogue) patch.canAccessCatalogue = true;
             if ((!Array.isArray(data.aliases) || data.aliases.length === 0) && Array.isArray(defaultMatch.aliases) && defaultMatch.aliases.length) patch.aliases = defaultMatch.aliases.slice();
             if (Object.keys(patch).length > 0) {
               Object.assign(data, patch);
@@ -7132,7 +7155,8 @@ function switchView(viewName) {
       (viewName === 'idea-board' && canCurrentUserPlanContent()) ||
       (viewName === 'employee-database' && canCurrentUserAccessEmployeeDb()) ||
       (viewName === 'onboarding' && canCurrentUserAccessOnboarding()) ||
-      (viewName === 'leave' && canCurrentUserAccessLeave());
+      (viewName === 'leave' && canCurrentUserAccessLeave()) ||
+      (viewName === 'catalogue' && canCurrentUserAccessCatalogue());
     if (!boardOnlyAllowed) viewName = 'priority-board';
   }
   // Employee Database and Onboarding are HR/admin only — bounce anyone else.
@@ -7143,6 +7167,9 @@ function switchView(viewName) {
     viewName = 'dashboard';
   }
   if (viewName === 'leave' && !canCurrentUserAccessLeave()) {
+    viewName = 'dashboard';
+  }
+  if (viewName === 'catalogue' && !canCurrentUserAccessCatalogue()) {
     viewName = 'dashboard';
   }
 
@@ -7156,6 +7183,7 @@ function switchView(viewName) {
     calendar: ['Calendar', 'Scheduled posts and delivery dates at a glance'],
     tasks: ['Task Tracker', 'Social media posts and general design tasks'],
     'content-links': ['Content Links', 'Directory of completed content deliverables and Google Drive links posted by creatives.'],
+    catalogue: ['Product Catalogue', 'Tahams family products: proper names, SKUs and colour codes'],
     'idea-board': ['Idea Board', 'Upcoming content ideas, seasonal campaigns, and inspiration — plan ahead before a task exists'],
     'priority-board': ['Priority Board', 'DTF/Vinyl and sublimation print-prep requests, flagged by slot and job type'],
     team: ['People & Roles', 'Team roster, roles, and login permissions'],
@@ -7193,7 +7221,7 @@ function switchView(viewName) {
 
   // Customize layout elements depending on view
   const headerActions = document.querySelector('.header-actions');
-  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'idea-board' || viewName === 'priority-board' || viewName === 'employee-database' || viewName === 'onboarding' || viewName === 'leave') {
+  if (viewName === 'analytics' || viewName === 'tasks' || viewName === 'ideas' || viewName === 'team' || viewName === 'logs' || viewName === 'content-links' || viewName === 'catalogue' || viewName === 'idea-board' || viewName === 'priority-board' || viewName === 'employee-database' || viewName === 'onboarding' || viewName === 'leave') {
     headerActions.style.display = 'none';
   } else {
     headerActions.style.display = 'flex';
@@ -7203,6 +7231,7 @@ function switchView(viewName) {
   if (viewName === 'tasks') renderTasks();
   else if (viewName === 'team') renderTeam();
   else if (viewName === 'content-links') renderContentLinks();
+  else if (viewName === 'catalogue') renderCatalogue();
   else if (viewName === 'idea-board') renderIdeaBoard();
   else if (viewName === 'priority-board') renderPriorityBoard();
   else if (viewName === 'dashboard') renderDashboard();
@@ -7257,6 +7286,7 @@ const VIEW_RENDERERS = {
   team: renderTeam,
   logs: renderLogs,
   'content-links': renderContentLinks,
+  catalogue: renderCatalogue,
   'idea-board': renderIdeaBoard,
   'priority-board': renderPriorityBoard,
   'employee-database': renderEmployeeDatabase,
@@ -9737,6 +9767,7 @@ function renderTeam() {
     if (p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.15); margin-right: 4px;">Employee DB</span>`;
     if (p.canAccessOnboarding && !p.canAccessEmployeeDb) roleTagsHtml += `<span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); margin-right: 4px;">Onboarding</span>`;
     if (p.canAccessLeave) roleTagsHtml += `<span class="badge" style="background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.15); margin-right: 4px;">Leave</span>`;
+    if (p.canAccessCatalogue) roleTagsHtml += `<span class="badge" style="background: rgba(255, 159, 10, 0.1); color: #ffc46b; border: 1px solid rgba(255, 159, 10, 0.15); margin-right: 4px;">Catalogue</span>`;
     if (!roleTagsHtml) roleTagsHtml = '<span style="color: #64748b; font-style: italic;">No Roles</span>';
 
     // Access tags
@@ -9830,6 +9861,8 @@ function openPersonModal(personId = null) {
       if (onbCb) onbCb.checked = !!person.canAccessOnboarding;
       const leaveCb = document.getElementById('person-role-leave');
       if (leaveCb) leaveCb.checked = !!person.canAccessLeave;
+      const catalogueCb = document.getElementById('person-role-catalogue');
+      if (catalogueCb) catalogueCb.checked = !!person.canAccessCatalogue;
     }
   } else {
     modalTitle.textContent = 'Add New Person';
@@ -9916,6 +9949,8 @@ async function handlePersonFormSubmit(e) {
   const canAccessOnboarding = onbCb ? onbCb.checked : false;
   const leaveCb = document.getElementById('person-role-leave');
   const canAccessLeave = leaveCb ? leaveCb.checked : false;
+  const catalogueCb = document.getElementById('person-role-catalogue');
+  const canAccessCatalogue = catalogueCb ? catalogueCb.checked : false;
 
   if (!name || !role) {
     showToast('Please fill out all required fields', 'error');
@@ -9947,7 +9982,8 @@ async function handlePersonFormSubmit(e) {
     canPlanContent,
     canAccessEmployeeDb,
     canAccessOnboarding,
-    canAccessLeave
+    canAccessLeave,
+    canAccessCatalogue
   };
 
   try {
@@ -10711,6 +10747,559 @@ function updatePublishingQueueBadge() {
   } else {
     badge.style.display = 'none';
   }
+}
+
+/* ---------------------------------------------------------------------------
+   PRODUCT CATALOGUE (draft, read-only)
+
+   A lookup for designers and developers: find any Tahams family product and
+   get its proper name, provisional SKU and colour codes. The data below is
+   the draft list from the Obsidian note "Tahams - Master Product List"
+   (built 2026-09-23 from the Inventory A to Z and pricing sheets). It is
+   bundled in the app rather than stored in Supabase because it has not been
+   verified by the office yet; editing, image upload and a database table
+   come after that check (see "Product Catalogue - Plan & Decisions").
+
+   Every filter value has two names: `filter` (the short word used in the
+   sheets and in filters, e.g. "Lavender") and `proper` (the official name,
+   e.g. "Bliss Lavender"). `proper: null` means the office hasn't given one
+   yet; the filter word is shown with a "proper name TBD" flag instead.
+--------------------------------------------------------------------------- */
+const DEFAULT_CATALOG = {
+  brands: {
+    tahams:  { name: 'Tahams', code: 'TMS' },
+    lumina:  { name: 'Lumina by Tahams', code: 'LBT' },
+    perfume: { name: 'Perfume de Tahams', code: 'PDT' }
+  },
+  segments: [
+    { id: 'T',  name: 'Toddler',  sizes: ['S', 'M', 'L', 'XL', '2XL'] },
+    { id: 'K',  name: 'Kids',     sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] },
+    { id: 'A',  name: 'Adult',    sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] },
+    { id: 'BB', name: 'Big Boss', sizes: ['4XL', '5XL', '6XL', '7XL', '8XL', '9XL', '10XL'] },
+    { id: 'F',  name: 'Female',   sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL', '7XL', '8XL', '9XL', '10XL'] }
+  ],
+  categories: [
+    { id: 'C1',  name: 'Regular T-Shirt',            code: 'RT', season: 'Summer',   fabric: 'Regular Cotton', brand: 'tahams' },
+    { id: 'C2',  name: 'Raglan T-Shirt',             code: 'RG', season: 'Summer',   fabric: null,             brand: 'tahams' },
+    { id: 'C3',  name: 'Cut & Sew T-Shirt',          code: 'CS', season: 'Summer',   fabric: null,             brand: 'tahams' },
+    { id: 'C4',  name: 'Signature Striped T-Shirt',  code: 'SS', season: 'Summer',   fabric: 'Mixed Cotton',   brand: 'tahams' },
+    { id: 'C5',  name: 'Lycra Cotton T-Shirt & Polo', code: 'LC', season: 'Summer',  fabric: 'Lycra Cotton',   brand: 'tahams' },
+    { id: 'C6',  name: 'Katua & Fotua',              code: 'KF', season: 'All year', fabric: null,             brand: 'tahams' },
+    { id: 'C7',  name: 'Punjabi',                    code: 'PJ', season: 'All year', fabric: null,             brand: 'tahams' },
+    { id: 'C8',  name: 'Cuban Shirt',                code: 'CB', season: 'Summer',   fabric: null,             brand: 'tahams' },
+    { id: 'C9',  name: 'Bottoms',                    code: 'BT', season: 'All year', fabric: null,             brand: 'tahams' },
+    { id: 'C10', name: 'Winter Regular Wear',        code: 'WR', season: 'Winter',   fabric: null,             brand: 'tahams' },
+    { id: 'C11', name: 'Winter Elite Wear',          code: 'WE', season: 'Winter',   fabric: null,             brand: 'tahams' },
+    { id: 'C12', name: 'Female Co-ords Set',         code: 'CO', season: 'All year', fabric: null,             brand: 'lumina' },
+    { id: 'C13', name: 'Gift Items',                 code: 'GF', season: 'All year', fabric: null,             brand: 'tahams' },
+    { id: 'C14', name: 'Perfume',                    code: 'PF', season: 'All year', fabric: null,             brand: 'perfume' }
+  ],
+  colours: [
+    { id: 'white',    filter: 'White',         proper: 'Frosty White',    hex: '#FFFFFF', code: 'WHT', aliases: [] },
+    { id: 'black',    filter: 'Black',         proper: 'Raven Black',     hex: '#1D1C1E', code: 'BLK', aliases: [] },
+    { id: 'maroon',   filter: 'Maroon',        proper: 'Crimson Maroon',  hex: '#721522', code: 'MRN', aliases: [] },
+    { id: 'navy',     filter: 'Navy Blue',     proper: 'Ocean Navy Blue', hex: '#132B51', code: 'NVY', aliases: ['navy'] },
+    { id: 'anthra',   filter: 'Anthra',        proper: 'Charcoal Anthra', hex: null,      code: 'ANT', aliases: ['charcoal', 'anthracite'] },
+    { id: 'sky',      filter: 'Sky Blue',      proper: 'Breeze Sky Blue', hex: '#92D1F3', code: 'SKY', aliases: ['sky'] },
+    { id: 'green',    filter: 'Hunter Green',  proper: 'Hunter Green',    hex: '#074F3C', code: 'HGR', aliases: ['green'] },
+    { id: 'lavender', filter: 'Lavender',      proper: 'Bliss Lavender',  hex: '#E4D2FF', code: 'LAV', aliases: ['lavendar', 'light purple'] },
+    { id: 'red',      filter: 'Red',           proper: 'Ferrari Red',     hex: '#F01422', code: 'RED', aliases: [] },
+    { id: 'purple',   filter: 'Purple',        proper: null,              hex: null,      code: 'PUR', aliases: [] },
+    { id: 'syrup',    filter: 'Syrup Brown',   proper: null,              hex: null,      code: 'SYB', aliases: ['brown'] },
+    { id: 'sandy',    filter: 'Sandy Beige',   proper: null,              hex: null,      code: 'SBG', aliases: ['beige'] },
+    { id: 'wine',     filter: 'Wine Red',      proper: null,              hex: null,      code: 'WRD', aliases: ['wine'] },
+    { id: 'aqua',     filter: 'Aquamarine',    proper: null,              hex: null,      code: 'AQM', aliases: ['aqua'] },
+    { id: 'emerald',  filter: 'Emerald Green', proper: null,              hex: null,      code: 'EMG', aliases: ['emerald'] },
+    { id: 'cream',    filter: 'Cream',         proper: null,              hex: null,      code: 'CRM', aliases: [] },
+    { id: 'ash',      filter: 'Ash',           proper: null,              hex: null,      code: 'ASH', aliases: ['grey', 'gray'] },
+    { id: 'brown',    filter: 'Brown',         proper: null,              hex: null,      code: 'BRN', aliases: [] }
+  ],
+  // Named designs. A solid colour is referenced by its colour id directly;
+  // everything here is a colour pair or a named pattern, whose name is
+  // already the proper name.
+  designs: [
+    { id: 'rg-white-green',    kind: 'pair', colours: ['white', 'green'] },
+    { id: 'rg-white-lavender', kind: 'pair', colours: ['white', 'lavender'] },
+    { id: 'rg-maroon-white',   kind: 'pair', colours: ['maroon', 'white'] },
+    { id: 'rg-maroon-black',   kind: 'pair', colours: ['maroon', 'black'] },
+    { id: 'rg-lavender-black', kind: 'pair', colours: ['lavender', 'black'] },
+    { id: 'rg-navy-black',     kind: 'pair', colours: ['navy', 'black'] },
+    { id: 'rg-sky-navy',       kind: 'pair', colours: ['sky', 'navy'] },
+    { id: 'rg-black-white',    kind: 'pair', colours: ['black', 'white'] },
+    { id: 'rg-green-anthra',   kind: 'pair', colours: ['green', 'anthra'] },
+    { id: 'rg-anthra-black',   kind: 'pair', colours: ['anthra', 'black'] },
+    { id: 'st-white-black',    kind: 'stripe', name: 'White Black',    code: 'WBK', colours: ['white', 'black'] },
+    { id: 'st-cream-red',      kind: 'stripe', name: 'Cream Red',      code: 'CRD', colours: ['cream', 'red'] },
+    { id: 'st-ash-black',      kind: 'stripe', name: 'Ash Black',      code: 'ABK', colours: ['ash', 'black'] },
+    { id: 'st-green-white',    kind: 'stripe', name: 'Green White',    code: 'GWH', colours: ['green', 'white'] },
+    { id: 'st-navy-white',     kind: 'stripe', name: 'Navy White',     code: 'NWH', colours: ['navy', 'white'] },
+    { id: 'st-lavender-brown', kind: 'stripe', name: 'Lavender Brown', code: 'LBR', colours: ['lavender', 'brown'] },
+    { id: 'st-maroon-cream',   kind: 'stripe', name: 'Maroon Cream',   code: 'MCR', colours: ['maroon', 'cream'] },
+    { id: 'st-sky-brown',      kind: 'stripe', name: 'Sky Brown',      code: 'SBR', colours: ['sky', 'brown'] },
+    { id: 'kt-crimson-square', kind: 'pattern', name: 'Crimson Classic Square', code: 'CCS' },
+    { id: 'kt-urban-check',    kind: 'pattern', name: 'Urban Check',            code: 'UCH' },
+    { id: 'kt-purple-aura',    kind: 'pattern', name: 'Purple Aura Stripe',     code: 'PAS' },
+    { id: 'kt-desert-stripe',  kind: 'pattern', name: 'Desert Stripe',          code: 'DST' },
+    { id: 'kt-gray-zenith',    kind: 'pattern', name: 'Gray Zenith',            code: 'GZN' },
+    { id: 'kt-skyline-stripe', kind: 'pattern', name: 'Skyline Stripe',         code: 'SKS' },
+    { id: 'cb-shadow-lines',   kind: 'pattern', name: 'Shadow Lines',           code: 'SHL' },
+    { id: 'cb-mauve-mist',     kind: 'pattern', name: 'Mauve Mist',             code: 'MVM' },
+    { id: 'cb-terracotta',     kind: 'pattern', name: 'Terracotta Blossom',     code: 'TCB' },
+    { id: 'cb-crimson-shadow', kind: 'pattern', name: 'Crimson Shadow',         code: 'CSH' },
+    { id: 'jn-rebel-blue',     kind: 'pattern', name: 'Rebel Blue',             code: 'RBL' },
+    { id: 'jn-indigo-drift',   kind: 'pattern', name: 'Indigo Drift',           code: 'IND' },
+    { id: 'jn-charcoal-black', kind: 'pattern', name: 'Charcoal Black',         code: 'CHB' },
+    { id: 'jn-coastal-blue',   kind: 'pattern', name: 'Coastal Blue',           code: 'CBL' }
+  ],
+  designSets: {
+    REG:     ['white', 'maroon', 'lavender', 'purple', 'navy', 'sky', 'black', 'green', 'anthra', 'red', 'syrup'],
+    RAGLAN:  ['rg-white-green', 'rg-white-lavender', 'rg-maroon-white', 'rg-maroon-black', 'rg-lavender-black', 'rg-navy-black', 'rg-sky-navy', 'rg-black-white', 'rg-green-anthra', 'rg-anthra-black'],
+    CUTSEW:  ['cs-anthra-green', 'cs-anthra-black', 'cs-maroon-black'],
+    STRIPE:  ['st-white-black', 'st-cream-red', 'st-ash-black', 'st-green-white', 'st-navy-white', 'st-lavender-brown', 'st-maroon-cream', 'st-sky-brown'],
+    LYCRA:   ['sandy', 'wine', 'black', 'navy'],
+    KATUA:   ['kt-crimson-square', 'kt-urban-check', 'kt-purple-aura', 'kt-desert-stripe', 'kt-gray-zenith', 'kt-skyline-stripe'],
+    CUBAN:   ['cb-shadow-lines', 'cb-mauve-mist', 'cb-terracotta', 'cb-crimson-shadow'],
+    TROUSER: ['black', 'navy', 'green', 'maroon'],
+    JEANS:   ['jn-rebel-blue', 'jn-indigo-drift', 'jn-charcoal-black', 'jn-coastal-blue'],
+    ELITE:   ['sandy', 'wine', 'black', 'aqua', 'emerald']
+  },
+  // [id, formal name, category, product type, neck, sleeve, segments, design set, code, options]
+  // Empty segments = not yet known (sizes fall back to Adult, flagged TBD).
+  // `options` replaces sizes for products sold by capacity/format/waist.
+  products: [
+    ['P1',  'Basic Half Sleeve T-Shirt',        'C1',  'T-Shirt',      'Round Neck', 'Half Sleeve', ['T', 'K', 'A', 'BB'], 'REG',    'BHS'],
+    ['P2',  'Basic Full Sleeve T-Shirt',        'C1',  'T-Shirt',      'Round Neck', 'Full Sleeve', ['T', 'K', 'A', 'BB'], 'REG',    'BFS'],
+    ['P3',  'Romper Half Sleeve',               'C1',  'Romper',       'Round Neck', 'Half Sleeve', ['T'],                 'REG',    'RMH'],
+    ['P4',  'Romper Full Sleeve',               'C1',  'Romper',       'Round Neck', 'Full Sleeve', ['T'],                 'REG',    'RMF'],
+    ['P5',  'Drop Shoulder T-Shirt',            'C1',  'T-Shirt',      'Round Neck', 'Half Sleeve', ['A', 'BB'],           'REG',    'DSH'],
+    ['P6',  'Basic Crop Tee',                   'C1',  'Crop Tee',     'Round Neck', 'Half Sleeve', ['A'],                 'REG',    'BCT'],
+    ['P7',  'Lettuce Edge Crop',                'C1',  'Crop Tee',     'Round Neck', 'Half Sleeve', ['A'],                 'REG',    'LEC'],
+    ['P8',  'Full Sleeve Crop',                 'C1',  'Crop Tee',     'Round Neck', 'Full Sleeve', ['A'],                 'REG',    'FSC'],
+    ['P9',  'Tank Top',                         'C1',  'Tank Top',     'Round Neck', 'Sleeveless',  ['A'],                 'REG',    'TNK'],
+    ['P10', 'Long T-Shirt',                     'C1',  'Long T-Shirt', 'Round Neck', null,          ['A'],                 'REG',    'LNG'],
+    ['P11', 'V-Neck Half Sleeve T-Shirt',       'C1',  'T-Shirt',      'V-Neck',     'Half Sleeve', ['T', 'K', 'A', 'BB'], 'REG',    'VHS'],
+    ['P12', 'V-Neck Full Sleeve T-Shirt',       'C1',  'T-Shirt',      'V-Neck',     'Full Sleeve', ['T', 'K', 'A', 'BB'], 'REG',    'VFS'],
+    ['P13', 'V-Neck Drop Shoulder T-Shirt',     'C1',  'T-Shirt',      'V-Neck',     'Half Sleeve', ['A', 'BB'],           'REG',    'VDS'],
+    ['P14', 'Polo',                             'C1',  'Polo',         'Polo Collar', 'Half Sleeve', ['A'],                'REG',    'POL'],
+    ['P15', 'Raglan Half Sleeve T-Shirt',       'C2',  'T-Shirt',      'Round Neck', 'Half Sleeve', ['K', 'A', 'BB'],      'RAGLAN', 'RHS'],
+    ['P16', 'Raglan Full Sleeve T-Shirt',       'C2',  'T-Shirt',      'Round Neck', 'Full Sleeve', ['K', 'A', 'BB'],      'RAGLAN', 'RFS'],
+    ['P17', 'Raglan Drop Shoulder T-Shirt',     'C2',  'T-Shirt',      'Round Neck', 'Half Sleeve', [],                    'RAGLAN', 'RDS'],
+    ['P18', 'Raglan Basic Crop Tee',            'C2',  'Crop Tee',     'Round Neck', 'Half Sleeve', [],                    'RAGLAN', 'RCT'],
+    ['P19', 'Raglan Lettuce Edge Crop',         'C2',  'Crop Tee',     'Round Neck', 'Half Sleeve', [],                    'RAGLAN', 'RLC'],
+    ['P20', 'Raglan Full Sleeve Crop',          'C2',  'Crop Tee',     'Round Neck', 'Full Sleeve', [],                    'RAGLAN', 'RFC'],
+    ['P21', 'Raglan Long T-Shirt',              'C2',  'Long T-Shirt', 'Round Neck', null,          [],                    'RAGLAN', 'RLT'],
+    ['P22', 'Raglan V-Neck Half Sleeve',        'C2',  'T-Shirt',      'V-Neck',     'Half Sleeve', [],                    'RAGLAN', 'RVH'],
+    ['P23', 'Raglan V-Neck Full Sleeve',        'C2',  'T-Shirt',      'V-Neck',     'Full Sleeve', [],                    'RAGLAN', 'RVF'],
+    ['P24', 'Raglan V-Neck Drop Shoulder',      'C2',  'T-Shirt',      'V-Neck',     'Half Sleeve', [],                    'RAGLAN', 'RVD'],
+    ['P25', 'Cut & Sew Half Sleeve T-Shirt',    'C3',  'T-Shirt',      'Round Neck', 'Half Sleeve', ['K', 'A'],            'CUTSEW', 'CHS'],
+    ['P26', 'Signature Striped Half Sleeve T-Shirt', 'C4', 'T-Shirt',  'Round Neck', 'Half Sleeve', ['K', 'A', 'BB'],      'STRIPE', 'SHS'],
+    ['P27', 'Signature Striped Drop Shoulder T-Shirt', 'C4', 'T-Shirt', 'Round Neck', 'Half Sleeve', ['A', 'BB'],          'STRIPE', 'SDS'],
+    ['P28', 'Signature Striped Crop Tee',       'C4',  'Crop Tee',     'Round Neck', 'Half Sleeve', ['A'],                 'STRIPE', 'SCT'],
+    ['P29', 'Lycra Basic Half Sleeve T-Shirt',  'C5',  'T-Shirt',      'Round Neck', 'Half Sleeve', [],                    'LYCRA',  'LHS'],
+    ['P30', 'Lycra Drop Shoulder T-Shirt',      'C5',  'T-Shirt',      'Round Neck', 'Half Sleeve', [],                    'LYCRA',  'LDS'],
+    ['P31', 'Lycra Half Sleeve Polo',           'C5',  'Polo',         'Polo Collar', 'Half Sleeve', [],                   'LYCRA',  'LHP'],
+    ['P32', 'Lycra Full Sleeve Polo',           'C5',  'Polo',         'Polo Collar', 'Full Sleeve', [],                   'LYCRA',  'LFP'],
+    ['P33', 'Katua',                            'C6',  'Katua',        null,         null,          ['K', 'A', 'BB'],      'KATUA',  'KAT'],
+    ['P34', 'Fotua',                            'C6',  'Fotua',        null,         null,          [],                    'KATUA',  'FOT'],
+    ['P35', 'Punjabi',                          'C7',  'Punjabi',      null,         null,          ['A'],                 null,     'PJB'],
+    ['P36', 'Cuban Shirt',                      'C8',  'Shirt',        null,         null,          ['A', 'BB'],           'CUBAN',  'CUB'],
+    ['P37', 'Kids Cuban Shirt',                 'C8',  'Shirt',        null,         null,          ['K'],                 'CUBAN',  'KCB'],
+    ['P38', 'Relaxed Fit Check Trouser',        'C9',  'Trouser',      null,         null,          ['A', 'BB'],           'TROUSER', 'RFT'],
+    ['P39', 'Jeans',                            'C9',  'Jeans',        null,         null,          ['A'],                 'JEANS',  'JNS', { label: 'Waist', values: ['30', '32', '34', '36', '38'] }],
+    ['P40', 'Sweatpants',                       'C9',  'Pants',        null,         null,          [],                    'ELITE',  'SWP'],
+    ['P41', 'Kids Pants',                       'C9',  'Pants',        null,         null,          ['K'],                 'REG',    'KPN'],
+    ['P42', 'Kangaroo Pocket Hoodie',           'C10', 'Hoodie',       null,         'Full Sleeve', ['A', 'BB'],           null,     'KPH'],
+    ['P43', 'Zipper Hoodie',                    'C10', 'Hoodie',       null,         'Full Sleeve', ['A', 'BB'],           null,     'ZPH'],
+    ['P44', 'Sweatshirt',                       'C10', 'Sweatshirt',   null,         'Full Sleeve', ['A', 'BB'],           null,     'SWT'],
+    ['P45', 'Crop Zipper Hoodie',               'C10', 'Hoodie',       null,         'Full Sleeve', ['A'],                 null,     'CZH'],
+    ['P46', 'Sleeveless Zipper Hoodie',         'C10', 'Hoodie',       null,         'Sleeveless',  ['A', 'BB'],           null,     'SZH'],
+    ['P47', 'Drop Shoulder Half Sleeve Hoodie', 'C10', 'Hoodie',       null,         'Half Sleeve', ['A', 'BB'],           null,     'DHH'],
+    ['P48', 'Sleeveless Sweatshirt',            'C10', 'Sweatshirt',   null,         'Sleeveless',  ['A', 'BB'],           null,     'SLS'],
+    ['P49', 'Elite Kangaroo Pocket Hoodie',     'C11', 'Hoodie',       null,         'Full Sleeve', ['A', 'BB'],           'ELITE',  'KPH'],
+    ['P50', 'Elite Zipper Hoodie',              'C11', 'Hoodie',       null,         'Full Sleeve', ['A', 'BB'],           'ELITE',  'ZPH'],
+    ['P51', 'Elite Sweatshirt',                 'C11', 'Sweatshirt',   null,         'Full Sleeve', ['A', 'BB'],           'ELITE',  'SWT'],
+    ['P52', 'Elite Sleeveless Zipper Hoodie',   'C11', 'Hoodie',       null,         'Sleeveless',  ['A', 'BB'],           'ELITE',  'SZH'],
+    ['P53', 'Elite Kids Zipper Hoodie',         'C11', 'Hoodie',       null,         'Full Sleeve', ['K'],                 'ELITE',  'KZH'],
+    ['P54', 'Korobi Co-ords Set',               'C12', 'Co-ords Set',  null,         null,          ['F'],                 null,     'KRB'],
+    ['P55', 'Rojoni Co-ords Set',               'C12', 'Co-ords Set',  null,         null,          ['F'],                 null,     'RJN'],
+    ['P56', 'Orchid Co-ords Set',               'C12', 'Co-ords Set',  null,         null,          ['F'],                 null,     'ORC'],
+    ['P57', 'Mug',                              'C13', 'Mug',          null,         null,          [],                    null,     'MUG', { label: 'Type', values: ['Standard'] }],
+    ['P58', 'Magic Mug',                        'C13', 'Mug',          null,         null,          [],                    null,     'MGM', { label: 'Type', values: ['Standard'] }],
+    ['P59', 'Photo Frame',                      'C13', 'Photo Frame',  null,         null,          [],                    null,     'FRM', { label: 'Size', values: ['A5', 'A4'] }],
+    ['P60', 'Water Bottle',                     'C13', 'Water Bottle', null,         null,          [],                    null,     'BTL', { label: 'Capacity', values: ['600 ml', '750 ml'] }],
+    ['P61', 'Perfume',                          'C14', 'Perfume',      null,         null,          [],                    null,     'PRF', { label: 'Size', values: ['6 ml', '10 ml', '30 ml'] }]
+  ]
+};
+// Cut & Sew pairs reuse the same pair shape as Raglan.
+DEFAULT_CATALOG.designs.push(
+  { id: 'cs-anthra-green', kind: 'pair', colours: ['anthra', 'green'] },
+  { id: 'cs-anthra-black', kind: 'pair', colours: ['anthra', 'black'] },
+  { id: 'cs-maroon-black', kind: 'pair', colours: ['maroon', 'black'] }
+);
+
+// Lookup maps and the expanded product list, built once on first use.
+let catalogIndex = null;
+function getCatalogIndex() {
+  if (catalogIndex) return catalogIndex;
+  const c = DEFAULT_CATALOG;
+  const colours = new Map(c.colours.map(x => [x.id, x]));
+  const designs = new Map(c.designs.map(x => [x.id, x]));
+  const categories = new Map(c.categories.map(x => [x.id, x]));
+  const segments = new Map(c.segments.map(x => [x.id, x]));
+  const products = c.products.map(([id, name, categoryId, type, neck, sleeve, segs, designSet, code, options]) => ({
+    id, name, categoryId, type, neck, sleeve,
+    segments: segs, segmentsKnown: segs.length > 0,
+    designIds: designSet ? c.designSets[designSet] : [],
+    code, options: options || null
+  }));
+  catalogIndex = { colours, designs, categories, segments, products };
+  return catalogIndex;
+}
+
+// Colour name for display: the proper name, or the filter word when the
+// office hasn't supplied a proper name yet.
+function catalogColourName(colour) {
+  return colour ? (colour.proper || colour.filter) : '';
+}
+
+// Everything the UI needs to know about one design id (a solid colour id, a
+// pair or a named pattern): its proper name, the filter words it answers to,
+// a code for the SKU, swatch colours, and whether any part still lacks a
+// proper name.
+function catalogDesignInfo(designId) {
+  const { colours, designs } = getCatalogIndex();
+  if (colours.has(designId)) {
+    const col = colours.get(designId);
+    return {
+      id: designId, kind: 'solid', name: catalogColourName(col),
+      filterWords: [col.filter, ...(col.aliases || [])],
+      code: col.code, swatches: [col.hex], hex: col.hex,
+      nameTbd: !col.proper, colourIds: [designId]
+    };
+  }
+  const d = designs.get(designId);
+  if (!d) return null;
+  const parts = (d.colours || []).map(id => colours.get(id)).filter(Boolean);
+  if (d.kind === 'pair') {
+    return {
+      id: designId, kind: 'pair', name: parts.map(catalogColourName).join(' and '),
+      filterWords: parts.flatMap(p => [p.filter, ...(p.aliases || [])]),
+      code: parts.map(p => p.code).join(''), swatches: parts.map(p => p.hex), hex: null,
+      nameTbd: parts.some(p => !p.proper), colourIds: d.colours
+    };
+  }
+  return {
+    id: designId, kind: d.kind, name: d.name,
+    filterWords: parts.flatMap(p => [p.filter, ...(p.aliases || [])]),
+    code: d.code, swatches: parts.map(p => p.hex), hex: null,
+    nameTbd: false, colourIds: d.colours || []
+  };
+}
+
+// Size choices for a product: its own option list (waist, capacity...) or
+// the sizes of each segment it's sold in. Unknown segments fall back to
+// Adult sizes so the lookup still works, flagged in the UI.
+function catalogSizeChoices(product) {
+  if (product.options) {
+    return product.options.values.map(v => ({ label: v, code: v.replace(/\s+/g, '').toUpperCase() }));
+  }
+  const { segments } = getCatalogIndex();
+  const segIds = product.segmentsKnown ? product.segments : ['A'];
+  return segIds.flatMap(segId => {
+    const seg = segments.get(segId);
+    // Adult and Big Boss sizes are unambiguous on their own (XL, 5XL);
+    // Toddler and Kids repeat Adult size letters, so they carry the segment.
+    const prefix = (segId === 'T' || segId === 'K') ? `${seg.name} ` : '';
+    const codePrefix = (segId === 'T' || segId === 'K') ? `${segId}` : '';
+    return seg.sizes.map(s => ({ label: `${prefix}${s}`, code: `${codePrefix}${s}`, segmentId: segId }));
+  });
+}
+
+function catalogBrandFor(product) {
+  const { categories } = getCatalogIndex();
+  const cat = categories.get(product.categoryId);
+  return DEFAULT_CATALOG.brands[cat ? cat.brand : 'tahams'];
+}
+
+// The full proper name, built from its parts so nobody types it by hand:
+// "Tahams Basic Half Sleeve T-Shirt, Bliss Lavender, XL".
+function catalogProperName(product, designId, sizeLabel) {
+  const brand = catalogBrandFor(product);
+  const design = designId ? catalogDesignInfo(designId) : null;
+  return [`${brand.name} ${product.name}`, design ? design.name : null, sizeLabel || null]
+    .filter(Boolean).join(', ');
+}
+
+// Provisional SKU: BRAND-CATEGORY-PRODUCT-DESIGN-SIZE, e.g.
+// TMS-RT-BHS-LAV-XL. Format not yet approved; shown as provisional.
+function catalogSku(product, designId, sizeCode) {
+  const { categories } = getCatalogIndex();
+  const cat = categories.get(product.categoryId);
+  const design = designId ? catalogDesignInfo(designId) : null;
+  return [catalogBrandFor(product).code, cat.code, product.code, design ? design.code : null, sizeCode || null]
+    .filter(Boolean).join('-');
+}
+
+// Colour and design names matching the search text: the "type lavender,
+// get Bliss Lavender" answer shown above the product cards.
+function catalogNameMatches(query) {
+  const q = (query || '').trim().toLowerCase();
+  if (q.length < 2) return [];
+  const { colours, designs } = getCatalogIndex();
+  const hits = [];
+  colours.forEach(col => {
+    const words = [col.filter, col.proper, ...(col.aliases || [])].filter(Boolean).map(w => w.toLowerCase());
+    if (words.some(w => w.includes(q))) hits.push(catalogDesignInfo(col.id));
+  });
+  designs.forEach(d => {
+    if (d.kind === 'pair') return;   // pairs are just two colours already listed
+    if ((d.name || '').toLowerCase().includes(q)) hits.push(catalogDesignInfo(d.id));
+  });
+  return hits;
+}
+
+function catalogProductMatches(product, q) {
+  if (!q) return true;
+  const { categories } = getCatalogIndex();
+  const hay = [
+    product.name, product.type, product.neck, product.sleeve, product.id,
+    categories.get(product.categoryId).name,
+    catalogSku(product),
+    ...product.designIds.flatMap(id => {
+      const d = catalogDesignInfo(id);
+      return d ? [d.name, ...d.filterWords] : [];
+    })
+  ].filter(Boolean).join(' ').toLowerCase();
+  return q.split(/\s+/).every(word => hay.includes(word));
+}
+
+const catalogFilters = { q: '', category: 'all', type: 'all', colour: 'all', segment: 'all' };
+let catalogEventsWired = false;
+
+function renderCatalogue() {
+  const grid = document.getElementById('catalog-grid');
+  if (!grid) return;
+  const idx = getCatalogIndex();
+
+  if (!catalogEventsWired) {
+    catalogEventsWired = true;
+    const fill = (id, allLabel, items) => {
+      const sel = document.getElementById(id);
+      sel.innerHTML = `<option value="all">${allLabel}</option>` +
+        items.map(([value, label]) => `<option value="${escHtml(value)}">${escHtml(label)}</option>`).join('');
+    };
+    fill('catalog-filter-category', 'All categories', DEFAULT_CATALOG.categories.map(c => [c.id, c.name]));
+    fill('catalog-filter-type', 'All products', [...new Set(idx.products.map(p => p.type))].sort().map(t => [t, t]));
+    fill('catalog-filter-colour', 'All colours', DEFAULT_CATALOG.colours.map(c => [c.id, catalogColourName(c)]));
+    fill('catalog-filter-segment', 'All segments', DEFAULT_CATALOG.segments.map(s => [s.id, s.name]));
+
+    const bind = (id, key, evt) => document.getElementById(id).addEventListener(evt, e => {
+      catalogFilters[key] = e.target.value;
+      renderCatalogue();
+    });
+    bind('catalog-search', 'q', 'input');
+    bind('catalog-filter-category', 'category', 'change');
+    bind('catalog-filter-type', 'type', 'change');
+    bind('catalog-filter-colour', 'colour', 'change');
+    bind('catalog-filter-segment', 'segment', 'change');
+
+    grid.addEventListener('click', e => {
+      const card = e.target.closest('[data-product-id]');
+      if (card) openCatalogModal(card.dataset.productId);
+    });
+    document.getElementById('catalog-name-matches').addEventListener('click', e => {
+      const btn = e.target.closest('[data-copy]');
+      if (btn) catalogCopy(btn.dataset.copy, btn.dataset.copyLabel);
+    });
+    document.getElementById('catalog-modal-close-btn').addEventListener('click', closeCatalogModal);
+    document.getElementById('catalog-modal').addEventListener('click', e => {
+      if (e.target.id === 'catalog-modal') closeCatalogModal();
+    });
+  }
+
+  const q = catalogFilters.q.trim().toLowerCase();
+  const list = idx.products.filter(p =>
+    (catalogFilters.category === 'all' || p.categoryId === catalogFilters.category) &&
+    (catalogFilters.type === 'all' || p.type === catalogFilters.type) &&
+    (catalogFilters.segment === 'all' || p.segments.includes(catalogFilters.segment)) &&
+    (catalogFilters.colour === 'all' || p.designIds.some(id => {
+      const d = catalogDesignInfo(id);
+      return d && d.colourIds.includes(catalogFilters.colour);
+    })) &&
+    catalogProductMatches(p, q)
+  );
+
+  // Name matches: the direct answer to "what do we call this colour?"
+  const matchesEl = document.getElementById('catalog-name-matches');
+  const matches = catalogNameMatches(q);
+  matchesEl.innerHTML = matches.length ? matches.map(d => `
+    <div class="catalog-name-match">
+      <span class="catalog-swatches">${catalogSwatchHtml(d)}</span>
+      <span class="catalog-name-match-text">
+        ${d.kind === 'solid'
+          ? `<span class="catalog-name-match-filter">${escHtml(d.filterWords[0])}</span><span class="catalog-name-match-arrow" aria-hidden="true">→</span>`
+          : `<span class="catalog-name-match-filter">${d.kind === 'stripe' ? 'Stripe design' : 'Pattern'}</span>`}
+        <strong>${escHtml(d.name)}</strong>
+        ${d.nameTbd ? '<span class="catalog-flag">Proper name TBD</span>' : ''}
+        ${d.hex ? `<span class="catalog-hex">${escHtml(d.hex)}</span>` : ''}
+      </span>
+      <button type="button" class="btn-secondary catalog-copy-btn" data-copy="${escHtml(d.name)}" data-copy-label="Name">Copy name</button>
+    </div>`).join('') : '';
+
+  document.getElementById('catalog-count').textContent =
+    `${list.length} of ${idx.products.length} products`;
+
+  grid.innerHTML = list.length ? list.map(p => {
+    const cat = idx.categories.get(p.categoryId);
+    const designs = p.designIds.map(catalogDesignInfo).filter(Boolean);
+    const segNames = p.segmentsKnown
+      ? p.segments.map(s => idx.segments.get(s).name)
+      : (p.options ? [] : ['Segment TBD']);
+    return `
+      <button type="button" class="catalog-card" data-product-id="${p.id}">
+        <span class="catalog-card-swatches">${designs.length ? designs.slice(0, 12).map(catalogSwatchHtml).join('') : '<span class="catalog-card-nodesign">Designs TBD</span>'}</span>
+        <span class="catalog-card-name">${escHtml(p.name)}</span>
+        <span class="catalog-card-meta">${escHtml(cat.name)} · ${escHtml(p.type)}</span>
+        <span class="catalog-card-chips">
+          ${segNames.map(s => `<span class="catalog-chip">${escHtml(s)}</span>`).join('')}
+          ${p.options ? `<span class="catalog-chip">${escHtml(p.options.values.join(', '))}</span>` : ''}
+          ${designs.length ? `<span class="catalog-chip">${designs.length} design${designs.length === 1 ? '' : 's'}</span>` : ''}
+        </span>
+        <span class="catalog-card-sku">${escHtml(catalogSku(p))}</span>
+      </button>`;
+  }).join('') : '<p class="catalog-empty">No products match. Try another word or change a filter.</p>';
+}
+
+// Small colour dots for a design; a pattern with no known colours gets its
+// initials instead, so every design has something to recognise it by.
+function catalogSwatchHtml(design) {
+  const known = (design.swatches || []).filter(Boolean);
+  if (design.kind === 'pattern' && known.length === 0) {
+    const initials = design.name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    return `<span class="catalog-swatch catalog-swatch-pattern" title="${escHtml(design.name)}">${escHtml(initials)}</span>`;
+  }
+  if (known.length === 0) {
+    return `<span class="catalog-swatch catalog-swatch-unknown" title="${escHtml(design.name)} (colour code TBD)"></span>`;
+  }
+  const bg = known.length === 1 ? known[0] : `linear-gradient(135deg, ${known[0]} 50%, ${known[1]} 50%)`;
+  return `<span class="catalog-swatch" style="background: ${bg};" title="${escHtml(design.name)}"></span>`;
+}
+
+async function catalogCopy(text, label) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(`${label || 'Text'} copied`, 'success');
+  } catch (e) {
+    showToast('Could not copy. Select the text manually.', 'error');
+  }
+}
+
+let catalogModalState = null;
+
+function openCatalogModal(productId) {
+  const idx = getCatalogIndex();
+  const product = idx.products.find(p => p.id === productId);
+  if (!product) return;
+  const sizes = catalogSizeChoices(product);
+  catalogModalState = {
+    product,
+    designId: product.designIds[0] || null,
+    size: sizes[0] || null
+  };
+  document.getElementById('catalog-modal-title').textContent = product.name;
+  renderCatalogModalBody();
+  document.getElementById('catalog-modal').classList.add('active');
+}
+
+function closeCatalogModal() {
+  document.getElementById('catalog-modal').classList.remove('active');
+  catalogModalState = null;
+}
+
+function renderCatalogModalBody() {
+  const body = document.getElementById('catalog-modal-body');
+  const { product, designId, size } = catalogModalState;
+  const idx = getCatalogIndex();
+  const cat = idx.categories.get(product.categoryId);
+  const brand = catalogBrandFor(product);
+  const designs = product.designIds.map(catalogDesignInfo).filter(Boolean);
+  const sizes = catalogSizeChoices(product);
+  const design = designId ? catalogDesignInfo(designId) : null;
+  const properName = catalogProperName(product, designId, size && size.label);
+  const sku = catalogSku(product, designId, size && size.code);
+
+  const facts = [
+    ['Brand', brand.name],
+    ['Category', cat.name],
+    ['Product', product.type],
+    ['Neck', product.neck],
+    ['Sleeve', product.sleeve],
+    ['Fabric', cat.fabric],
+    ['Segments', product.segmentsKnown ? product.segments.map(s => idx.segments.get(s).name).join(', ') : (product.options ? null : 'TBD (Adult sizes shown)')]
+  ].filter(([, v]) => v);
+
+  body.innerHTML = `
+    <dl class="catalog-facts">
+      ${facts.map(([k, v]) => `<div><dt>${escHtml(k)}</dt><dd>${escHtml(v)}</dd></div>`).join('')}
+    </dl>
+
+    ${designs.length ? `
+    <div class="catalog-picker">
+      <p class="catalog-picker-label">Design</p>
+      <div class="catalog-picker-options" data-pick="design">
+        ${designs.map(d => `
+          <button type="button" class="catalog-option${d.id === designId ? ' is-selected' : ''}" data-value="${d.id}" aria-pressed="${d.id === designId}">
+            <span class="catalog-swatches">${catalogSwatchHtml(d)}</span>${escHtml(d.name)}
+          </button>`).join('')}
+      </div>
+    </div>` : '<p class="catalog-note">Designs and colours for this product are not in the sheets yet.</p>'}
+
+    ${sizes.length ? `
+    <div class="catalog-picker">
+      <p class="catalog-picker-label">${escHtml(product.options ? product.options.label : 'Size')}</p>
+      <div class="catalog-picker-options" data-pick="size">
+        ${sizes.map(s => `
+          <button type="button" class="catalog-option${size && s.code === size.code ? ' is-selected' : ''}" data-value="${escHtml(s.code)}" aria-pressed="${!!(size && s.code === size.code)}">${escHtml(s.label)}</button>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="catalog-result">
+      <div class="catalog-result-row">
+        <div>
+          <p class="catalog-result-label">Proper name</p>
+          <p class="catalog-result-value">${escHtml(properName)}</p>
+          ${design && design.nameTbd ? '<p class="catalog-flag-text">Colour proper name not given yet: the sheet name is shown.</p>' : ''}
+        </div>
+        <button type="button" class="btn-secondary catalog-copy-btn" data-copy="${escHtml(properName)}" data-copy-label="Proper name">Copy</button>
+      </div>
+      <div class="catalog-result-row">
+        <div>
+          <p class="catalog-result-label">SKU <span class="catalog-flag">Provisional</span></p>
+          <p class="catalog-result-value catalog-mono">${escHtml(sku)}</p>
+        </div>
+        <button type="button" class="btn-secondary catalog-copy-btn" data-copy="${escHtml(sku)}" data-copy-label="SKU">Copy</button>
+      </div>
+      ${design && design.hex ? `
+      <div class="catalog-result-row">
+        <div>
+          <p class="catalog-result-label">Colour code</p>
+          <p class="catalog-result-value catalog-mono">${escHtml(design.hex)}</p>
+        </div>
+        <button type="button" class="btn-secondary catalog-copy-btn" data-copy="${escHtml(design.hex)}" data-copy-label="Colour code">Copy</button>
+      </div>` : ''}
+    </div>`;
+
+  body.querySelectorAll('[data-pick] .catalog-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pick = btn.closest('[data-pick]').dataset.pick;
+      if (pick === 'design') catalogModalState.designId = btn.dataset.value;
+      else catalogModalState.size = sizes.find(s => s.code === btn.dataset.value) || null;
+      renderCatalogModalBody();
+    });
+  });
+  body.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', () => catalogCopy(btn.dataset.copy, btn.dataset.copyLabel));
+  });
 }
 
 window.markTaskPosted = async function(taskId) {
