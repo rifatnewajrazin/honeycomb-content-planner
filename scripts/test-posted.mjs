@@ -10,6 +10,11 @@
 
 import { readFileSync } from 'fs';
 
+// The team works in Dhaka time and the business week starts Saturday 00:00
+// local, so the checks run in that time zone (restored at the end).
+const previousTZ = process.env.TZ;
+process.env.TZ = 'Asia/Dhaka';
+
 const src = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
 
 function extractBlock(startIdx, open, close) {
@@ -21,8 +26,9 @@ function extractBlock(startIdx, open, close) {
   throw new Error('Unbalanced block in app.js');
 }
 function fnSource(name) {
-  const i = src.indexOf(`function ${name}(`);
+  let i = src.indexOf(`function ${name}(`);
   if (i === -1) throw new Error(`test-posted: function ${name}() not found in app.js`);
+  if (src.slice(i - 6, i) === 'async ') i -= 6;
   return extractBlock(i, '{', '}');
 }
 function constSource(name, open, close) {
@@ -34,7 +40,8 @@ function constSource(name, open, close) {
 const FUNCS = [
   'matchTaskToBrandId', 'taskEffectiveBrandId', 'taskIsSubBrandBucket', 'pageKeysForTask',
   'brandForPageKey', 'pageLabelForLog', 'isTaskFullyPosted', 'getTaskPostedState',
-  'countPublishedForBrand', 'describeTaskChanges'
+  'countPublishedForBrand', 'countOverduePagesForBrand', 'describeTaskChanges',
+  'markTasksPostedBulk'
 ];
 const code = [
   constSource('DEFAULT_BRANDS', '[', ']'),
@@ -43,7 +50,23 @@ const code = [
   `return { DEFAULT_BRANDS, BRAND_HIERARCHY, ${FUNCS.join(', ')} };`
 ].join('\n');
 const state = { brands: [], tasks: [] };
-const app = new Function('state', code)(state);
+// Stand-ins for the browser/database pieces markTasksPostedBulk touches.
+const env = {
+  saved: [], logs: [], toasts: [], failIds: new Set(),
+  canCurrentUserMarkPosted: () => true,
+  doc: (_db, table, id) => ({ table, id }),
+  setDoc: async (ref, data) => {
+    if (env.failIds.has(ref.id)) throw new Error('simulated network failure');
+    env.saved.push({ id: ref.id, data });
+  },
+  logActivity: (text) => env.logs.push(text),
+  showToast: (msg, type) => env.toasts.push([type, msg]),
+  renderActivityLog() {}, updateActivityBadge() {}, refreshViews() {}
+};
+const STUBS = ['canCurrentUserMarkPosted', 'doc', 'setDoc', 'logActivity', 'showToast',
+  'renderActivityLog', 'updateActivityBadge', 'refreshViews'];
+const app = new Function('state', 'env', 'db',
+  `const { ${STUBS.join(', ')} } = env;\n` + code)(state, env, {});
 state.brands = app.DEFAULT_BRANDS;
 
 let failures = 0;
@@ -135,6 +158,56 @@ Object.entries(app.BRAND_HIERARCHY).forEach(([sub, parent]) => {
     'brand: Tahams to Lumina by Tahams; status: "In Progress" to "Finished"; comments changed');
   check('edit log with no changes', app.describeTaskChanges(before, { ...before }), 'no changes');
 }
+
+// 9. Week boundary in Dhaka time: Saturday 01:00 Dhaka is Friday 19:00 UTC,
+// and must count for the week starting that Saturday.
+{
+  const t = { id: 'T-10', taskType: 'post', brandId: 'sammtech', posted: { main: true }, postedAt: '2026-09-18T19:00:00.000Z' };
+  check('Saturday 1 AM Dhaka counts for the new week', count([t], 'sammtech'), 1);
+  check('...and not for the week before', count([t], 'sammtech', lastWeek), 0);
+  const f = { id: 'T-11', taskType: 'post', brandId: 'sammtech', posted: { main: true }, postedAt: '2026-09-25T17:00:00.000Z' };
+  check('Friday 11 PM Dhaka stays in its week', count([f], 'sammtech'), 1);
+}
+
+// 10. Critical badge is judged per page, like Published.
+{
+  const overdue = (tasks, brandId) => app.countOverduePagesForBrand(tasks, brandId, week[0]);
+  const subOnly = { id: 'T-12', taskType: 'post', brandId: 'lumina-tahams', date: '2026-09-10', posted: { sub: true, parent: false } };
+  check('sub page done: sub-brand not overdue', overdue([subOnly], 'lumina-tahams'), 0);
+  check('Tahams page missing: Tahams overdue', overdue([subOnly], 'tahams'), 1);
+  const none = { id: 'T-13', taskType: 'post', brandId: 'tahams', date: '2026-09-10' };
+  check('never-marked old post is overdue', overdue([none], 'tahams'), 1);
+  const thisWeek = { id: 'T-14', taskType: 'post', brandId: 'tahams', date: '2026-09-20', posted: { main: false } };
+  check('this week\'s post is not overdue yet', overdue([thisWeek], 'tahams'), 0);
+  const leftover = { id: 'T-15', taskType: 'post', brandId: 'lumina-tahams', date: '2026-09-10', posted: { main: false, sub: true, parent: true } };
+  check('leftover key does not make it overdue', overdue([leftover], 'tahams') + overdue([leftover], 'lumina-tahams'), 0);
+}
+
+// 11. Bulk "Mark as Posted": a failed save leaves the task unposted, is
+// reported, and is not logged; successful ones are logged by name.
+{
+  state.tasks = [
+    { id: 'T-20', name: 'Good one', taskType: 'post', brandId: 'lumina-tahams', posted: { sub: false, parent: false } },
+    { id: 'T-21', name: 'Bad one', taskType: 'post', brandId: 'tahams', posted: { main: false } }
+  ];
+  env.failIds = new Set(['T-21']);
+  const realConsoleError = console.error;
+  console.error = () => {};   // the app logs the simulated failure; expected here
+  await app.markTasksPostedBulk([
+    { taskId: 'T-20', pageKey: 'sub' }, { taskId: 'T-20', pageKey: 'parent' }, { taskId: 'T-21', pageKey: 'main' }
+  ]);
+  console.error = realConsoleError;
+  const [good, bad] = state.tasks;
+  check('saved task is posted in memory', app.isTaskFullyPosted(good), true);
+  check('saved task has per-page times', Object.keys(good.postedAtByPage || {}).sort(), ['parent', 'sub']);
+  check('failed task stays unposted in memory', bad.posted, { main: false });
+  check('failed task has no posted time', bad.postedAt, undefined);
+  check('only the saved task is logged', env.logs,
+    ['marked Task T-20: "Good one" as posted on Lumina by Tahams page and Tahams page']);
+  check('failure is shown to the user', env.toasts.some(([type, msg]) => type === 'error' && msg.includes('T-21')), true);
+}
+
+if (previousTZ === undefined) delete process.env.TZ; else process.env.TZ = previousTZ;
 
 if (failures) {
   console.error(`test-posted: ${failures} check(s) failed. Build stopped.`);

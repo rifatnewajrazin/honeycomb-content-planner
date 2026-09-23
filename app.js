@@ -7546,7 +7546,7 @@ function taskBrandName(task) {
 // posted on just one of them counts for that page's brand straight away.
 // Each page uses its own postedAtByPage time when present (older marks only
 // have the task-level postedAt; marks older than that fall back to the
-// scheduled date). Covered by scripts/test-posted.mjs, which runs on every
+// scheduled date). weekStart/weekEnd are local-time Dates. Covered by scripts/test-posted.mjs, which runs on every
 // `npm run build`.
 function countPublishedForBrand(tasks, brandId, weekStart, weekEnd) {
   let count = 0;
@@ -7556,11 +7556,33 @@ function countPublishedForBrand(tasks, brandId, weekStart, weekEnd) {
       if (t.posted[key] !== true) return;
       const pageBrand = brandForPageKey(t, key);
       if (!pageBrand || pageBrand.id !== brandId) return;
+      // Compare the actual posted moment, not its UTC calendar date: the
+      // week runs Saturday 00:00 local (Dhaka) time, which is still Friday
+      // in UTC, so slicing the ISO string put Saturday 00:00 to 05:59 marks
+      // into the previous week.
       const stamp = (t.postedAtByPage && t.postedAtByPage[key]) || t.postedAt;
-      const postedDateStr = stamp ? stamp.slice(0, 10) : t.date;
-      if (!postedDateStr) return;
-      const postedDate = new Date(postedDateStr + 'T00:00:00');
+      const postedDate = stamp ? new Date(stamp) : (t.date ? new Date(t.date + 'T00:00:00') : null);
+      if (!postedDate || isNaN(postedDate)) return;
       if (postedDate >= weekStart && postedDate <= weekEnd) count++;
+    });
+  });
+  return count;
+}
+
+// Dashboard "Critical" check for one brand card: how many pages this brand
+// owes from posts scheduled before this week that still aren't marked
+// posted. Per page, like countPublishedForBrand, so a Lumina post missing
+// only on the Tahams page counts against Tahams, not Lumina.
+function countOverduePagesForBrand(tasks, brandId, weekStart) {
+  let count = 0;
+  tasks.forEach(t => {
+    if (t.taskType !== 'post' || !t.date) return;
+    if (!(new Date(t.date + 'T00:00:00') < weekStart)) return;
+    const posted = (t.posted && typeof t.posted === 'object') ? t.posted : {};
+    pageKeysForTask(t).forEach(key => {
+      if (posted[key] === true) return;
+      const pageBrand = brandForPageKey(t, key);
+      if (pageBrand && pageBrand.id === brandId) count++;
     });
   });
   return count;
@@ -7615,14 +7637,12 @@ function renderDashboard() {
     // (Was reading the separate `posts` collection, which nothing writes to
     // anymore now that Posted-tracking lives in Task Tracker — that left
     // every brand permanently stuck Critical regardless of real activity.)
-    const overduePosts = (state.tasks || []).filter(t => {
-      if (t.taskType !== 'post' || isTaskFullyPosted(t) || !t.date) return false;
-      const tDate = new Date(t.date + 'T00:00:00');
-      if (!(tDate < weekStart)) return false;
-      return taskEffectiveBrandId(t) === brand.id;
-    });
+    // Judged per page, the same way Published is counted: a sub-brand post
+    // still missing on the Tahams mother page flags Tahams, not the
+    // sub-brand whose own page is already done.
+    const overduePages = countOverduePagesForBrand(state.tasks || [], brand.id, weekStart);
 
-    if (overduePosts.length > 0) {
+    if (overduePages > 0) {
       healthStatus = 'Critical';
       healthClass = 'status-critical-badge';
     } else if (publishedCount < Math.ceil(goal / 2) && new Date().getDay() > 3) {
@@ -8762,7 +8782,11 @@ async function markTasksPostedBulk(selections) {
     pageKeysByTaskId.get(taskId).add(pageKey);
   }
 
+  // Each task is only changed in memory AFTER its save succeeds. Previously
+  // the row was flipped to posted first, so a failed save still looked
+  // posted until the next refresh, with no error and no log entry.
   let successCount = 0;
+  const failedIds = [];
   for (const [taskId, pageKeys] of pageKeysByTaskId) {
     const task = state.tasks.find(t => t.id === taskId);
     if (!task) continue;
@@ -8776,12 +8800,11 @@ async function markTasksPostedBulk(selections) {
     });
     if (newlyPosted.length === 0) continue;
 
-    task.posted = posted;
-    task.postedAtByPage = postedAtByPage;
-    task.postedAt = now;
+    const updatedTask = { ...task, posted, postedAtByPage, postedAt: now };
 
     try {
-      await setDoc(doc(db, "tasks", taskId), task);
+      await setDoc(doc(db, "tasks", taskId), updatedTask);
+      Object.assign(task, updatedTask);
       successCount++;
       // One entry per task, naming the task and each page, so the Log
       // Report shows exactly what was marked and where.
@@ -8789,11 +8812,15 @@ async function markTasksPostedBulk(selections) {
       logActivity(`marked Task ${task.id}: "${task.name}" as posted on ${pages}`, db);
     } catch (err) {
       console.error(`Failed to mark task ${taskId} as posted:`, err);
+      failedIds.push(taskId);
     }
   }
 
   if (successCount > 0) {
     showToast(`Marked ${successCount} post${successCount === 1 ? '' : 's'} as posted`, 'success');
+  }
+  if (failedIds.length > 0) {
+    showToast(`Could not save ${failedIds.join(', ')} as posted. Check your connection and try again.`, 'error');
   }
 
   renderActivityLog();
