@@ -1,6 +1,7 @@
 {
   "scripts": {
     "build": "node build.mjs",
+    "test": "node scripts/test-posted.mjs",
     "images": "node scripts/convert-images.mjs",
     "start": "node server.mjs"
   },

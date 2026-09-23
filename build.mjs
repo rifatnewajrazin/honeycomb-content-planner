@@ -15,6 +15,10 @@
 import * as esbuild from 'esbuild';
 import { readFileSync } from 'fs';
 
+// 0. Posted-tracking checks. Exits the process (stopping the build) if the
+// Dashboard Published count or posted-status rules are broken.
+await import('./scripts/test-posted.mjs');
+
 const pkg = JSON.parse(readFileSync(new URL('./node_modules/@supabase/supabase-js/package.json', import.meta.url)));
 
 // 1. Vendor Supabase — single self-contained ESM module, version pinned.

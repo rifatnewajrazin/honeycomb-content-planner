@@ -368,26 +368,25 @@ function pageLabelForLog(task, pageKey) {
 // on (see pageKeysForTask) has been marked true — a Tahams sub-brand task
 // posted only on its own page but not yet on the Tahams parent page is NOT
 // fully posted. Replaces the old flat `task.isPosted === true` check.
+// Only the pages the task's CURRENT brand needs are read: changing a task's
+// brand (e.g. Tahams to Lumina by Tahams) leaves the old page's key behind in
+// task.posted, and that leftover must not decide whether the task is done.
 function isTaskFullyPosted(task) {
   const posted = task && task.posted;
   if (!posted || typeof posted !== 'object') return false;
-  const keys = Object.keys(posted);
-  if (keys.length === 0) return false;
-  return keys.every(k => posted[k] === true);
+  return pageKeysForTask(task).every(k => posted[k] === true);
 }
 
 // 'posted' (every page done), 'partial' (some but not all — the case that
 // should catch a moderator's eye, e.g. posted on the sub-brand page but not
-// yet the Tahams parent page), or 'not_posted' (nothing done yet).
+// yet the Tahams parent page), or 'not_posted' (nothing done yet). Same
+// current-pages-only rule as isTaskFullyPosted.
 function getTaskPostedState(task) {
   const posted = task && task.posted;
   if (!posted || typeof posted !== 'object') return 'not_posted';
-  const vals = Object.values(posted);
-  if (vals.length === 0) return 'not_posted';
-  const allTrue = vals.every(v => v === true);
-  if (allTrue) return 'posted';
-  const anyTrue = vals.some(v => v === true);
-  return anyTrue ? 'partial' : 'not_posted';
+  const vals = pageKeysForTask(task).map(k => posted[k] === true);
+  if (vals.every(Boolean)) return 'posted';
+  return vals.some(Boolean) ? 'partial' : 'not_posted';
 }
 
 // Gate for creating/editing/deleting Idea Board entries — only people with
@@ -7541,6 +7540,32 @@ function taskBrandName(task) {
   return brand ? brand.name : '';
 }
 
+// Dashboard "Published" count for one brand card, counted per page, not per
+// task: a Tahams sub-brand task posted on both its own page and the Tahams
+// mother page counts once for the sub-brand and once for Tahams, and a task
+// posted on just one of them counts for that page's brand straight away.
+// Each page uses its own postedAtByPage time when present (older marks only
+// have the task-level postedAt; marks older than that fall back to the
+// scheduled date). Covered by scripts/test-posted.mjs, which runs on every
+// `npm run build`.
+function countPublishedForBrand(tasks, brandId, weekStart, weekEnd) {
+  let count = 0;
+  tasks.forEach(t => {
+    if (t.taskType !== 'post' || !t.posted || typeof t.posted !== 'object') return;
+    pageKeysForTask(t).forEach(key => {
+      if (t.posted[key] !== true) return;
+      const pageBrand = brandForPageKey(t, key);
+      if (!pageBrand || pageBrand.id !== brandId) return;
+      const stamp = (t.postedAtByPage && t.postedAtByPage[key]) || t.postedAt;
+      const postedDateStr = stamp ? stamp.slice(0, 10) : t.date;
+      if (!postedDateStr) return;
+      const postedDate = new Date(postedDateStr + 'T00:00:00');
+      if (postedDate >= weekStart && postedDate <= weekEnd) count++;
+    });
+  });
+  return count;
+}
+
 // Render Dashboard View
 function renderDashboard() {
   const grid = document.getElementById('dashboard-cards-grid');
@@ -7577,24 +7602,7 @@ function renderDashboard() {
     // posted in week 2 belongs to week 2. Tasks marked posted before
     // postedAt existed have no timestamp to go on, so they fall back to
     // their scheduled date.
-    // Counted per page, not per task: a Tahams sub-brand task posted on both
-    // its own page and the Tahams mother page counts once for the sub-brand
-    // and once for Tahams. Each page uses its own postedAtByPage time when
-    // present (older marks only have the task-level postedAt).
-    let publishedCount = 0;
-    (state.tasks || []).forEach(t => {
-      if (t.taskType !== 'post' || !t.posted || typeof t.posted !== 'object') return;
-      pageKeysForTask(t).forEach(key => {
-        if (t.posted[key] !== true) return;
-        const pageBrand = brandForPageKey(t, key);
-        if (!pageBrand || pageBrand.id !== brand.id) return;
-        const stamp = (t.postedAtByPage && t.postedAtByPage[key]) || t.postedAt;
-        const postedDateStr = stamp ? stamp.slice(0, 10) : t.date;
-        if (!postedDateStr) return;
-        const postedDate = new Date(postedDateStr + 'T00:00:00');
-        if (postedDate >= weekStart && postedDate <= weekEnd) publishedCount++;
-      });
-    });
+    const publishedCount = countPublishedForBrand(state.tasks || [], brand.id, weekStart, weekEnd);
     const goal = brand.frequencyGoal;
     const progressPct = goal > 0 ? Math.min(Math.round((publishedCount / goal) * 100), 100) : 0;
 
@@ -8830,6 +8838,41 @@ async function unpostTaskPage(taskId, pageKey) {
   }
 }
 
+// Plain-language summary of what an Edit Task save changed, for the Log
+// Report, e.g. 'brand: Tahams to Lumina by Tahams; status: In Progress to
+// Finished'. Long free text (notes/comments, links) is named, not quoted.
+function describeTaskChanges(before, after) {
+  const brandName = id => {
+    if (!id) return 'none';
+    const brands = (state.brands && state.brands.length > 0) ? state.brands : DEFAULT_BRANDS;
+    const b = brands.find(x => x.id === id);
+    return b ? b.name : id;
+  };
+  const jobTypeName = v => v === 'post' ? 'Social Media Post' : 'General Design Task';
+  const show = v => (v === undefined || v === null || v === '') ? 'none' : `"${v}"`;
+  const fields = [
+    ['name', 'name', show],
+    ['designer', 'creative', show],
+    ['assignedBy', 'assigned by', show],
+    ['brandId', 'brand', brandName],
+    ['taskType', 'job type', jobTypeName],
+    ['date', 'date', show],
+    ['time', 'time', show],
+    ['urgency', 'need within', show],
+    ['status', 'status', show],
+    ['deliveryLink', 'delivery link', null],
+    ['comments', 'comments', null]
+  ];
+  const changes = [];
+  fields.forEach(([key, label, fmt]) => {
+    const a = before[key] ?? '';
+    const b = after[key] ?? '';
+    if (a === b) return;
+    changes.push(fmt ? `${label}: ${fmt(before[key])} to ${fmt(after[key])}` : `${label} changed`);
+  });
+  return changes.length ? changes.join('; ') : 'no changes';
+}
+
 // Small HTML escaper for user-entered strings rendered via innerHTML in the
 // Task Tracker's notes feed and the read-only detail view.
 function escHtml(s) {
@@ -9375,11 +9418,12 @@ async function handleTaskFormSubmit(e) {
       // from ANY task change (by anyone) would overwrite state.tasks from the
       // server and silently erase it, with the user having been told it saved.
       // Now the write is awaited and confirmed before we tell the user it worked.
+      const before = { ...task };
       try {
         await setDoc(doc(db, "tasks", task.id), updatedTask);
         Object.assign(task, updatedTask);
         showToast('Task updated successfully', 'success');
-        logActivity(`updated Task ${task.id}: "${task.name}"`, db);
+        logActivity(`updated Task ${task.id}: "${task.name}" (${describeTaskChanges(before, updatedTask)})`, db);
         refreshViews();
         requestAnimationFrame(() => flashTaskRow(task.id));
         closeTaskModal();
