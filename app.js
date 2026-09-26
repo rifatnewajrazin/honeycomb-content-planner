@@ -11073,8 +11073,120 @@ function catalogProductMatches(product, q) {
   return q.split(/\s+/).every(word => hay.includes(word));
 }
 
-const catalogFilters = { q: '', category: 'all', type: 'all', colour: 'all', segment: 'all' };
+// Every facet (category, product, colour, segment) is a Set: empty = no
+// restriction, one or more values = match ANY of them (OR). The facets
+// themselves combine with AND, so picking two colours plus a category shows
+// every product in that category offered in either colour.
+const catalogFilters = { q: '', category: new Set(), type: new Set(), colour: new Set(), segment: new Set() };
+const CATALOG_FACETS = ['category', 'type', 'colour', 'segment'];
 let catalogEventsWired = false;
+let catalogFacetOptions = null;
+
+function catalogFacetMatch(set, value) {
+  return set.size === 0 || (value != null && set.has(value));
+}
+
+function catalogFacetMatchAny(set, values) {
+  return set.size === 0 || values.some(v => set.has(v));
+}
+
+// Builds the option list for each facet dropdown once (label + value), so
+// the panels and the active-filter chip labels share one source.
+function getCatalogFacetOptions() {
+  if (catalogFacetOptions) return catalogFacetOptions;
+  const idx = getCatalogIndex();
+  catalogFacetOptions = {
+    category: DEFAULT_CATALOG.categories.map(c => ({ value: c.id, label: c.name })),
+    type: [...new Set(idx.products.map(p => p.type))].sort().map(t => ({ value: t, label: t })),
+    colour: DEFAULT_CATALOG.colours.map(c => ({ value: c.id, label: catalogColourName(c) })),
+    segment: DEFAULT_CATALOG.segments.map(s => ({ value: s.id, label: s.name }))
+  };
+  return catalogFacetOptions;
+}
+
+function catalogFacetLabel(facet, value) {
+  const opt = (getCatalogFacetOptions()[facet] || []).find(o => o.value === value);
+  return opt ? opt.label : value;
+}
+
+const CATALOG_FACET_TITLES = { category: 'Category', type: 'Product', colour: 'Colour', segment: 'Segment' };
+
+function closeAllCatalogPanels(exceptFacet) {
+  CATALOG_FACETS.forEach(facet => {
+    if (facet === exceptFacet) return;
+    const panel = document.querySelector(`[data-panel="${facet}"]`);
+    const toggle = document.querySelector(`[data-toggle="${facet}"]`);
+    if (panel) panel.hidden = true;
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function updateCatalogMultiselectToggle(facet) {
+  const toggle = document.querySelector(`[data-toggle="${facet}"]`);
+  if (!toggle) return;
+  const count = catalogFilters[facet].size;
+  const countEl = toggle.querySelector('.catalog-multiselect-count');
+  countEl.hidden = count === 0;
+  countEl.textContent = String(count);
+  toggle.classList.toggle('has-selection', count > 0);
+}
+
+function renderCatalogActiveFilters() {
+  const el = document.getElementById('catalog-active-filters');
+  if (!el) return;
+  const chips = [];
+  CATALOG_FACETS.forEach(facet => {
+    catalogFilters[facet].forEach(value => {
+      chips.push({ facet, value, label: catalogFacetLabel(facet, value) });
+    });
+  });
+  if (!chips.length) { el.innerHTML = ''; return; }
+  el.innerHTML = chips.map(c => `
+    <button type="button" class="catalog-active-chip" data-remove-facet="${c.facet}" data-remove-value="${escHtml(c.value)}">
+      <span class="catalog-active-chip-group">${escHtml(CATALOG_FACET_TITLES[c.facet])}:</span> ${escHtml(c.label)}
+      <span class="catalog-active-chip-x" aria-hidden="true">&times;</span>
+    </button>`).join('') +
+    `<button type="button" class="catalog-active-clear-all" id="catalog-clear-all-filters">Clear all</button>`;
+}
+
+function wireCatalogMultiselect(facet) {
+  const toggle = document.querySelector(`[data-toggle="${facet}"]`);
+  const panel = document.querySelector(`[data-panel="${facet}"]`);
+  const optionsEl = document.querySelector(`[data-options="${facet}"]`);
+  const clearBtn = document.querySelector(`[data-clear="${facet}"]`);
+  const options = getCatalogFacetOptions()[facet] || [];
+
+  optionsEl.innerHTML = options.map(o => `
+    <label class="catalog-multiselect-option">
+      <input type="checkbox" value="${escHtml(o.value)}">
+      <span>${escHtml(o.label)}</span>
+    </label>`).join('');
+
+  toggle.addEventListener('click', e => {
+    e.stopPropagation();
+    const willOpen = panel.hidden;
+    closeAllCatalogPanels(facet);
+    panel.hidden = !willOpen;
+    toggle.setAttribute('aria-expanded', String(willOpen));
+  });
+
+  optionsEl.addEventListener('change', e => {
+    const cb = e.target.closest('input[type="checkbox"]');
+    if (!cb) return;
+    if (cb.checked) catalogFilters[facet].add(cb.value);
+    else catalogFilters[facet].delete(cb.value);
+    updateCatalogMultiselectToggle(facet);
+    renderCatalogue();
+  });
+
+  clearBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    catalogFilters[facet].clear();
+    optionsEl.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+    updateCatalogMultiselectToggle(facet);
+    renderCatalogue();
+  });
+}
 
 function renderCatalogue() {
   const grid = document.getElementById('catalog-grid');
@@ -11083,25 +11195,40 @@ function renderCatalogue() {
 
   if (!catalogEventsWired) {
     catalogEventsWired = true;
-    const fill = (id, allLabel, items) => {
-      const sel = document.getElementById(id);
-      sel.innerHTML = `<option value="all">${allLabel}</option>` +
-        items.map(([value, label]) => `<option value="${escHtml(value)}">${escHtml(label)}</option>`).join('');
-    };
-    fill('catalog-filter-category', 'All categories', DEFAULT_CATALOG.categories.map(c => [c.id, c.name]));
-    fill('catalog-filter-type', 'All products', [...new Set(idx.products.map(p => p.type))].sort().map(t => [t, t]));
-    fill('catalog-filter-colour', 'All colours', DEFAULT_CATALOG.colours.map(c => [c.id, catalogColourName(c)]));
-    fill('catalog-filter-segment', 'All segments', DEFAULT_CATALOG.segments.map(s => [s.id, s.name]));
+    CATALOG_FACETS.forEach(wireCatalogMultiselect);
 
-    const bind = (id, key, evt) => document.getElementById(id).addEventListener(evt, e => {
-      catalogFilters[key] = e.target.value;
+    document.getElementById('catalog-search').addEventListener('input', e => {
+      catalogFilters.q = e.target.value;
       renderCatalogue();
     });
-    bind('catalog-search', 'q', 'input');
-    bind('catalog-filter-category', 'category', 'change');
-    bind('catalog-filter-type', 'type', 'change');
-    bind('catalog-filter-colour', 'colour', 'change');
-    bind('catalog-filter-segment', 'segment', 'change');
+
+    document.addEventListener('click', e => {
+      if (e.target.closest('.catalog-multiselect')) return;
+      closeAllCatalogPanels();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAllCatalogPanels();
+    });
+
+    document.getElementById('catalog-active-filters').addEventListener('click', e => {
+      if (e.target.closest('#catalog-clear-all-filters')) {
+        CATALOG_FACETS.forEach(facet => {
+          catalogFilters[facet].clear();
+          updateCatalogMultiselectToggle(facet);
+          document.querySelectorAll(`[data-options="${facet}"] input[type="checkbox"]`).forEach(cb => { cb.checked = false; });
+        });
+        renderCatalogue();
+        return;
+      }
+      const chip = e.target.closest('[data-remove-facet]');
+      if (!chip) return;
+      const { removeFacet, removeValue } = chip.dataset;
+      catalogFilters[removeFacet].delete(removeValue);
+      updateCatalogMultiselectToggle(removeFacet);
+      const cb = document.querySelector(`[data-options="${removeFacet}"] input[value="${CSS.escape(removeValue)}"]`);
+      if (cb) cb.checked = false;
+      renderCatalogue();
+    });
 
     grid.addEventListener('click', e => {
       const card = e.target.closest('[data-product-id]');
@@ -11117,14 +11244,16 @@ function renderCatalogue() {
     });
   }
 
+  renderCatalogActiveFilters();
+
   const q = catalogFilters.q.trim().toLowerCase();
   const list = idx.products.filter(p =>
-    (catalogFilters.category === 'all' || p.categoryId === catalogFilters.category) &&
-    (catalogFilters.type === 'all' || p.type === catalogFilters.type) &&
-    (catalogFilters.segment === 'all' || p.segments.includes(catalogFilters.segment)) &&
-    (catalogFilters.colour === 'all' || p.designIds.some(id => {
+    catalogFacetMatch(catalogFilters.category, p.categoryId) &&
+    catalogFacetMatch(catalogFilters.type, p.type) &&
+    catalogFacetMatchAny(catalogFilters.segment, p.segments) &&
+    (catalogFilters.colour.size === 0 || p.designIds.some(id => {
       const d = catalogDesignInfo(id);
-      return d && d.colourIds.includes(catalogFilters.colour);
+      return d && d.colourIds.some(cid => catalogFilters.colour.has(cid));
     })) &&
     catalogProductMatches(p, q)
   );

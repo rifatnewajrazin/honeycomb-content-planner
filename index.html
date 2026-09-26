@@ -11,7 +11,7 @@
   <!-- Font CSS as a direct <link> (was an @import at the top of style.css, which
        chained behind style.css and blocked render). -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="style.min.css?v=3.31.0">
+  <link rel="stylesheet" href="style.min.css?v=3.32.0">
   <style>
     /* Date field: word-month display text with a native calendar picker layered on top */
     .date-field { position: relative; }
@@ -590,11 +590,61 @@
 
           <div class="catalog-toolbar">
             <input type="search" id="catalog-search" class="search-input catalog-search" placeholder="Search a product, colour, design or SKU, e.g. lavender" aria-label="Search the catalogue" autocomplete="off">
-            <select id="catalog-filter-category" class="filter-select" aria-label="Category"></select>
-            <select id="catalog-filter-type" class="filter-select" aria-label="Product"></select>
-            <select id="catalog-filter-colour" class="filter-select" aria-label="Colour"></select>
-            <select id="catalog-filter-segment" class="filter-select" aria-label="Segment"></select>
+            <div class="catalog-multiselect" data-filter="category">
+              <button type="button" class="catalog-multiselect-toggle" data-toggle="category" aria-haspopup="true" aria-expanded="false">
+                <span class="catalog-multiselect-label">Category</span>
+                <span class="catalog-multiselect-count" hidden></span>
+              </button>
+              <div class="catalog-multiselect-panel" data-panel="category" hidden>
+                <div class="catalog-multiselect-panel-header">
+                  <span>Category</span>
+                  <button type="button" class="catalog-multiselect-clear" data-clear="category">Clear</button>
+                </div>
+                <div class="catalog-multiselect-options" data-options="category"></div>
+              </div>
+            </div>
+            <div class="catalog-multiselect" data-filter="type">
+              <button type="button" class="catalog-multiselect-toggle" data-toggle="type" aria-haspopup="true" aria-expanded="false">
+                <span class="catalog-multiselect-label">Product</span>
+                <span class="catalog-multiselect-count" hidden></span>
+              </button>
+              <div class="catalog-multiselect-panel" data-panel="type" hidden>
+                <div class="catalog-multiselect-panel-header">
+                  <span>Product</span>
+                  <button type="button" class="catalog-multiselect-clear" data-clear="type">Clear</button>
+                </div>
+                <div class="catalog-multiselect-options" data-options="type"></div>
+              </div>
+            </div>
+            <div class="catalog-multiselect" data-filter="colour">
+              <button type="button" class="catalog-multiselect-toggle" data-toggle="colour" aria-haspopup="true" aria-expanded="false">
+                <span class="catalog-multiselect-label">Colour</span>
+                <span class="catalog-multiselect-count" hidden></span>
+              </button>
+              <div class="catalog-multiselect-panel" data-panel="colour" hidden>
+                <div class="catalog-multiselect-panel-header">
+                  <span>Colour</span>
+                  <button type="button" class="catalog-multiselect-clear" data-clear="colour">Clear</button>
+                </div>
+                <div class="catalog-multiselect-options" data-options="colour"></div>
+              </div>
+            </div>
+            <div class="catalog-multiselect" data-filter="segment">
+              <button type="button" class="catalog-multiselect-toggle" data-toggle="segment" aria-haspopup="true" aria-expanded="false">
+                <span class="catalog-multiselect-label">Segment</span>
+                <span class="catalog-multiselect-count" hidden></span>
+              </button>
+              <div class="catalog-multiselect-panel" data-panel="segment" hidden>
+                <div class="catalog-multiselect-panel-header">
+                  <span>Segment</span>
+                  <button type="button" class="catalog-multiselect-clear" data-clear="segment">Clear</button>
+                </div>
+                <div class="catalog-multiselect-options" data-options="segment"></div>
+              </div>
+            </div>
           </div>
+
+          <div id="catalog-active-filters" class="catalog-active-filters" aria-live="polite"></div>
 
           <div id="catalog-name-matches" class="catalog-name-matches" aria-live="polite"></div>
 
@@ -1654,6 +1704,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.min.js?v=3.31.0"></script>
+  <script type="module" src="app.min.js?v=3.32.0"></script>
 </body>
 </html>
